@@ -10,12 +10,12 @@ import java.util.Map;
 public class PermissionGroup {
 
     String groupName;
-    Map<String, Boolean> perms = new HashMap<>();
+    //Map<String, Boolean> perms = new HashMap<>();
 
     public PermissionGroup(String name)
     {
         groupName = name;
-        
+
     }
 
 }

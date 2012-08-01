@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class RemCommand extends Listener {
 
-    Map<String, String> remMap = new HashMap<>();
+    Map<String, String> remMap = new HashMap<String, String>();
 
     public RemCommand() {
         new File("data" + File.separator + "rem").mkdirs();
@@ -110,7 +110,7 @@ public class RemCommand extends Listener {
     @Override
     public String[] getAliases() {
 
-        List<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<String>();
         list.add("rem");
         list.add("r");
         list.add("remember");

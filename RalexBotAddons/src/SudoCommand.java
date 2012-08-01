@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class SudoCommand extends Listener {
 
-    Map<String, Boolean> sudoList = new HashMap<>();
+    Map<String, Boolean> sudoList = new HashMap<String, Boolean>();
     String password;
 
     public SudoCommand() {

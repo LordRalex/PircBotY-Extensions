@@ -56,40 +56,32 @@ public class TellCommand extends Listener {
         if (sender == null || sender.isEmpty()) {
             return;
         }
-        switch (command) {
-            case "t":
-            case "tell":
-                String message = "";
-                for (int i = 1; i < args.length; i++) {
-                    message += args[i] + " ";
-                }
-                message = message.trim();
-                String target = args[0];
-                FileSystem.addTell(sender, target, message);
-                if (channel != null) {
-                    sendMessage(channel, "Message will be delivered to " + target);
-                } else if (sender != null) {
-                    sendMessage(sender, "Message will be delivered to " + target);
-                } else {
-                    RalexBotMain.print("Message will be delivered to " + target);
-                }
-                break;
-            case "st":
-            case "showtells":
-                if (sender == null) {
-                    return;
-                }
-                String[] messages = FileSystem.getTells(sender);
-                if (messages.length == 0) {
-                    sendMessage(sender, "I have no messages for you");
-                } else {
-                    sendMessage(sender, messages);
-                }
-                FileSystem.clearTells(sender);
-                break;
-            default:
-                sendMessage(sender, "That command is not set up yet, sorry");
-                break;
+        if (command.equalsIgnoreCase("t") || command.equalsIgnoreCase("tell")) {
+            String message = "";
+            for (int i = 1; i < args.length; i++) {
+                message += args[i] + " ";
+            }
+            message = message.trim();
+            String target = args[0];
+            FileSystem.addTell(sender, target, message);
+            if (channel != null) {
+                sendMessage(channel, "Message will be delivered to " + target);
+            } else if (sender != null) {
+                sendMessage(sender, "Message will be delivered to " + target);
+            } else {
+                RalexBotMain.print("Message will be delivered to " + target);
+            }
+        } else if (command.equalsIgnoreCase("st") || command.equalsIgnoreCase("showtells")) {
+            if (sender == null) {
+                return;
+            }
+            String[] messages = FileSystem.getTells(sender);
+            if (messages.length == 0) {
+                sendMessage(sender, "I have no messages for you");
+            } else {
+                sendMessage(sender, messages);
+            }
+            FileSystem.clearTells(sender);
         }
     }
 

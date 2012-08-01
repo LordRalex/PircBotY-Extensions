@@ -26,7 +26,7 @@ public class LoginCommand extends Listener {
 
     boolean useCache = false;
     boolean lastTest = true;
-    Map<String, String> ignoreList = new HashMap<>();
+    //Map<String, String> ignoreList = new HashMap<String, String>();
 
     @Override
     public void onCommand(CommandEvent event) {

@@ -19,10 +19,10 @@ import java.util.logging.Logger;
  */
 public class EventManager {
 
-    List<Listener> listeners = new ArrayList<>();
+    List<Listener> listeners = new ArrayList<Listener>();
 
     public EventManager() {
-        listeners = new ArrayList<>();
+        listeners = new ArrayList<Listener>();
     }
 
     public void loadExecutors() throws MalformedURLException {
@@ -44,7 +44,7 @@ public class EventManager {
                         listeners.add(list);
                         System.out.println("  Added: " + list.getClass().getName());
                     }
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+                } catch (Exception ex) {
                     Logger.getLogger(EventManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }

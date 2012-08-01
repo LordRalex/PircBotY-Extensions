@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class JoinLeaveCommand extends Listener {
 
-    Map<String, String> channelList = new HashMap<>();
+    Map<String, String> channelList = new HashMap<String, String>();
     final int MAX_CHANNELS = FileSystem.getInt("max-channels");
 
     @Override
@@ -28,9 +28,9 @@ public class JoinLeaveCommand extends Listener {
         String[] args = event.getArgs();
         String channel = event.getChannel();
         String sender = event.getSender();
-        switch (command) {
-            case "join":
-                if (args.length != 1) {
+        if(command.equalsIgnoreCase("join"))
+        {
+            if (args.length != 1) {
                     return;
                 }
                 channel = args[0];
@@ -42,9 +42,9 @@ public class JoinLeaveCommand extends Listener {
                 }
                 channelList.put(channel, sender);
                 getBot().joinChannel(channel);
-                break;
-            case "leave":
-                if (args.length == 1) {
+        }else if (command.equalsIgnoreCase("leave"))
+        {
+            if (args.length == 1) {
                     channel = args[0];
                 }
                 RalexBotMain.print("Leave recieved for channel: " + channel);
@@ -55,9 +55,6 @@ public class JoinLeaveCommand extends Listener {
                 } else {
                     sendMessage(sender, "You did not have him join this channel");
                 }
-                break;
-            default:
-                sendMessage(sender, "What was that?");
         }
     }
 

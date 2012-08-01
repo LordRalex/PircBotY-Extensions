@@ -60,7 +60,7 @@ public class RalexBotMain {
                     System.exit(0);
                 }
             }
-        } catch (IrcException | IOException ex) {
+        } catch (IrcException ex) {
             Logger.getLogger(RalexBotMain.class.getName()).log(Level.SEVERE, "Error caught:", ex);
             bot.forceStop();
             crashed = true;
@@ -103,7 +103,7 @@ public class RalexBotMain {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(RalexBotMain.class.getName()).log(Level.SEVERE, null, ex);
         }
         new RalexBotMain().startBot(new Scanner(System.in), args);

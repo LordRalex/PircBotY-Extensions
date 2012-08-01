@@ -180,7 +180,7 @@ public class RalexBot extends PircBot {
     protected void onNickChange(final String oldNick, final String login, final String hostname, final String newNick) {
         super.onNickChange(oldNick, login, hostname, newNick);
         Event event = new NickChangeEvent(oldNick, login, hostname, newNick);
-        manager.runEvent(event);;
+        manager.runEvent(event);
     }
 
     /**

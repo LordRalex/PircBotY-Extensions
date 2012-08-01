@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class GuestListener extends Listener {
 
-    Map<String, Thread> threads = new HashMap<>();
+    //Map<String, Thread> threads = new HashMap<String, Thread>();
 
     @Override
     public void onJoin(JoinEvent event) {

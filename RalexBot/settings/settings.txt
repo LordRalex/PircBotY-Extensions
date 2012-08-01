@@ -1,10 +1,8 @@
 auto-join:
-    - #ae97
-	- #minecraftforums
-	- #serverhelp
+  - #ae97
 max-channels: 5
 nick: RalexBot
-password: killer8000
-mcnick: Lord_Ralex
-mcpass: Lucario45
-sudo-pass: test123
+password: 
+mcnick: 
+mcpass: 
+sudo-pass: 

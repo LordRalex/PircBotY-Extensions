@@ -15,12 +15,9 @@ import java.util.Map;
 public class AntiSpamListener extends Listener {
 
     Map<String, Posts> logs = new HashMap<>();
-    Map<String, Login> logins = new HashMap<>();
     private final int MAX_MESSAGES = 4;
-    private final int SPAM_RATE = (int) (3.5 * 1000);
+    private final int SPAM_RATE = (int) (3 * 1000);
     private final int DUPE_RATE = (int) 15 * 1000;
-    //private final int LOGIN_RATE = (int) 10 * 1000;
-    //private final int MAX_LOGINS = 5;
 
     @Override
     public void onMessage(MessageEvent event) {
@@ -101,8 +98,5 @@ public class AntiSpamListener extends Listener {
         public long getTime() {
             return timePosted;
         }
-    }
-
-    private class Login {
     }
 }

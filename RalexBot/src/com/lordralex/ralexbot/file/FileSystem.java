@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class FileSystem {
 
-    private static Map<String, Object> settings = new HashMap<>();
+    private static Map<String, Object> settings = new HashMap<String, Object>();
 
     /**
      * Saves a new rem or overrides an existing rem on the disk. If a rem
@@ -63,7 +63,7 @@ public class FileSystem {
                 String line = fileReader.nextLine().trim();
                 if (line.startsWith("-")) {
                     Object obj = settings.remove(lastAdded);
-                    List<String> list = new ArrayList<>();
+                    List<String> list = new ArrayList<String>();
 
                     if (obj instanceof List) {
                         list = (List<String>) obj;
@@ -75,7 +75,7 @@ public class FileSystem {
                     }
 
                     if (list == null) {
-                        list = new ArrayList<>();
+                        list = new ArrayList<String>();
                     }
                     list.add(line.substring(2));
                     settings.put(lastAdded, list);
@@ -172,7 +172,7 @@ public class FileSystem {
             }
             name = name.toLowerCase();
             Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
-            List<String> lines = new ArrayList<>();
+            List<String> lines = new ArrayList<String>();
             while (reader.hasNext()) {
                 lines.add(reader.nextLine().trim());
             }
@@ -195,7 +195,7 @@ public class FileSystem {
         if (target == null || sender == null || message == null) {
             return;
         }
-        List<String> lines = new ArrayList<>();
+        List<String> lines = new ArrayList<String>();
         String[] old = getTells(target);
         lines.addAll(Arrays.asList(old));
         lines.add("From " + sender + "-> " + message);
@@ -232,7 +232,7 @@ public class FileSystem {
             List<String> list = (List<String>) obj;
             return list;
         }
-        return new ArrayList<>();
+        return new ArrayList<String>();
     }
 
     /**

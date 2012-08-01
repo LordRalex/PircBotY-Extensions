@@ -42,7 +42,7 @@ public class ExpandCommand extends Listener {
                     }
                     String finalLink = parse(args[0]);
                     sendMessage(target, finalLink);
-                } catch (URISyntaxException | IOException ex) {
+                } catch (IOException | URISyntaxException ex) {
                     Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }

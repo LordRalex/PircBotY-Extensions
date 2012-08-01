@@ -35,10 +35,14 @@ public abstract class Listener {
             onNickChange((NickChangeEvent) event);
         } else if (event instanceof CommandEvent) {
             CommandEvent cmdEvent = (CommandEvent) event;
-            for (String alias : getAliases()) {
-                if (alias.equalsIgnoreCase(cmdEvent.getCommand())) {
-                    onCommand(cmdEvent);
-                    return;
+            if (getAliases() == null || getAliases().length == 0) {
+                onCommand(cmdEvent);
+            } else {
+                for (String alias : getAliases()) {
+                    if (alias.equalsIgnoreCase(cmdEvent.getCommand())) {
+                        onCommand(cmdEvent);
+                        return;
+                    }
                 }
             }
         }

@@ -71,7 +71,7 @@ public class DeadflyCommand extends Listener {
                             return;
                         }
                     }
-                } catch (URISyntaxException | IOException ex) {
+                } catch (IOException | URISyntaxException ex) {
                     Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
                 } finally {
                     try {
