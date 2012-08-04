@@ -4,17 +4,15 @@ package com.lordralex.ralexbot.api.events;
  * @version 1.0
  * @author Joshua
  */
-public class Event {
+public abstract class Event {
 
     protected boolean cancelled = false;
 
-    public boolean isCancelled()
-    {
+    public final boolean isCancelled() {
         return cancelled;
     }
 
-    public void setCancelled(boolean newState)
-    {
+    public final void setCancelled(boolean newState) {
         cancelled = newState;
     }
 }
