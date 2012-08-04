@@ -1,5 +1,4 @@
 
-
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -46,5 +45,12 @@ public class SayCommand extends Listener {
     @Override
     public void declarePriorities() {
         priorities.put(EventType.Command, Priority.NORMAL);
+    }
+    
+    @Override
+    public String[] getAliases() {
+        return new String[]{
+                    "say"
+                };
     }
 }

@@ -20,7 +20,7 @@ public abstract class Listener {
 
     public Map<EventType, Priority> priorities = new HashMap<>();
 
-    public void runEvent(Event event) {
+    public final void runEvent(Event event) {
         if (event instanceof MessageEvent) {
             onMessage((MessageEvent) event);
         } else if (event instanceof JoinEvent) {
@@ -159,7 +159,7 @@ public abstract class Listener {
      * @param user The user to test.
      * @return True if user is the master, otherwise false
      */
-    public boolean isMaster(String user) {
+    public final boolean isMaster(String user) {
         if (user == null || user.equalsIgnoreCase("lord_ralex") || user.equalsIgnoreCase("console")) {
             return true;
         }
@@ -198,7 +198,7 @@ public abstract class Listener {
      * @param channel The channel to see if they are op in
      * @return True if the nick is op in the channel, false otherwise
      */
-    public boolean isOP(String name, String channel) {
+    public final boolean isOP(String name, String channel) {
         if (name == null || channel == null) {
             return false;
         }
@@ -219,7 +219,7 @@ public abstract class Listener {
      * @param channel The channel to see if they are voiced in
      * @return True if the nick is voiced in the channel, false otherwise
      */
-    public boolean isVoice(String name, String channel) {
+    public final boolean isVoice(String name, String channel) {
         if (name == null || channel == null) {
             return false;
         }
@@ -238,7 +238,7 @@ public abstract class Listener {
      * @param target The nick or channel to send the message to.
      * @param message The message to send to the user/channel.
      */
-    public void sendMessage(String target, String message) {
+    public final void sendMessage(String target, String message) {
         if (target == null) {
             return;
         }
@@ -252,7 +252,7 @@ public abstract class Listener {
      * @param target The channel or person to send the messages to.
      * @param message The collection of messages to send.
      */
-    public void sendMessage(String target, String[] message) {
+    public final void sendMessage(String target, String[] message) {
         if (target == null) {
             return;
         }
@@ -261,7 +261,7 @@ public abstract class Listener {
         }
     }
 
-    public void sendNotice(String target, String message) {
+    public final void sendNotice(String target, String message) {
         if (target == null) {
             return;
         }
@@ -273,7 +273,7 @@ public abstract class Listener {
      *
      * @return The bot from {@link RalexBotMain}
      */
-    public RalexBot getBot() {
+    public final RalexBot getBot() {
         return RalexBotMain.getBot();
     }
 

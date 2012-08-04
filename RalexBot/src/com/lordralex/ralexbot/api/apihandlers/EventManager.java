@@ -19,10 +19,10 @@ import java.util.logging.Logger;
  */
 public class EventManager {
 
-    List<Listener> listeners = new ArrayList<Listener>();
+    List<Listener> listeners = new ArrayList<>();
 
     public EventManager() {
-        listeners = new ArrayList<Listener>();
+        listeners = new ArrayList<>();
     }
 
     public void loadExecutors() throws MalformedURLException {
