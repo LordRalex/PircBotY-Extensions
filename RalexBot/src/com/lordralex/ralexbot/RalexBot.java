@@ -24,7 +24,7 @@ public class RalexBot extends PircBot {
     /**
      * The current version of the {@link RalexBot}
      */
-    public static final String RBVERSION = "0.3.0";
+    public static final String RBVERSION = "0.3.1";
     public EventManager manager;
 
     /**
@@ -38,6 +38,7 @@ public class RalexBot extends PircBot {
     public RalexBot(boolean debugState) throws IrcException, IOException {
         long begin = System.currentTimeMillis();
         this.setAutoNickChange(true);
+        this.setVersion(VERSION);
         System.out.println("Loading files: " + (System.currentTimeMillis() - begin) + " ms");
         FileSystem.loadFiles();
         if (!debugState) {
@@ -107,11 +108,6 @@ public class RalexBot extends PircBot {
 
     private void createListeners() {
         manager = new EventManager();
-        try {
-            manager.loadExecutors();
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     @Override

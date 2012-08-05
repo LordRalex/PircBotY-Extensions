@@ -52,7 +52,6 @@ public class FileSystem {
             try {
                 saveDefaultSettings();
             } catch (IOException ex) {
-                Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -63,8 +62,7 @@ public class FileSystem {
                 String line = fileReader.nextLine().trim();
                 if (line.startsWith("-")) {
                     Object obj = settings.remove(lastAdded);
-                    List<String> list = new ArrayList<String>();
-
+                    List<String> list = new ArrayList<>();
                     if (obj instanceof List) {
                         list = (List<String>) obj;
                     } else {
@@ -107,18 +105,20 @@ public class FileSystem {
         }
         FileWriter writer = new FileWriter(new File("settings" + File.separator + "settings.txt"));
         String[] lines = new String[]{
-            "auto-join:\n",
-            "    - #ae97\n",
-            "    - #jamolnn\n",
-            "max-channels: 5\n",
-            "nick: RalexBot\n",
-            "password: \n",
-            "mcnick: \n",
-            "mcpass: \n",
-            "sudo-pass: test123\n"
+            "auto-join:",
+            "    - #ae97",
+            "max-channels: 5",
+            "nick: RalexBot",
+            "password:",
+            "mcnick:",
+            "mcpass:",
+            "sudo-pass: test123",
+            "spam-message: 5",
+            "spam-time: 3500",
+            "spam-dupe: 3"
         };
         for (String line : lines) {
-            writer.write(line);
+            writer.write(line + "\n");
         }
         writer.close();
     }
@@ -172,7 +172,7 @@ public class FileSystem {
             }
             name = name.toLowerCase();
             Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
-            List<String> lines = new ArrayList<String>();
+            List<String> lines = new ArrayList<>();
             while (reader.hasNext()) {
                 lines.add(reader.nextLine().trim());
             }
@@ -195,7 +195,7 @@ public class FileSystem {
         if (target == null || sender == null || message == null) {
             return;
         }
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         String[] old = getTells(target);
         lines.addAll(Arrays.asList(old));
         lines.add("From " + sender + "-> " + message);
@@ -232,7 +232,7 @@ public class FileSystem {
             List<String> list = (List<String>) obj;
             return list;
         }
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     /**

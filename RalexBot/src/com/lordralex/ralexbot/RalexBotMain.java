@@ -1,11 +1,10 @@
 package com.lordralex.ralexbot;
 
-import java.io.IOException;
+import com.lordralex.ralexbot.api.events.CommandEvent;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import org.jibble.pircbot.IrcException;
 
 /**
@@ -48,7 +47,7 @@ public class RalexBotMain {
                 crashed = false;
             } catch (Throwable e) {
                 Logger.getLogger(RalexBotMain.class.getName()).log(Level.SEVERE, null, e);
-                //bot.getCmdExec().executeCommand("stop", null, null);
+                bot.manager.runEvent(new CommandEvent("stop", null, null, new String[0]));
                 crashed = true;
             } finally {
                 if (thread.isAlive()) {
@@ -80,32 +79,11 @@ public class RalexBotMain {
     }
 
     /**
-     * The main constructor to create the entire bot. This is the preferred way
-     * to start the bot.
-     *
-     * @param keyboard The keyboard to be used for the console listener
-     * @param args Any arguments to pass
-     * @deprecated Replacement is to use startBot(Scanner keyboard, String[]
-     * args)
-     * @since 1.0
-     */
-    public RalexBotMain(Scanner keyboard, String[] args) {
-    }
-
-    public RalexBotMain() {
-    }
-
-    /**
      * @param args the command line arguments
      *
      * @since 1.0
      */
     public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
-            Logger.getLogger(RalexBotMain.class.getName()).log(Level.SEVERE, null, ex);
-        }
         new RalexBotMain().startBot(new Scanner(System.in), args);
     }
 
@@ -158,7 +136,16 @@ public class RalexBotMain {
                     message = keyboard.nextLine();
                 }
                 if (message != null) {
-                    //bot.getCmdExec().executeCommand(message, null, null);
+                    String cmd = message.split(" ")[0];
+                    String[] temp = message.split(" ");
+                    String[] temp2 = new String[temp.length - 1];
+                    for (int i = 0; i < temp2.length; i++) {
+                        temp2[i] = temp[i + 1];
+                    }
+                    bot.manager.runEvent(new CommandEvent(cmd, null, null, temp2));
+                    if (cmd.equalsIgnoreCase("stop")) {
+                        stop = true;
+                    }
                 }
             }
             keyboard.close();

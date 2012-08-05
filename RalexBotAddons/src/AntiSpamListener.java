@@ -3,6 +3,7 @@ import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.EventType;
 import com.lordralex.ralexbot.api.events.MessageEvent;
+import com.lordralex.ralexbot.file.FileSystem;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,12 +16,18 @@ import java.util.Map;
 public class AntiSpamListener extends Listener {
 
     Map<String, Posts> logs = new HashMap<>();
-    private final int MAX_MESSAGES = 4;
-    private final int SPAM_RATE = (int) (3 * 1000);
-    private final int DUPE_RATE = (int) 15 * 1000;
+    private final int MAX_MESSAGES;
+    private final int SPAM_RATE;
+    private final int DUPE_RATE;
+
+    public AntiSpamListener() {
+        MAX_MESSAGES = FileSystem.getInt("spam-message");
+        SPAM_RATE = FileSystem.getInt("spam-time");
+        DUPE_RATE = FileSystem.getInt("spam-dupe");
+    }
 
     @Override
-    public void onMessage(MessageEvent event) {
+    public synchronized void onMessage(MessageEvent event) {
         if (event.isCancelled()) {
             return;
         }

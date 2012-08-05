@@ -20,45 +20,41 @@ import java.util.logging.Logger;
 public class EventManager {
 
     List<Listener> listeners = new ArrayList<>();
+    Scheduler scheduler;
 
     public EventManager() {
         listeners = new ArrayList<>();
-    }
-
-    public void loadExecutors() throws MalformedURLException {
-        File extensionFolder = new File("extensions");
-        extensionFolder.mkdirs();
-        listeners.clear();
-        URL[] urls = new URL[]{extensionFolder.toURI().toURL()};
-        ClassLoader cl = new URLClassLoader(urls);
-        for (File file : extensionFolder.listFiles()) {
-            if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                try {
-                    String className = file.getName();
-                    className = className.replace("extension" + File.separator, "").replace(".class", "");
-                    Class cls = cl.loadClass(className);
-                    Object obj = cls.newInstance();
-                    if (obj instanceof Listener) {
-                        Listener list = (Listener) obj;
-                        list.declarePriorities();
-                        listeners.add(list);
-                        System.out.println("  Added: " + list.getClass().getName());
+        try {
+            File extensionFolder = new File("extensions");
+            extensionFolder.mkdirs();
+            listeners.clear();
+            URL[] urls = new URL[]{extensionFolder.toURI().toURL()};
+            ClassLoader cl = new URLClassLoader(urls);
+            for (File file : extensionFolder.listFiles()) {
+                if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
+                    try {
+                        String className = file.getName();
+                        className = className.replace("extension" + File.separator, "").replace(".class", "");
+                        Class cls = cl.loadClass(className);
+                        Object obj = cls.newInstance();
+                        if (obj instanceof Listener) {
+                            Listener list = (Listener) obj;
+                            list.declarePriorities();
+                            listeners.add(list);
+                            System.out.println("  Added: " + list.getClass().getName());
+                        }
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                        Logger.getLogger(EventManager.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                } catch (Exception ex) {
-                    Logger.getLogger(EventManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(EventManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+        scheduler = new Scheduler(listeners);
     }
 
     public void runEvent(Event eventToRun) {
-        EventType eventType = EventType.getEvent(eventToRun);
-        for (Priority prio : Priority.getValues()) {
-            for (Listener listener : listeners) {
-                if (listener.priorities.get(eventType) == prio) {
-                    listener.runEvent(eventToRun);
-                }
-            }
-        }
+        scheduler.scheduleEvent(eventToRun);
     }
 }
