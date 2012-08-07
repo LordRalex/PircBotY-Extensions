@@ -1,4 +1,3 @@
-
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -125,19 +124,19 @@ public class PingServerCommand extends Listener {
                 if (localDataInputStream != null) {
                     localDataInputStream.close();
                 }
-            } catch (Throwable localThrowable4) {
+            } catch (Throwable a) {
             }
             try {
                 if (localDataOutputStream != null) {
                     localDataOutputStream.close();
                 }
-            } catch (Throwable localThrowable5) {
+            } catch (Throwable b) {
             }
             try {
                 if (pingTest != null) {
                     pingTest.close();
                 }
-            } catch (Throwable localThrowable6) {
+            } catch (Throwable c) {
             }
             return results;
         }
@@ -161,15 +160,15 @@ public class PingServerCommand extends Listener {
     private String b() {
         String str1 = "";
         try {
-            BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(PingServerCommand.class.getResourceAsStream("/font.txt"), "UTF-8"));
-            String str2;
-            while ((str2 = localBufferedReader.readLine()) != null) {
-                if (!str2.startsWith("#")) {
-                    str1 = str1 + str2;
+            try (BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(PingServerCommand.class.getResourceAsStream("/font.txt"), "UTF-8"))) {
+                String str2;
+                while ((str2 = localBufferedReader.readLine()) != null) {
+                    if (!str2.startsWith("#")) {
+                        str1 = str1 + str2;
+                    }
                 }
             }
-            localBufferedReader.close();
-        } catch (Exception localException) {
+        } catch (Exception a) {
         }
         return str1;
     }

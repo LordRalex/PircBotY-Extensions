@@ -1,4 +1,3 @@
-
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.EventType;
@@ -15,45 +14,46 @@ import java.util.Map;
  */
 public class AntiSpamListener extends Listener {
 
-    Map<String, Posts> logs = new HashMap<>();
+    private final Map<String, Posts> logs = new HashMap<>();
     private int MAX_MESSAGES;
     private int SPAM_RATE;
     private int DUPE_RATE;
-    
+
     @Override
-    public void setup()
-    {
+    public void setup() {
         MAX_MESSAGES = FileSystem.getInt("spam-message");
         SPAM_RATE = FileSystem.getInt("spam-time");
         DUPE_RATE = FileSystem.getInt("spam-dupe");
-    }    
+    }
 
     @Override
-    public synchronized void onMessage(MessageEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        String channel = event.getChannel();
-        String sender = event.getSender();
-        String message = event.getMessage();
-        String hostname = event.getHostname();
-        if (isOP(sender, channel) || isVoice(sender, channel) || sender.equalsIgnoreCase(getBot().getNick())) {
-            return;
-        }
-        message = message.toString().toLowerCase();
-        Posts posts = logs.remove(sender);
-        if (posts == null) {
-            posts = new Posts();
-        }
-        if (posts.addPost(message)) {
-            if (isOP(this.getBot().getNick(), channel)) {
-                getBot().kick(channel, sender, "Triggered Spam Guard (IP=" + hostname + ")");
-            } else {
-                getBot().sendMessage("chanserv", "kick " + channel + " " + sender + " Triggered Spam guard (IP=" + hostname + ")");
+    public void onMessage(MessageEvent event) {
+        synchronized (logs) {
+            if (event.isCancelled()) {
+                return;
             }
-            event.setCancelled(true);
-        } else {
-            logs.put(sender, posts);
+            String channel = event.getChannel();
+            String sender = event.getSender();
+            String message = event.getMessage();
+            String hostname = event.getHostname();
+            if (isOP(sender, channel) || isVoice(sender, channel) || sender.equalsIgnoreCase(getBot().getNick())) {
+                return;
+            }
+            message = message.toString().toLowerCase();
+            Posts posts = logs.remove(sender);
+            if (posts == null) {
+                posts = new Posts();
+            }
+            if (posts.addPost(message)) {
+                if (isOP(this.getBot().getNick(), channel)) {
+                    getBot().kick(channel, sender, "Triggered Spam Guard (IP=" + hostname + ")");
+                } else {
+                    getBot().sendMessage("chanserv", "kick " + channel + " " + sender + " Triggered Spam guard (IP=" + hostname + ")");
+                }
+                event.setCancelled(true);
+            } else {
+                logs.put(sender, posts);
+            }
         }
     }
 

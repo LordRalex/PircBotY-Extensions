@@ -5,7 +5,6 @@ import com.lordralex.ralexbot.api.events.*;
 import com.lordralex.ralexbot.file.FileSystem;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -24,7 +23,7 @@ public class RalexBot extends PircBot {
     /**
      * The current version of the {@link RalexBot}
      */
-    public static final String RBVERSION = "0.3.1";
+    public static final String RBVERSION = "0.3.3";
     public EventManager manager;
 
     /**

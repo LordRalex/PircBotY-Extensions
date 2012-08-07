@@ -6,7 +6,7 @@ package com.lordralex.ralexbot.api.events;
  */
 public class NickChangeEvent extends Event {
 
-    protected String oldNick, newNick, login, hostname;
+    final private String oldNick, newNick, login, hostname;
 
     public NickChangeEvent(final String aOldNick, final String aLogin, final String aHostname, final String aNewNick) {
         oldNick = aOldNick;

@@ -6,7 +6,7 @@ package com.lordralex.ralexbot.api.events;
  */
 public class MessageEvent extends Event {
 
-    protected String channel, sender, login, hostname, message;
+    final private String channel, sender, login, hostname, message;
 
     public MessageEvent(final String aChannel, final String aSender, final String aLogin, final String aHostname, final String aMessage) {
         channel = aChannel;

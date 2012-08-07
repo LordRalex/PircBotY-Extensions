@@ -6,10 +6,7 @@ package com.lordralex.ralexbot.api.events;
  */
 public class JoinEvent extends Event {
 
-    protected String channel;
-    protected String sender;
-    protected String login;
-    protected String hostname;
+    final private String channel, sender, login, hostname;
 
     public JoinEvent(final String aChannel, final String aSender, final String aLogin, final String aHostname) {
         channel = aChannel;

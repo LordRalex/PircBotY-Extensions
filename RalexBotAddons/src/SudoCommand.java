@@ -1,4 +1,3 @@
-
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
@@ -12,7 +11,7 @@ import java.util.Map;
  */
 public class SudoCommand extends Listener {
 
-    Map<String, Boolean> sudoList = new HashMap<String, Boolean>();
+    Map<String, Boolean> sudoList = new HashMap<>();
     String password;
 
     public SudoCommand() {

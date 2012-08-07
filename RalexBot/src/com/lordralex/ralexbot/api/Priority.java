@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lordralex.ralexbot.api;
 
 /**
@@ -9,13 +5,13 @@ package com.lordralex.ralexbot.api;
  * @author Joshua
  */
 public enum Priority {
+
     LOWEST(0),
     LOW(1),
     NORMAL(2),
     HIGH(3),
     HIGHEST(4),
     FINAL(5);
-
     private final int slot;
 
     private Priority(int slot) {
@@ -26,15 +22,14 @@ public enum Priority {
         return slot;
     }
 
-    public static Priority[] getValues()
-    {
-        return new Priority[] {
-            LOWEST,
-            LOW,
-            NORMAL,
-            HIGH,
-            HIGHEST,
-            FINAL
-        };
+    public static Priority[] getValues() {
+        return new Priority[]{
+                    LOWEST,
+                    LOW,
+                    NORMAL,
+                    HIGH,
+                    HIGHEST,
+                    FINAL
+                };
     }
 }

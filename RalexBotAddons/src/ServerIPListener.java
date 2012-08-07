@@ -1,4 +1,3 @@
-
 import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
@@ -68,7 +67,7 @@ public class ServerIPListener extends Listener {
 
     private boolean isServer(String testString) {
         String test = testString.toLowerCase().trim();
-        List<String> tempList = new ArrayList<String>();
+        List<String> tempList = new ArrayList<>();
         int lastOccurance = 0;
         for (int i = 0; i < test.length(); i++) {
             if (test.charAt(i) == '.') {

@@ -1,4 +1,3 @@
-
 import com.lordralex.ralexbot.RalexBotMain;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
@@ -50,11 +49,11 @@ public class YamlCommand extends Listener {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new InputStreamReader(new URL(url).openStream()));
-            List<String> lines = new ArrayList<String>();
+            List<String> lines = new ArrayList<>();
             while (reader.ready()) {
                 lines.add(reader.readLine());
             }
-            List<String> errorLog = new ArrayList<String>();
+            List<String> errorLog = new ArrayList<>();
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i);
                 if (line.contains("\t")) {

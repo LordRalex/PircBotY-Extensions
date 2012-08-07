@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class FileSystem {
 
-    private static Map<String, Object> settings = new HashMap<String, Object>();
+    private static Map<String, Object> settings = new HashMap<>();
 
     /**
      * Saves a new rem or overrides an existing rem on the disk. If a rem
@@ -26,9 +26,9 @@ public class FileSystem {
      */
     public static void saveRem(String name, String line) {
         try {
-            FileWriter writer = new FileWriter(new File("data" + File.separator + "rem" + File.separator + name + ".txt"));
-            writer.write(line);
-            writer.close();
+            try (FileWriter writer = new FileWriter(new File("data" + File.separator + "rem" + File.separator + name + ".txt"))) {
+                writer.write(line);
+            }
         } catch (IOException ex) {
             Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -73,14 +73,14 @@ public class FileSystem {
                     }
 
                     if (list == null) {
-                        list = new ArrayList<String>();
+                        list = new ArrayList<>();
                     }
                     list.add(line.substring(2));
                     settings.put(lastAdded, list);
                 } else {
                     String name = line.split(":")[0];
                     lastAdded = name;
-                    String obj = null;
+                    String obj;
                     try {
                         obj = line.split(":")[1].trim();
                     } catch (IndexOutOfBoundsException e) {
@@ -106,7 +106,6 @@ public class FileSystem {
         if (new File("settings" + File.separator + "settings.txt").exists()) {
             return;
         }
-        FileWriter writer = new FileWriter(new File("settings" + File.separator + "settings.txt"));
         String[] lines = new String[]{
             "auto-join:",
             "    - #ae97",
@@ -120,10 +119,11 @@ public class FileSystem {
             "spam-time: 3500",
             "spam-dupe: 3"
         };
-        for (String line : lines) {
-            writer.write(line + "\n");
+        try (FileWriter writer = new FileWriter(new File("settings" + File.separator + "settings.txt"))) {
+            for (String line : lines) {
+                writer.write(line + "\n");
+            }
         }
-        writer.close();
     }
 
     /**
@@ -142,11 +142,11 @@ public class FileSystem {
         new File("data" + File.separator + "tells").mkdirs();
         new File("data" + File.separator + "tells" + File.separator + name + ".txt").delete();
         try {
-            FileWriter writer = new FileWriter(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
-            for (String line : lines) {
-                writer.write(line + "\n");
+            try (FileWriter writer = new FileWriter(new File("data" + File.separator + "tells" + File.separator + name + ".txt"))) {
+                for (String line : lines) {
+                    writer.write(line + "\n");
+                }
             }
-            writer.close();
         } catch (IOException e) {
             Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, e);
         }
@@ -174,12 +174,13 @@ public class FileSystem {
                 return new String[0];
             }
             name = name.toLowerCase();
-            Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
-            List<String> lines = new ArrayList<>();
-            while (reader.hasNext()) {
-                lines.add(reader.nextLine().trim());
+            List<String> lines;
+            try (Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"))) {
+                lines = new ArrayList<>();
+                while (reader.hasNext()) {
+                    lines.add(reader.nextLine().trim());
+                }
             }
-            reader.close();
             String[] result = lines.toArray(new String[0]);
             return result;
         } catch (FileNotFoundException ex) {

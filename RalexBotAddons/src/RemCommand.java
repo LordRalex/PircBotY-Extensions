@@ -1,5 +1,3 @@
-
-
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -18,7 +16,7 @@ import java.util.logging.Logger;
  */
 public class RemCommand extends Listener {
 
-    Map<String, String> remMap = new HashMap<String, String>();
+    Map<String, String> remMap = new HashMap<>();
 
     @Override
     public void setup() {
@@ -26,10 +24,10 @@ public class RemCommand extends Listener {
         for (File file : new File("data" + File.separator + "rem").listFiles()) {
             try {
                 String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
-                Scanner reader = new Scanner(file);
-                String line = reader.nextLine().trim();
-                remMap.put(name, line);
-                reader.close();
+                try (Scanner reader = new Scanner(file)) {
+                    String line = reader.nextLine().trim();
+                    remMap.put(name, line);
+                }
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(RemCommand.class.getName()).log(Level.SEVERE, null, ex);
             }

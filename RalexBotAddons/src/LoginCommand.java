@@ -1,4 +1,3 @@
-
 import com.lordralex.ralexbot.RalexBotMain;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
@@ -10,8 +9,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.HttpsURLConnection;
@@ -26,7 +23,6 @@ public class LoginCommand extends Listener {
 
     boolean useCache = false;
     boolean lastTest = true;
-    //Map<String, String> ignoreList = new HashMap<String, String>();
 
     @Override
     public void onCommand(CommandEvent event) {
@@ -94,9 +90,9 @@ public class LoginCommand extends Listener {
             connection.connect();
             Certificate[] certs = connection.getServerCertificates();
             byte[] bytes = new byte[294];
-            DataInputStream dis = new DataInputStream(RalexBotMain.class.getResourceAsStream("/minecraft.key"));
-            dis.readFully(bytes);
-            dis.close();
+            try (DataInputStream dis = new DataInputStream(RalexBotMain.class.getResourceAsStream("/minecraft.key"))) {
+                dis.readFully(bytes);
+            }
             Certificate c = certs[0];
             PublicKey pk = c.getPublicKey();
             byte[] data = pk.getEncoded();

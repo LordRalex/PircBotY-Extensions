@@ -1,5 +1,3 @@
-
-
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
@@ -13,7 +11,7 @@ import java.util.Map;
  */
 public class StatusCommand extends Listener {
 
-    Map<String, Boolean> memStatus = new HashMap<String, Boolean>();
+    Map<String, Boolean> memStatus = new HashMap<>();
 
     @Override
     public void onPart(PartEvent event) {

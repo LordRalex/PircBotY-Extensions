@@ -6,7 +6,7 @@ package com.lordralex.ralexbot.api.events;
  */
 public class QuitEvent extends Event {
 
-    protected String sender, login, hostname, reason;
+    final private String sender, login, hostname, reason;
 
     public QuitEvent(final String aSender, final String aLogin, final String aHostname, final String aReason) {
         sender = aSender;

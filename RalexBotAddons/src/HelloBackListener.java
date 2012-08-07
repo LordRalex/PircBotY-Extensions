@@ -1,4 +1,3 @@
-
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
@@ -11,7 +10,7 @@ import java.util.List;
  */
 public class HelloBackListener extends Listener {
 
-    List<User> logins = new ArrayList<User>();
+    List<User> logins = new ArrayList<>();
     List<String> hellos = new ArrayList<>();
 
     public HelloBackListener() {

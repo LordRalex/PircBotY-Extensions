@@ -1,7 +1,5 @@
-
-
-import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.RalexBot;
+import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.EventType;
@@ -19,9 +17,8 @@ public class RalexBotCommand extends Listener {
             return;
         }
 
-        final String channel = event.getChannel();
-        final String sender = event.getSender();
-        final String[] args = event.getArgs();
+        String channel = event.getChannel();
+        String sender = event.getSender();
         String target = null;
         if (channel != null) {
             target = channel;

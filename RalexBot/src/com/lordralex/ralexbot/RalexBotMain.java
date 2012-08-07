@@ -4,11 +4,10 @@ import com.lordralex.ralexbot.api.events.CommandEvent;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.UIManager;
 import org.jibble.pircbot.IrcException;
 
 /**
- * @version 1.2
+ * @version 3.3
  * @author Lord_Ralex
  * @since 1.0
  */

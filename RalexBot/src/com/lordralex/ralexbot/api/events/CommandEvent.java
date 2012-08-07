@@ -6,8 +6,8 @@ package com.lordralex.ralexbot.api.events;
  */
 public class CommandEvent extends Event {
 
-    private String command, sender, channel;
-    private String[] args;
+    final private String command, sender, channel;
+    final private String[] args;
 
     public CommandEvent(String aCommand, String aSender, String aChannel, String[] lines) {
         command = aCommand;

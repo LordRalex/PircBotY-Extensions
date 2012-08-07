@@ -142,5 +142,4 @@ public class Utils {
         }
         return total.trim();
     }
-
 }
