@@ -67,7 +67,7 @@ public class SudoCommand extends Listener {
             for (int i = 1; i < args.length; i++) {
                 newargs[i - 1] = args[i];
             }
-            getBot().manager.runEvent(new CommandEvent(args[0], "Lord_Ralex", event.getChannel(), args));
+            getBot().manager.runEvent(new CommandEvent(args[0], "Lord_Ralex", event.getChannel(), newargs));
         }
     }
 

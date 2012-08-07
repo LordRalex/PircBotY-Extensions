@@ -25,58 +25,52 @@ public class PingServerCommand extends Listener {
         final String channel = event.getChannel();
         final String sender = event.getSender();
         final String[] args = event.getArgs();
-
-        new Thread() {
-
-            @Override
-            public void run() {
-                String target = channel;
-                if (channel == null && sender == null) {
-                    return;
-                }
-                if (channel == null) {
-                    target = sender;
-                }
-                final String dest = target;
-                String ip = args[0];
-                String port;
-                if (args.length >= 2) {
-                    port = args[1];
-                } else {
-                    port = "25565";
-                    if (ip.contains(":")) {
-                        port = ip.split(":")[1];
-                        ip = ip.split(":")[0];
-                    }
-                }
-                int portA = 25565;
+        String target = channel;
+        if (channel == null && sender == null) {
+            return;
+        }
+        if (channel == null) {
+            target = sender;
+        }
+        final String dest = target;
+        String ip = args[0];
+        String port;
+        if (args.length >= 2) {
+            port = args[1];
+        } else {
+            port = "25565";
+            if (ip.contains(":")) {
+                port = ip.split(":")[1];
+                ip = ip.split(":")[0];
+            }
+        }
+        int portA = 25565;
+        try {
+            portA = Integer.parseInt(port);
+        } catch (NumberFormatException e) {
+            if (port.startsWith("[") && port.endsWith("]")) {
+                port = port.substring(1, port.length() - 2);
                 try {
                     portA = Integer.parseInt(port);
-                } catch (NumberFormatException e) {
-                    if (port.startsWith("[") && port.endsWith("]")) {
-                        port = port.substring(1, port.length() - 2);
-                        try {
-                            portA = Integer.parseInt(port);
-                        } catch (NumberFormatException ex) {
-                            sendMessage(dest, "I could not convert " + port + " to a number, make sure it is only digits.");
-                            return;
-                        }
-                    }
-                }
-                try {
-                    InetAddress.getByName(ip);
-                } catch (UnknownHostException ex) {
-                    sendMessage(dest, "The IP you entered could not be tested");
+                } catch (NumberFormatException ex) {
+                    sendMessage(dest, "I could not convert " + port + " to a number, make sure it is only digits.");
                     return;
                 }
-                Object[] results = test(ip, portA);
-                if (results[0] == Boolean.TRUE) {
-                    sendMessage(dest, "IP: " + ip + ":" + portA + " was reachable. Players: " + results[2] + "/" + results[3] + " MOTD: " + results[1]);
-                } else {
-                    sendMessage(dest, "I could not connect to " + ip + ":" + portA);
-                }
             }
-        }.start();
+        }
+        try {
+            InetAddress.getByName(ip);
+        } catch (UnknownHostException ex) {
+            sendMessage(dest, "The IP you entered could not be tested");
+            return;
+        }
+        Object[] results = test(ip, portA);
+        if (results[0] == Boolean.TRUE) {
+            sendMessage(dest, "IP: " + ip + ":" + portA + " was reachable. Players: " + results[2] + "/" + results[3] + " MOTD: " + results[1]);
+        } else {
+            sendMessage(dest, "I could not connect to " + ip + ":" + portA);
+        }
+
     }
 
     @Override

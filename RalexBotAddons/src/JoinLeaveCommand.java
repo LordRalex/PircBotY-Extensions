@@ -16,8 +16,14 @@ import java.util.Map;
  */
 public class JoinLeaveCommand extends Listener {
 
-    Map<String, String> channelList = new HashMap<String, String>();
-    final int MAX_CHANNELS = FileSystem.getInt("max-channels");
+    private Map<String, String> channelList = new HashMap<String, String>();
+    private int MAX_CHANNELS;
+    
+    @Override
+    public void setup()
+    {
+        MAX_CHANNELS = FileSystem.getInt("max-channels");
+    }
 
     @Override
     public void onCommand(CommandEvent event) {

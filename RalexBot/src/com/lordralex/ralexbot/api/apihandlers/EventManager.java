@@ -1,9 +1,7 @@
 package com.lordralex.ralexbot.api.apihandlers;
 
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.Event;
-import com.lordralex.ralexbot.api.events.EventType;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,6 +37,7 @@ public class EventManager {
                         Object obj = cls.newInstance();
                         if (obj instanceof Listener) {
                             Listener list = (Listener) obj;
+                            list.setup();
                             list.declarePriorities();
                             listeners.add(list);
                             System.out.println("  Added: " + list.getClass().getName());

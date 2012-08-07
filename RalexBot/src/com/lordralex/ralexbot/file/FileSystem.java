@@ -89,6 +89,9 @@ public class FileSystem {
                     settings.put(name, obj);
                 }
             }
+            for (String key : settings.keySet()) {
+                System.out.println(key + ": " + settings.get(key));
+            }
         } catch (FileNotFoundException ex) {
         }
     }
@@ -211,11 +214,13 @@ public class FileSystem {
      */
     public static int getInt(String path) {
         Object obj = settings.get(path);
-        if (obj instanceof Integer) {
-            Integer value = (Integer) obj;
+        String ob = (String) obj;
+        try {
+            Integer value = Integer.parseInt(ob);
             return value.intValue();
+        } catch (NumberFormatException e) {
+            return 0;
         }
-        return 0;
     }
 
     /**

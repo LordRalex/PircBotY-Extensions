@@ -23,30 +23,23 @@ public class ExpandCommand extends Listener {
         final String channel = event.getChannel();
         final String sender = event.getSender();
         final String[] args = event.getArgs();
-
-        new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    String target = channel;
-                    if (target == null) {
-                        target = sender;
-                    }
-                    if (target == null) {
-                        return;
-                    }
-                    if (args.length == 0) {
-                        sendMessage(target, "*expand <link>");
-                        return;
-                    }
-                    String finalLink = parse(args[0]);
-                    sendMessage(target, finalLink);
-                } catch (IOException | URISyntaxException ex) {
-                    Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        try {
+            String target = channel;
+            if (target == null) {
+                target = sender;
             }
-        }.start();
+            if (target == null) {
+                return;
+            }
+            if (args.length == 0) {
+                sendMessage(target, "*expand <link>");
+                return;
+            }
+            String finalLink = parse(args[0]);
+            sendMessage(target, finalLink);
+        } catch (IOException | URISyntaxException ex) {
+            Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 

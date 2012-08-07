@@ -1,5 +1,4 @@
 
-
 import com.lordralex.ralexbot.RalexBotMain;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
@@ -91,9 +90,7 @@ public class GreetingCommand extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "setwelcome",
-                    "welcome"
-                };
+                    "setwelcome",};
     }
 
     @Override

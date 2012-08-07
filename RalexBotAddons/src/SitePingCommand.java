@@ -28,62 +28,56 @@ public class SitePingCommand extends Listener {
         final String[] args = event.getArgs();
         final String command = event.getCommand();
 
-
-        new Thread() {
-
-            @Override
-            public void run() {
-                URL site;
-                String target = channel;
-                if (target == null) {
-                    target = sender;
-                }
-                if (target == null) {
-                    return;
-                }
-                if (command.equalsIgnoreCase("mcf")) {
-                    try {
-                        site = new URL("http://www.minecraftforum.net");
-                    } catch (MalformedURLException ex) {
-                        Logger.getLogger(SitePingCommand.class.getName()).log(Level.SEVERE, null, ex);
-                        sendMessage(target, "Seems as though I could not make that an url >.>");
-                        return;
-                    }
-                } else {
-                    if (args.length != 1) {
-                        sendMessage(target, "The correct usage is *pingsite <url>");
-                        return;
-                    }
-                    try {
-                        String path = args[0];
-                        if (!path.startsWith("http://") && !path.startsWith("https://")) {
-                            path = "http://" + path;
-                        }
-                        site = new URL(path);
-                    } catch (MalformedURLException ex) {
-                        Logger.getLogger(SitePingCommand.class.getName()).log(Level.SEVERE, null, ex);
-                        sendMessage(target, "Seems as though I could not make that an url >.>");
-                        return;
-                    }
-                }
-                HttpURLConnection connection;
-                try {
-                    connection = (HttpURLConnection) site.openConnection();
-                    connection.setReadTimeout(5000);
-                    int code = connection.getResponseCode();
-                    if (code == 200) {
-                        sendMessage(target, "I could reach that site just fine");
-                    } else {
-                        sendMessage(target, "I got response code " + code);
-                    }
-                } catch (SocketTimeoutException ex) {
-                    sendMessage(target, "I timed out trying to reach that site");
-                } catch (IOException ex) {
-                    Logger.getLogger(SitePingCommand.class.getName()).log(Level.SEVERE, null, ex);
-                    sendMessage(target, "I was unable to work this out, so I cannot reach the site >.>");
-                }
+        URL site;
+        String target = channel;
+        if (target == null) {
+            target = sender;
+        }
+        if (target == null) {
+            return;
+        }
+        if (command.equalsIgnoreCase("mcf")) {
+            try {
+                site = new URL("http://www.minecraftforum.net");
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(SitePingCommand.class.getName()).log(Level.SEVERE, null, ex);
+                sendMessage(target, "Seems as though I could not make that an url >.>");
+                return;
             }
-        }.start();
+        } else {
+            if (args.length != 1) {
+                sendMessage(target, "The correct usage is *pingsite <url>");
+                return;
+            }
+            try {
+                String path = args[0];
+                if (!path.startsWith("http://") && !path.startsWith("https://")) {
+                    path = "http://" + path;
+                }
+                site = new URL(path);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(SitePingCommand.class.getName()).log(Level.SEVERE, null, ex);
+                sendMessage(target, "Seems as though I could not make that an url >.>");
+                return;
+            }
+        }
+        HttpURLConnection connection;
+        try {
+            connection = (HttpURLConnection) site.openConnection();
+            connection.setReadTimeout(5000);
+            int code = connection.getResponseCode();
+            if (code == 200) {
+                sendMessage(target, "I could reach that site just fine");
+            } else {
+                sendMessage(target, "I got response code " + code);
+            }
+        } catch (SocketTimeoutException ex) {
+            sendMessage(target, "I timed out trying to reach that site");
+        } catch (IOException ex) {
+            Logger.getLogger(SitePingCommand.class.getName()).log(Level.SEVERE, null, ex);
+            sendMessage(target, "I was unable to work this out, so I cannot reach the site >.>");
+        }
+
     }
 
     @Override

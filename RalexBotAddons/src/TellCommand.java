@@ -1,12 +1,12 @@
 
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.file.FileSystem;
 import com.lordralex.ralexbot.RalexBotMain;
+import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.EventType;
 import com.lordralex.ralexbot.api.events.JoinEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
+import com.lordralex.ralexbot.file.FileSystem;
 
 /**
  * @version 1.0

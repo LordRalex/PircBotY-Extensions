@@ -35,48 +35,40 @@ public class LoginCommand extends Listener {
         }
         final String channel = event.getChannel();
         final String sender = event.getSender();
+        if (!useCache) {
+            String userName = FileSystem.getString("mcnick");
+            String password = FileSystem.getString("mcpass");
+            try {
+                String parameters;
+                parameters = "user=" + URLEncoder.encode(userName, "UTF-8") + "&password=" + URLEncoder.encode(password, "UTF-8") + "&version=" + 13;
 
-        new Thread() {
-
-            @Override
-            public void run() {
-                if (!useCache) {
-                    String userName = FileSystem.getString("mcnick");
-                    String password = FileSystem.getString("mcpass");
-                    try {
-                        String parameters;
-                        parameters = "user=" + URLEncoder.encode(userName, "UTF-8") + "&password=" + URLEncoder.encode(password, "UTF-8") + "&version=" + 13;
-
-                        String result = testConnection("https://login.minecraft.net/", parameters);
-                        if (result == null) {
-                            lastTest = false;
-                        } else {
-                            lastTest = true;
-                        }
-                    } catch (UnsupportedEncodingException ex) {
-                        Logger.getLogger(LoginCommand.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                if (!lastTest) {
-                    if (channel != null) {
-                        sendMessage(channel, "Login Server Status: " + Colors.RED + Colors.BOLD + "Offline");
-                    } else if (sender != null) {
-                        sendMessage(sender, "Login Server Status: " + Colors.RED + Colors.BOLD + "Offline");
-                    } else {
-                        RalexBotMain.print("Status: Offline");
-                    }
+                String result = testConnection("https://login.minecraft.net/", parameters);
+                if (result == null) {
+                    lastTest = false;
                 } else {
-                    if (channel != null) {
-                        sendMessage(channel, "Login Server Status: " + Colors.GREEN + Colors.BOLD + "Online");
-                    } else if (sender != null) {
-                        sendMessage(sender, "Login Server Status: " + Colors.GREEN + Colors.BOLD + "Online");
-                    } else {
-                        RalexBotMain.print("Status: Online");
-                    }
+                    lastTest = true;
                 }
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(LoginCommand.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }.start();
-
+        }
+        if (!lastTest) {
+            if (channel != null) {
+                sendMessage(channel, "Login Server Status: " + Colors.RED + Colors.BOLD + "Offline");
+            } else if (sender != null) {
+                sendMessage(sender, "Login Server Status: " + Colors.RED + Colors.BOLD + "Offline");
+            } else {
+                RalexBotMain.print("Status: Offline");
+            }
+        } else {
+            if (channel != null) {
+                sendMessage(channel, "Login Server Status: " + Colors.GREEN + Colors.BOLD + "Online");
+            } else if (sender != null) {
+                sendMessage(sender, "Login Server Status: " + Colors.GREEN + Colors.BOLD + "Online");
+            } else {
+                RalexBotMain.print("Status: Online");
+            }
+        }
     }
 
     @Override

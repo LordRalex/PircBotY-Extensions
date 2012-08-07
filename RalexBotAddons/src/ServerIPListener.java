@@ -14,7 +14,7 @@ public class ServerIPListener extends Listener {
 
     PingServerCommand pingServer = new PingServerCommand();
     boolean silence = false;
-    List<String> triggered = new ArrayList<String>();
+    List<String> triggered = new ArrayList<>();
 
     @Override
     public void onMessage(MessageEvent event) {
@@ -26,34 +26,28 @@ public class ServerIPListener extends Listener {
         final String sender = event.getSender();
         final String message = event.getMessage();
 
-        new Thread() {
-
-            @Override
-            public void run() {
-                if (triggered.contains(sender.toLowerCase())) {
-                    silence = true;
-                }
-                String[] messageParts = message.split(" ");
-                for (String part : messageParts) {
-                    if (isServer(part)) {
-                        if (!silence) {
-                            sendMessage(channel, "Please do not advertise servers here");
-                            triggered.remove(sender.toLowerCase());
-                            triggered.add(sender.toLowerCase());
-                        } else if (triggered.contains(sender.toLowerCase())) {
-                            RalexBot bot = getBot();
-                            if (isOP(bot.getNick(), channel)) {
-                                bot.kick(channel, sender, "Advertising a server");
-                            } else {
-                                bot.sendMessage("chanserv", "kick " + channel + " " + sender + " " + "Advertising a server");
-                            }
-                        }
-                        silence = true;
+        if (triggered.contains(sender.toLowerCase())) {
+            silence = true;
+        }
+        String[] messageParts = message.split(" ");
+        for (String part : messageParts) {
+            if (isServer(part)) {
+                if (!silence) {
+                    sendMessage(channel, "Please do not advertise servers here");
+                    triggered.remove(sender.toLowerCase());
+                    triggered.add(sender.toLowerCase());
+                } else if (triggered.contains(sender.toLowerCase())) {
+                    RalexBot bot = getBot();
+                    if (isOP(bot.getNick(), channel)) {
+                        bot.kick(channel, sender, "Advertising a server");
+                    } else {
+                        bot.sendMessage("chanserv", "kick " + channel + " " + sender + " " + "Advertising a server");
                     }
                 }
-                silence = false;
+                silence = true;
             }
-        }.start();
+        }
+        silence = false;
     }
 
     @Override

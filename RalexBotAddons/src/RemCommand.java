@@ -20,7 +20,8 @@ public class RemCommand extends Listener {
 
     Map<String, String> remMap = new HashMap<String, String>();
 
-    public RemCommand() {
+    @Override
+    public void setup() {
         new File("data" + File.separator + "rem").mkdirs();
         for (File file : new File("data" + File.separator + "rem").listFiles()) {
             try {

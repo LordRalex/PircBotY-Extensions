@@ -16,15 +16,17 @@ import java.util.Map;
 public class AntiSpamListener extends Listener {
 
     Map<String, Posts> logs = new HashMap<>();
-    private final int MAX_MESSAGES;
-    private final int SPAM_RATE;
-    private final int DUPE_RATE;
-
-    public AntiSpamListener() {
+    private int MAX_MESSAGES;
+    private int SPAM_RATE;
+    private int DUPE_RATE;
+    
+    @Override
+    public void setup()
+    {
         MAX_MESSAGES = FileSystem.getInt("spam-message");
         SPAM_RATE = FileSystem.getInt("spam-time");
         DUPE_RATE = FileSystem.getInt("spam-dupe");
-    }
+    }    
 
     @Override
     public synchronized void onMessage(MessageEvent event) {

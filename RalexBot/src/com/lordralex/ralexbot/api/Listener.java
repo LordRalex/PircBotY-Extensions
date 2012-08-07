@@ -47,6 +47,8 @@ public abstract class Listener {
             }
         }
     }
+    
+    public void setup(){};
 
     public abstract void declarePriorities();
 

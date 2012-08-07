@@ -12,7 +12,7 @@ import java.util.List;
 public class HelloBackListener extends Listener {
 
     List<User> logins = new ArrayList<User>();
-    List<String> hellos = new ArrayList<String>();
+    List<String> hellos = new ArrayList<>();
 
     public HelloBackListener() {
         hellos.add("hello");
@@ -104,10 +104,12 @@ public class HelloBackListener extends Listener {
     }
 
     public boolean isGreeting(String message) {
-        message = message.toLowerCase().trim();
-        for (String greeting : hellos) {
-            if (message.contains(greeting)) {
-                return true;
+        String[] parts = message.toLowerCase().trim().split(" ");
+        for (String messagePart : parts) {
+            for (String greeting : hellos) {
+                if (messagePart.equalsIgnoreCase(greeting)) {
+                    return true;
+                }
             }
         }
         return false;
