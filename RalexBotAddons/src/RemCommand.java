@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
 public class RemCommand extends Listener {
 
     Map<String, String> remMap = new HashMap<>();
+    List<String> dontReply = new ArrayList<>();
 
     @Override
     public void setup() {
@@ -44,6 +46,34 @@ public class RemCommand extends Listener {
         String channel = event.getChannel();
         String sender = event.getSender();
         String[] args = event.getArgs();
+
+        if (command.equalsIgnoreCase("remshutup")) {
+            String target = channel;
+            if (args.length != 0) {
+                target = args[0];
+            }
+            target = target.toLowerCase();
+            boolean wasThere = dontReply.remove(channel);
+            if (wasThere) {
+                if (channel != null) {
+                    sendMessage(channel, "Returning to normal");
+                } else {
+                    sendMessage(sender, "Returning to normal");
+                }
+            } else {
+                dontReply.add(target);
+                if (channel != null) {
+                    sendMessage(channel, "Shutting up");
+                } else {
+                    sendMessage(sender, "Shutting up");
+                }
+            }
+            return;
+        }
+
+        if (dontReply.contains(channel)) {
+            return;
+        }
 
         if (isRem(command)) {
             String reply = remMap.get(command);
@@ -113,6 +143,7 @@ public class RemCommand extends Listener {
         list.add("rem");
         list.add("r");
         list.add("remember");
+        list.add("remshutup");
         for (Object command : remMap.keySet()) {
             list.add((String) command);
         }
