@@ -13,11 +13,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 /**
- * @version 1.0
+ *
  * @author Joshua
  */
-public class MCFProfileCommand extends Listener {
+public class GoogleCommand extends Listener {
 
     @Override
     public void onCommand(CommandEvent event) {
@@ -38,13 +42,15 @@ public class MCFProfileCommand extends Listener {
             return;
         }
         String total = buildArgs(args);
-        if (args.length == 0 || total.isEmpty()) {
+        if (args.length
+                == 0 || total.isEmpty()) {
+            sendMessage(target, "http://www.google.com");
             return;
         }
 
 
         try {
-            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:http://www.minecraftforum.net/user%20" + total.replace(" ", "%20");
+            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=" + total.replace(" ", "%20");
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
             List<String> parts = new ArrayList<>();
@@ -61,22 +67,19 @@ public class MCFProfileCommand extends Listener {
                 if (string.startsWith("\"url\":")) {
                     string = string.replace("\"", "");
                     string = string.replace("url:", "");
-                    String id = string.split("http://www.minecraftforum.net/user/")[1];
-                    id = id.split("/")[0];
-                    string = "http://www.minecraftforum.net/user/" + id;
                     sendMessage(target, string);
                     return;
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(YoutubeCommand.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (reader != null) {
                     reader.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(YoutubeCommand.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -84,7 +87,8 @@ public class MCFProfileCommand extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "mcfprofile"
+                    "g",
+                    "google"
                 };
     }
 

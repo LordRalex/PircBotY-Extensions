@@ -111,7 +111,7 @@ public class RalexBot extends PircBot {
 
     @Override
     public void onMessage(final String channel, final String sender, final String login, final String hostname, final String message) {
-        if (message.startsWith("*")) {
+        if (message.startsWith("*") || message.startsWith("$")) {
             String[] parts = message.split(" ");
             String command = parts[0].substring(1, parts[0].length());
             String[] args = new String[parts.length - 1];
