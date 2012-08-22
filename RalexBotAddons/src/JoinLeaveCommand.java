@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.RalexBotMain;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
@@ -68,7 +69,7 @@ public class JoinLeaveCommand extends Listener {
             String[] keys = channelList.keySet().toArray(new String[0]);
             for (String channel : keys) {
                 String old = channelList.get(channel);
-                if (old.equalsIgnoreCase(oldNick)) {
+                if (old != null && old.equalsIgnoreCase(oldNick)) {
                     channelList.remove(channel);
                     channelList.put(channel, newNick);
                 }
