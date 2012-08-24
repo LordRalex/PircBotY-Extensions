@@ -23,7 +23,7 @@ public class RalexBot extends PircBot {
     /**
      * The current version of the {@link RalexBot}
      */
-    public static final String RBVERSION = "0.3.3";
+    public static final String RBVERSION = "0.3.8";
     public EventManager manager;
 
     /**

@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.RalexBotMain;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
@@ -90,9 +91,8 @@ public class LoginCommand extends Listener {
             connection.connect();
             Certificate[] certs = connection.getServerCertificates();
             byte[] bytes = new byte[294];
-            try (DataInputStream dis = new DataInputStream(RalexBotMain.class.getResourceAsStream("/minecraft.key"))) {
-                dis.readFully(bytes);
-            }
+            DataInputStream dis = new DataInputStream(RalexBotMain.class.getResourceAsStream("/resources/minecraft.key"));
+            dis.readFully(bytes);
             Certificate c = certs[0];
             PublicKey pk = c.getPublicKey();
             byte[] data = pk.getEncoded();

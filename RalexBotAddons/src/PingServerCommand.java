@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -160,7 +161,7 @@ public class PingServerCommand extends Listener {
     private String b() {
         String str1 = "";
         try {
-            try (BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(PingServerCommand.class.getResourceAsStream("/font.txt"), "UTF-8"))) {
+            try (BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(PingServerCommand.class.getResourceAsStream("/resources/font.txt"), "UTF-8"))) {
                 String str2;
                 while ((str2 = localBufferedReader.readLine()) != null) {
                     if (!str2.startsWith("#")) {
