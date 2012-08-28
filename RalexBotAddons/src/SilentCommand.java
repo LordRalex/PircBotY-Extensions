@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -17,6 +18,9 @@ public class SilentCommand extends Listener {
     @Override
     public void onCommand(CommandEvent event) {
         if (event.isCancelled()) {
+            return;
+        }
+        if (!isOP(event.getSender(), event.getChannel())) {
             return;
         }
         switch (event.getCommand()) {

@@ -23,7 +23,7 @@ public class RalexBot extends PircBot {
     /**
      * The current version of the {@link RalexBot}
      */
-    public static final String RBVERSION = "0.3.8";
+    public static final String RBVERSION = "0.3.11";
     public EventManager manager;
 
     /**
@@ -135,7 +135,7 @@ public class RalexBot extends PircBot {
 
     @Override
     public void onPrivateMessage(final String sender, final String login, final String hostname, final String message) {
-        if (message.startsWith("*")) {
+        if (message.startsWith("*") || message.startsWith("$")) {
             String[] parts = message.split(" ");
             String command = parts[0].substring(1, parts[0].length());
             String[] args = new String[parts.length - 1];

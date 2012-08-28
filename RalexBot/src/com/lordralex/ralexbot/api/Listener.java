@@ -262,6 +262,22 @@ public abstract class Listener {
             sendMessage(target, line);
         }
     }
+    
+    /**
+     * Sends a collections of messages to a person or channel. Each line in the
+     * array will be sent to the target assuming the target is not null.
+     *
+     * @param target The channel or person to send the messages to.
+     * @param message The collection of messages to send.
+     */
+    public final void sendNotice(String target, String[] message) {
+        if (target == null) {
+            return;
+        }
+        for (String line : message) {
+            sendNotice(target, line);
+        }
+    }
 
     public final void sendNotice(String target, String message) {
         if (target == null) {

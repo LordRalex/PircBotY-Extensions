@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -62,7 +63,7 @@ public class DeadflyCommand extends Listener {
                     string = string.replace(";", "");
                     string = string.trim();
                     sendMessage(target, parse("http://adf.ly/" + string));
-                    return;
+                    break;
                 }
             }
         } catch (IOException | URISyntaxException ex) {

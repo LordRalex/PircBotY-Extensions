@@ -68,7 +68,7 @@ public class GoogleCommand extends Listener {
                     string = string.replace("\"", "");
                     string = string.replace("url:", "");
                     sendMessage(target, string);
-                    return;
+                    break;
                 }
             }
         } catch (IOException ex) {

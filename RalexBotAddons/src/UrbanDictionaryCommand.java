@@ -13,38 +13,30 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 /**
- * @version 1.0
+ *
  * @author Joshua
  */
-public class MCFProfileCommand extends Listener {
+public class UrbanDictionaryCommand extends Listener {
 
     @Override
     public void onCommand(CommandEvent event) {
-        if (event.isCancelled()) {
+        String target = event.getChannel();
+        if (target == null) {
+            target = event.getSender();
+        }
+        if (target == null) {
             return;
         }
-        final String channel = event.getChannel();
-        final String sender = event.getSender();
-        final String[] args = event.getArgs();
         BufferedReader reader = null;
-        String target = channel;
-        if (target
-                == null) {
-            target = sender;
-        }
-        if (target
-                == null) {
-            return;
-        }
-        String total = buildArgs(args);
-        if (args.length == 0 || total.isEmpty()) {
-            return;
-        }
-
+        String total = this.buildArgs(event.getArgs());
 
         try {
-            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:http://www.minecraftforum.net/user%20" + total.replace(" ", "%20");
+            String url = "http://m.urbandictionary.com/#define?term=" + total.replace(" ", "%20");
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
             List<String> parts = new ArrayList<>();
@@ -57,16 +49,17 @@ public class MCFProfileCommand extends Listener {
                 String[] c = part.split(",");
                 b.addAll(Arrays.asList(c));
             }
+            boolean sent = false;
             for (String string : b) {
-                if (string.startsWith("\"url\":")) {
-                    string = string.replace("\"", "");
-                    string = string.replace("url:", "");
-                    String id = string.split("http://www.minecraftforum.net/user/")[1];
-                    id = id.split("/")[0];
-                    string = "http://www.minecraftforum.net/user/" + id;
-                    sendMessage(target, string);
+                if (string.startsWith("<div class=\"definition\">")) {
+                    string = string.replace("<div class=\"definition\">", "").split("</div>")[0];
+                    sendMessage(target, total + ": " + string);
+                    sent = true;
                     break;
                 }
+            }
+            if (!sent) {
+                sendMessage(target, total + ": Nothing found");
             }
         } catch (IOException ex) {
             Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
@@ -79,12 +72,14 @@ public class MCFProfileCommand extends Listener {
                 Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
     }
 
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "mcfprofile"
+                    "urban",
+                    "ur"
                 };
     }
 

@@ -90,6 +90,10 @@ public class RemCommand extends Listener {
             return;
         }
 
+        if (args.length == 0) {
+            return;
+        }
+
         String[] part = buildRem(args);
         String name = part[0];
         String reply = part[1];

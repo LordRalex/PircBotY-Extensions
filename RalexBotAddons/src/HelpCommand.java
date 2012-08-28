@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -18,7 +19,10 @@ public class HelpCommand extends Listener {
         String sender = event.getSender();
         String channel = event.getChannel();
         String[] help = new String[]{
-            "My commands you can know about: ping, pingserver <ip>, version, ralexbot, tell <name> <message>, yaml <pastebin link>, login, plugin <plugin name or description>, siteping <link>, mcf <search>, mcfprofile <name>"
+            "My commands you can know about: ping, deadfly, ei, expand, google, "
+            + "help, login, mcf, mcfprofile, pingserver, slots, plugin, "
+            + getBot().getNick().toLowerCase() + ", rem, siteping, "
+            + "status, tell, yaml, youtube"
         };
         if (channel == null) {
             channel = sender;

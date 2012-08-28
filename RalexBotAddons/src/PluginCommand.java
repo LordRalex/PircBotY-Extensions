@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -59,7 +60,7 @@ public class PluginCommand extends Listener {
                     } else {
                         sendMessage(target, "There is this: http://dev.bukkit.org/server-mods/" + search + " or " + string);
                     }
-                    return;
+                    break;
                 }
             }
         } catch (IOException ex) {

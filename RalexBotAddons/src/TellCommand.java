@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.RalexBotMain;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
@@ -24,7 +25,7 @@ public class TellCommand extends Listener {
 
         String[] tells = FileSystem.getTells(sender);
         if (tells.length > 0) {
-            getBot().sendNotice(sender, "You have messages waiting for you, *showtells will show you them");
+            getBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
         }
     }
 
@@ -38,7 +39,7 @@ public class TellCommand extends Listener {
 
         String[] tells = FileSystem.getTells(sender);
         if (tells.length > 0) {
-            getBot().sendNotice(sender, "You have messages waiting for you, *showtells will show you them");
+            getBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
         }
     }
 
@@ -76,9 +77,9 @@ public class TellCommand extends Listener {
             }
             String[] messages = FileSystem.getTells(sender);
             if (messages.length == 0) {
-                sendMessage(sender, "I have no messages for you");
+                sendNotice(sender, "I have no messages for you");
             } else {
-                sendMessage(sender, messages);
+                sendNotice(sender, messages);
             }
             FileSystem.clearTells(sender);
         }

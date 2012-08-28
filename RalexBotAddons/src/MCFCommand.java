@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -63,7 +64,7 @@ public class MCFCommand extends Listener {
                     string = string.replace("\"", "");
                     string = string.replace("url:", "");
                     sendMessage(target, string);
-                    return;
+                    break;
                 }
             }
         } catch (IOException ex) {

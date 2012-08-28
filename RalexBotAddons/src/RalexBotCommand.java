@@ -1,8 +1,10 @@
+
 import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.EventType;
+import org.jibble.pircbot.PircBot;
 
 /**
  * @version 1.0
@@ -28,13 +30,13 @@ public class RalexBotCommand extends Listener {
         if (target == null) {
             return;
         }
-        sendMessage(target, "Hello. I am " + getBot().getNick() + " " + RalexBot.RBVERSION);
+        sendMessage(target, "Hello. I am " + getBot().getNick() + " " + RalexBot.RBVERSION + " using PircBot " + PircBot.VERSION);
     }
 
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "ralexbot",
+                    getBot().getNick().toLowerCase(),
                     "version"
                 };
     }
