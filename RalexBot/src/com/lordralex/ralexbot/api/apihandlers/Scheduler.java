@@ -56,7 +56,11 @@ public class Scheduler {
             for (Priority prio : Priority.getValues()) {
                 for (Listener listener : listeners) {
                     if (listener.priorities.get(eventType) == prio) {
-                        listener.runEvent(eventToRun);
+                        try {
+                            listener.runEvent(eventToRun);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

@@ -47,8 +47,11 @@ public abstract class Listener {
             }
         }
     }
-    
-    public void setup(){};
+
+    public void setup() {
+    }
+
+    ;
 
     public abstract void declarePriorities();
 
@@ -179,14 +182,23 @@ public abstract class Listener {
      * @return The new string with placeholders filled with provided information
      */
     public String replacePlaceHolders(String sender, String channel, String message, String[] args) {
+        if (message == null) {
+            return "";
+        }
         if (sender == null) {
             sender = "console";
         }
-        message = message.replace("{User}", sender);
-        message = message.replace("{Channel}", channel);
+        if (sender != null) {
+            message = message.replace("{User}", sender);
+        }
+        if (channel != null) {
+            message = message.replace("{Channel}", channel);
+        }
         try {
             for (int i = 0; i < args.length; i++) {
-                message = message.replace("{" + i + "}", args[i]);
+                if (args[i] != null) {
+                    message = message.replace("{" + i + "}", args[i]);
+                }
             }
         } catch (IndexOutOfBoundsException e) {
         }
@@ -262,7 +274,7 @@ public abstract class Listener {
             sendMessage(target, line);
         }
     }
-    
+
     /**
      * Sends a collections of messages to a person or channel. Each line in the
      * array will be sent to the target assuming the target is not null.
