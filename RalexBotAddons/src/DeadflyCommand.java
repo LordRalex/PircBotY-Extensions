@@ -62,7 +62,10 @@ public class DeadflyCommand extends Listener {
                     string = string.replace("\'", "");
                     string = string.replace(";", "");
                     string = string.trim();
-                    sendMessage(target, parse("http://adf.ly/" + string));
+                    if (!string.startsWith("https://adf.ly/")) {
+                        string = "https://adf.ly/" + string;
+                    }
+                    sendMessage(target, parse(string));
                     break;
                 }
             }

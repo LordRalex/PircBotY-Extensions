@@ -48,6 +48,9 @@ public class RemCommand extends Listener {
         String[] args = event.getArgs();
 
         if (command.equalsIgnoreCase("remshutup")) {
+            if (!isOP(sender, channel)) {
+                return;
+            }
             String target = channel;
             if (args.length != 0) {
                 target = args[0];
@@ -75,7 +78,7 @@ public class RemCommand extends Listener {
             return;
         }
 
-        if (isRem(command)) {
+        if (isRem(command.toLowerCase())) {
             String reply = remMap.get(command);
             if (sender == null) {
                 return;

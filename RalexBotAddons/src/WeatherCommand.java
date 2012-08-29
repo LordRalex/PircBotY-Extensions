@@ -9,7 +9,9 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,10 +23,12 @@ import java.util.logging.Logger;
  *
  * @author Joshua
  */
-public class UrbanDictionaryCommand extends Listener {
+public class WeatherCommand extends Listener {
 
     @Override
     public void onCommand(CommandEvent event) {
+        BufferedReader reader = null;
+        String total = this.buildArgs(event.getArgs());
         String target = event.getChannel();
         if (target == null) {
             target = event.getSender();
@@ -32,15 +36,9 @@ public class UrbanDictionaryCommand extends Listener {
         if (target == null) {
             return;
         }
-        if (event != null) {
-            sendMessage(target, "This command is disabled for now");
-            return;
-        }
-        BufferedReader reader = null;
-        String total = this.buildArgs(event.getArgs());
 
         try {
-            String url = "http://urbandictionary.com/define?term=" + total.replace(" ", "%20");
+            String url = "http://weather.com/weather/right-now/" + total.replace(" ", "%20");
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
             List<String> parts = new ArrayList<>();
@@ -55,15 +53,21 @@ public class UrbanDictionaryCommand extends Listener {
             }
             boolean sent = false;
             for (String string : b) {
-                if (string.startsWith("<div class=\"definition\">")) {
-                    string = string.replace("<div class=\"definition\">", "").split("</div>")[0];
-                    sendMessage(target, total + ": " + string);
+                if (string.startsWith("TWC.pco")) {
+
+                    int humidity = Integer.parseInt(string.split("\"relativehumidity\":")[1].substring(0, 2).replace(",", "").replace("\"", ""));
+                    int wind = Integer.parseInt(string.split("\"windspeed\":")[1].substring(0, 2).replace(",", "").replace("\"", ""));
+                    int temp = Integer.parseInt(string.split("\"realtemp\":")[1].substring(0, 3).replace(",", "").replace("\"", ""));
+                    int zip = Integer.parseInt(string.split("\"zip\":")[1].substring(0, 7).replace("\"", ""));
+
+                    String answer = "Weather for " + zip + "-> Temp: " + temp + "F, Wind:  " + wind + "Humidity: " + humidity + "%";
+                    sendMessage(target, total + ": " + answer);
                     sent = true;
                     break;
                 }
             }
             if (!sent) {
-                sendMessage(target, total + ": Nothing found");
+                sendMessage(target, total + ": Nothing found for that location ;-;");
             }
         } catch (IOException ex) {
             Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
@@ -76,14 +80,13 @@ public class UrbanDictionaryCommand extends Listener {
                 Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
     }
 
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "urban",
-                    "ur"
+                    "weather",
+                    "we"
                 };
     }
 
