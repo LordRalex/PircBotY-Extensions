@@ -26,7 +26,7 @@ public class NickCommand extends Listener {
         } else {
             newNick = "RalexBot";
         }
-        getBot().changeNick(newNick);
+        getPircBot().changeNick(newNick);
     }
 
     @Override

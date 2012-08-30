@@ -5,7 +5,8 @@ import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.EventType;
 import java.util.ArrayList;
 import java.util.List;
-import org.jibble.pircbot.User;
+import java.util.Set;
+import org.pircbotx.User;
 
 /**
  * @version 1.0
@@ -59,10 +60,10 @@ public class SilentCommand extends Listener {
         if (event.getChannel() != null && silenced.contains(event.getChannel().toLowerCase())) {
             String sender = event.getSender();
             boolean canUse = false;
-            User[] users = getBot().getUsers(event.getChannel());
+            Set<User> users = getPircBot().getUsers(getPircBot().getChannel(event.getChannel()));
             for (User user : users) {
                 if (user.getNick().equalsIgnoreCase(sender)) {
-                    if (user.hasVoice() || user.isOp()) {
+                    if (user.getChannelsVoiceIn().contains(getPircBot().getChannel(event.getChannel())) || user.getChannelsOpIn().contains(getPircBot().getChannel(event.getChannel()))) {
                         canUse = true;
                         break;
                     }

@@ -1,8 +1,11 @@
+
 import com.lordralex.ralexbot.RalexBotMain;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.EventType;
+import java.util.Set;
+import org.pircbotx.Channel;
 
 /**
  * @version 1.1
@@ -18,12 +21,12 @@ public class StopCommand extends Listener {
         }
 
         RalexBotMain.stop();
-        String[] channels = getBot().getChannels();
-        for (String channel1 : channels) {
-            getBot().partChannel(channel1, "Shutting down");
+        Set<Channel> channels = getPircBot().getChannels();
+        for (Channel channel1 : channels) {
+            getPircBot().partChannel(channel1, "Shutting down");
         }
-        getBot().disconnect();
-        getBot().quitServer();
+        getPircBot().disconnect();
+        getPircBot().quitServer();
     }
 
     @Override

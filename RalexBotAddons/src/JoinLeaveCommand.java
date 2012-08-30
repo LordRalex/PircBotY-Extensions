@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class JoinLeaveCommand extends Listener {
 
-    private Map<String, String> channelList = new HashMap<String, String>();
+    private Map<String, String> channelList = new HashMap<>();
     private int MAX_CHANNELS;
 
     @Override
@@ -45,7 +45,7 @@ public class JoinLeaveCommand extends Listener {
                 return;
             }
             channelList.put(channel, sender);
-            getBot().joinChannel(channel);
+            getPircBot().joinChannel(channel);
         } else if (command.equalsIgnoreCase("leave")) {
             if (args.length == 1) {
                 channel = args[0];
@@ -54,7 +54,7 @@ public class JoinLeaveCommand extends Listener {
             String getJoin = channelList.get(channel);
             if (isMaster(sender) || isOP(sender, channel) || isVoice(sender, channel) || sender.equalsIgnoreCase(getJoin)) {
                 channelList.remove(channel);
-                getBot().partChannel(channel, "Told to leave");
+                getPircBot().partChannel(getPircBot().getChannel(channel), "Told to leave");
             } else {
                 sendMessage(sender, "You did not have him join this channel");
             }

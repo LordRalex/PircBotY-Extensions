@@ -4,9 +4,9 @@ import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.Event;
 import com.lordralex.ralexbot.api.events.EventType;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -21,7 +21,7 @@ public class Scheduler {
     public Scheduler(List<Listener> list) {
         listeners = list;
         counter = 0;
-        threads = new HashMap<>();
+        threads = new ConcurrentHashMap<>();
     }
 
     public int scheduleEvent(Event evt) {

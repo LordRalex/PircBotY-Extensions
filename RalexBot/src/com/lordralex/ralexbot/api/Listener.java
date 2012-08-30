@@ -10,7 +10,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import org.jibble.pircbot.User;
+import java.util.Set;
+import org.pircbotx.Channel;
+import org.pircbotx.PircBotX;
+import org.pircbotx.User;
 
 /**
  * @version 1.0
@@ -216,10 +219,16 @@ public abstract class Listener {
         if (name == null || channel == null) {
             return false;
         }
-        User[] users = RalexBotMain.getBot().getUsers(channel);
+        User[] users = RalexBotMain.getPircbotX().getChannel(channel).getUsers().toArray(new User[0]);
         for (User user : users) {
             if (user.getNick().equalsIgnoreCase(name)) {
-                return user.isOp();
+                Set<Channel> chans = user.getChannelsVoiceIn();
+                for (Channel chan : chans) {
+                    if (chan.isOp(user)) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
         return false;
@@ -237,10 +246,16 @@ public abstract class Listener {
         if (name == null || channel == null) {
             return false;
         }
-        User[] users = RalexBotMain.getBot().getUsers(channel);
+        User[] users = RalexBotMain.getPircbotX().getChannel(channel).getUsers().toArray(new User[0]);
         for (User user : users) {
             if (user.getNick().equalsIgnoreCase(name)) {
-                return user.hasVoice();
+                Set<Channel> chans = user.getChannelsVoiceIn();
+                for (Channel chan : chans) {
+                    if (chan.hasVoice(user)) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
         return false;
@@ -256,7 +271,7 @@ public abstract class Listener {
         if (target == null) {
             return;
         }
-        RalexBotMain.getBot().sendMessage(target, message.trim());
+        RalexBotMain.getPircbotX().sendMessage(target, message.trim());
     }
 
     /**
@@ -295,7 +310,7 @@ public abstract class Listener {
         if (target == null) {
             return;
         }
-        getBot().sendNotice(target, message);
+        RalexBotMain.getPircbotX().sendNotice(target, message);
     }
 
     /**
@@ -305,6 +320,15 @@ public abstract class Listener {
      */
     public final RalexBot getBot() {
         return RalexBotMain.getBot();
+    }
+    
+    /**
+     * Return the static bot from the driver
+     *
+     * @return The bot from {@link RalexBotMain}
+     */
+    public final PircBotX getPircBot() {
+        return RalexBotMain.getBot().getBot();
     }
 
     public String buildArgs(String[] args) {

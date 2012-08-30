@@ -21,7 +21,7 @@ public class HelpCommand extends Listener {
         String[] help = new String[]{
             "My commands you can know about: ping, deadfly, ei, expand, google, "
             + "help, login, mcf, mcfprofile, pingserver, slots, plugin, "
-            + getBot().getNick().toLowerCase() + ", rem, siteping, "
+            + getPircBot().getNick().toLowerCase() + ", rem, siteping, "
             + "status, tell, yaml, youtube"
         };
         if (channel == null) {

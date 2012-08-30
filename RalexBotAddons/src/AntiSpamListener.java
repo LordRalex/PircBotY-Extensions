@@ -36,7 +36,7 @@ public class AntiSpamListener extends Listener {
             String sender = event.getSender();
             String message = event.getMessage();
             String hostname = event.getHostname();
-            if (isOP(sender, channel) || isVoice(sender, channel) || sender.equalsIgnoreCase(getBot().getNick())) {
+            if (isOP(sender, channel) || isVoice(sender, channel) || sender.equalsIgnoreCase(getPircBot().getNick())) {
                 return;
             }
             message = message.toString().toLowerCase();
@@ -45,10 +45,10 @@ public class AntiSpamListener extends Listener {
                 posts = new Posts();
             }
             if (posts.addPost(message)) {
-                if (isOP(this.getBot().getNick(), channel)) {
-                    getBot().kick(channel, sender, "Triggered Spam Guard (IP=" + hostname + ")");
+                if (isOP(this.getPircBot().getNick(), channel)) {
+                    getPircBot().kick(getPircBot().getChannel(channel), getPircBot().getUser(sender), "Triggered Spam Guard (IP=" + hostname + ")");
                 } else {
-                    getBot().sendMessage("chanserv", "kick " + channel + " " + sender + " Triggered Spam guard (IP=" + hostname + ")");
+                    getPircBot().sendMessage("chanserv", "kick " + channel + " " + sender + " Triggered Spam guard (IP=" + hostname + ")");
                 }
                 event.setCancelled(true);
             } else {

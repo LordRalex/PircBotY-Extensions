@@ -4,7 +4,7 @@ import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.EventType;
 import java.util.Random;
-import org.jibble.pircbot.Colors;
+import org.pircbotx.Colors;
 
 /*
  * To change this template, choose Tools | Templates

@@ -4,7 +4,8 @@ import com.lordralex.ralexbot.api.events.CommandEvent;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jibble.pircbot.IrcException;
+import org.pircbotx.PircBotX;
+import org.pircbotx.exception.IrcException;
 
 /**
  * @version 3.3
@@ -37,7 +38,7 @@ public class RalexBotMain {
             }
             try {
                 thread.start();
-                while (bot.isConnected() && !stop) {
+                while (bot.getBot().isConnected() && !stop) {
                 }
                 if (thread.isAlive()) {
                     thread.interrupt();
@@ -118,6 +119,10 @@ public class RalexBotMain {
         return bot;
     }
 
+    public static PircBotX getPircbotX() {
+        return bot.getBot();
+    }
+
     private static class CommandListener extends Thread {
 
         Scanner keyboard;
@@ -129,9 +134,9 @@ public class RalexBotMain {
         @Override
         public void run() {
             String message = null;
-            while (bot.isConnected() && !stop) {
+            while (bot.getBot().isConnected() && !stop) {
                 System.out.print("-> ");
-                if (keyboard.hasNext() && !stop && bot.isConnected()) {
+                if (keyboard.hasNext() && !stop && bot.getBot().isConnected()) {
                     message = keyboard.nextLine();
                 }
                 if (message != null) {

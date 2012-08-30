@@ -92,6 +92,6 @@ public class WeatherCommand extends Listener {
 
     @Override
     public void declarePriorities() {
-        priorities.put(EventType.Command, Priority.NORMAL);
+        //priorities.put(EventType.Command, Priority.NORMAL);
     }
 }

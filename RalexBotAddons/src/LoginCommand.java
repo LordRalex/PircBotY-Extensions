@@ -13,7 +13,7 @@ import java.security.cert.Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.HttpsURLConnection;
-import org.jibble.pircbot.Colors;
+import org.pircbotx.Colors;
 
 /**
  * @version 1.0

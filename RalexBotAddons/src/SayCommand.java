@@ -34,7 +34,7 @@ public class SayCommand extends Listener {
             message = message.split(" ", 2)[1];
         }
         if (target == null) {
-            target = getBot().getNick();
+            target = getPircBot().getNick();
         }
         if (target != null) {
             sendMessage(target, message);

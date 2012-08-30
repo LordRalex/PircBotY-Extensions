@@ -1,9 +1,11 @@
+
 import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.pircbotx.PircBotX;
 
 /**
  * @version 1.0
@@ -36,9 +38,9 @@ public class ServerIPListener extends Listener {
                     triggered.remove(sender.toLowerCase());
                     triggered.add(sender.toLowerCase());
                 } else if (triggered.contains(sender.toLowerCase())) {
-                    RalexBot bot = getBot();
+                    PircBotX bot = getPircBot();
                     if (isOP(bot.getNick(), channel)) {
-                        bot.kick(channel, sender, "Advertising a server");
+                        bot.kick(bot.getChannel(channel), bot.getUser(sender), "Advertising a server");
                     } else {
                         bot.sendMessage("chanserv", "kick " + channel + " " + sender + " " + "Advertising a server");
                     }

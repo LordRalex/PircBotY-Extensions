@@ -25,7 +25,7 @@ public class TellCommand extends Listener {
 
         String[] tells = FileSystem.getTells(sender);
         if (tells.length > 0) {
-            getBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
+            getPircBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
         }
     }
 
@@ -39,7 +39,7 @@ public class TellCommand extends Listener {
 
         String[] tells = FileSystem.getTells(sender);
         if (tells.length > 0) {
-            getBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
+            getPircBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
         }
     }
 

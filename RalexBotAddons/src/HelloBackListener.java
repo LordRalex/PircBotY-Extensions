@@ -31,7 +31,7 @@ public class HelloBackListener extends Listener {
         String message = event.getMessage();
         String channel = event.getChannel();
         String sender = event.getSender();
-        if (message.equalsIgnoreCase("Hello " + getBot().getNick()) || message.equalsIgnoreCase("Hello, " + getBot().getNick())) {
+        if (message.equalsIgnoreCase("Hello " + getPircBot().getNick()) || message.equalsIgnoreCase("Hello, " + getPircBot().getNick())) {
             sendMessage(channel, "Why hello there " + sender + ", thank you for telling me hi. I <3 you");
         } else if (isGreeting(message)) {
             for (int i = 0; i < logins.size(); i++) {
