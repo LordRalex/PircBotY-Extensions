@@ -108,6 +108,7 @@ public class RalexBot {
 
     private void createListeners() {
         manager = new EventManager();
+        bot.getListenerManager().addListener(manager);
     }
 
     /**

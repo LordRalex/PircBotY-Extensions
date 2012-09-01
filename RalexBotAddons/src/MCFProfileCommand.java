@@ -44,7 +44,7 @@ public class MCFProfileCommand extends Listener {
 
 
         try {
-            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:http://www.minecraftforum.net/user%20" + total.replace(" ", "%20");
+            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:www.minecraftforum.net/user%20viewing%20%22profile%20" + total.replace(" ", "%20") + "%22";
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
             List<String> parts = new ArrayList<>();
@@ -84,7 +84,9 @@ public class MCFProfileCommand extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "mcfprofile"
+                    "mcfprofile",
+                    "mcfp",
+                    "mp"
                 };
     }
 
