@@ -1,7 +1,6 @@
 package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.apihandlers.EventManager;
-import com.lordralex.ralexbot.api.events.*;
 import com.lordralex.ralexbot.file.FileSystem;
 import java.io.File;
 import java.io.IOException;
@@ -19,13 +18,13 @@ import org.pircbotx.exception.IrcException;
  */
 public class RalexBot {
 
-    private static List<String> autoJoinChannels = new ArrayList<>();
     /**
      * The current version of the {@link RalexBot}
      */
-    public static final String RBVERSION = "0.3.11";
-    public EventManager manager;
-    PircBotX bot;
+    public static final String RBVERSION = "0.4.2";
+    private static List<String> autoJoinChannels = new ArrayList<>();
+    private EventManager manager;
+    private PircBotX bot;
 
     /**
      * This creates the bot. In this, it will load the settings, create the
@@ -69,7 +68,6 @@ public class RalexBot {
     }
 
     private void setup(boolean debug) {
-
         bot.setVerbose(false);
         try {
             bot.connect("irc.esper.net");
@@ -92,11 +90,9 @@ public class RalexBot {
         createListeners();
 
         autoJoinChannels = FileSystem.getStringList("auto-join");
-
         if (autoJoinChannels == null) {
             autoJoinChannels = new ArrayList<>();
         }
-
         if (!debug) {
             for (String channel : autoJoinChannels) {
                 bot.joinChannel(channel);
@@ -121,10 +117,6 @@ public class RalexBot {
         return bot.isConnected();
     }
 
-    public boolean isStopped() {
-        return (!isOnline());
-    }
-
     /**
      * This force stops the bot. ONLY USE IF IT IS NOT RESPONDING OTHERWISE!
      */
@@ -133,7 +125,24 @@ public class RalexBot {
         bot.disconnect();
     }
 
+    /**
+     * Gets the PircbotX instance in use. This will always return the active
+     * bot, but cannot insure the bot is online.
+     *
+     * @return The PircbotX instance in use
+     * @deprecated Use the instance of RalexBot instead for safe api
+     */
     public PircBotX getBot() {
         return bot;
+    }
+
+    /**
+     * Gets the instance of the EventManager in charge of handling IRC and bot
+     * events
+     *
+     * @return The EventManager in use
+     */
+    public EventManager getManager() {
+        return manager;
     }
 }

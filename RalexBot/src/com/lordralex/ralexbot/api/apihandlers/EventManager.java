@@ -16,7 +16,7 @@ import org.pircbotx.hooks.ListenerAdapter;
  * @version 1.0
  * @author Joshua
  */
-public class EventManager extends ListenerAdapter {
+public final class EventManager extends ListenerAdapter {
 
     List<Listener> listeners = new ArrayList<>();
     Scheduler scheduler;

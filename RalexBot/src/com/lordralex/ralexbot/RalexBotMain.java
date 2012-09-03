@@ -47,7 +47,7 @@ public class RalexBotMain {
                 crashed = false;
             } catch (Throwable e) {
                 Logger.getLogger(RalexBotMain.class.getName()).log(Level.SEVERE, null, e);
-                bot.manager.runEvent(new CommandEvent("stop", null, null, new String[0]));
+                bot.getManager().runEvent(new CommandEvent("stop", null, null, new String[0]));
                 crashed = true;
             } finally {
                 if (thread.isAlive()) {
@@ -110,7 +110,8 @@ public class RalexBotMain {
     }
 
     /**
-     * Gets the bot the main driver is running as.
+     * Gets the bot the main driver is running as. This will give access to the
+     * main api settings allowed to be accessed by listeners.
      *
      * @return The bot being used
      * @since 1.0
@@ -119,6 +120,13 @@ public class RalexBotMain {
         return bot;
     }
 
+    /**
+     * Gets the PircBotX instance stored in the RalexBot object.
+     *
+     * @return the PircBotX instance
+     *
+     * @deprecated Use getBot() instead
+     */
     public static PircBotX getPircbotX() {
         return bot.getBot();
     }
@@ -146,7 +154,7 @@ public class RalexBotMain {
                     for (int i = 0; i < temp2.length; i++) {
                         temp2[i] = temp[i + 1];
                     }
-                    bot.manager.runEvent(new CommandEvent(cmd, null, null, temp2));
+                    bot.getManager().runEvent(new CommandEvent(cmd, null, null, temp2));
                     if (cmd.equalsIgnoreCase("stop")) {
                         stop = true;
                     }

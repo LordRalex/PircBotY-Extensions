@@ -52,7 +52,7 @@ public class JoinLeaveCommand extends Listener {
             }
             RalexBotMain.print("Leave recieved for channel: " + channel);
             String getJoin = channelList.get(channel);
-            if (isMaster(sender) || isOP(sender, channel) || isVoice(sender, channel) || sender.equalsIgnoreCase(getJoin)) {
+            if (isMaster(sender) || isOP(sender, channel) || sender.equalsIgnoreCase(getJoin)) {
                 channelList.remove(channel);
                 getPircBot().partChannel(getPircBot().getChannel(channel), "Told to leave");
             } else {

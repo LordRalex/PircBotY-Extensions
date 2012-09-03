@@ -57,6 +57,7 @@ public class MCFProfileCommand extends Listener {
                 String[] c = part.split(",");
                 b.addAll(Arrays.asList(c));
             }
+            boolean sent = false;
             for (String string : b) {
                 if (string.startsWith("\"url\":")) {
                     string = string.replace("\"", "");
@@ -65,8 +66,12 @@ public class MCFProfileCommand extends Listener {
                     id = id.split("/")[0];
                     string = "http://www.minecraftforum.net/user/" + id;
                     sendMessage(target, string);
+                    sent = true;
                     break;
                 }
+            }
+            if (!sent) {
+                sendMessage(target, "No one was found....");
             }
         } catch (IOException ex) {
             Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);

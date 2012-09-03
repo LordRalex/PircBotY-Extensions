@@ -47,11 +47,6 @@ public class SudoCommand extends Listener {
         final String sender = event.getSender();
         final String[] args = event.getArgs();
 
-        String[] tells = FileSystem.getTells(sender);
-        if (tells.length > 0) {
-            getPircBot().sendNotice(sender, "You have messages waiting for you, *showtells will show you them");
-        }
-
         if (args.length == 0) {
             return;
         }
@@ -66,7 +61,7 @@ public class SudoCommand extends Listener {
             for (int i = 1; i < args.length; i++) {
                 newargs[i - 1] = args[i];
             }
-            getBot().manager.runEvent(new CommandEvent(args[0], "Lord_Ralex", event.getChannel(), newargs));
+            getBot().getManager().runEvent(new CommandEvent(args[0], "Lord_Ralex", event.getChannel(), newargs));
         }
     }
 

@@ -16,7 +16,7 @@ public class StopCommand extends Listener {
 
     @Override
     public void onCommand(CommandEvent event) {
-        if (event.getSender() != null) {
+        if (event.getSender() != null && (getBot().getBot().getUser(event.getSender()).isIdentified() && event.getSender().equalsIgnoreCase("Lord_Ralex"))) {
             return;
         }
 

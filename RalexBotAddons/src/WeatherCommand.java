@@ -38,7 +38,7 @@ public class WeatherCommand extends Listener {
         }
 
         try {
-            String url = "http://weather.com/weather/right-now/" + total.replace(" ", "%20");
+            String url = "http://thefuckingweather.com/?where=colleyville%2c+txa" + total.replace(" ", "+").replace(",", "%2c");
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
             List<String> parts = new ArrayList<>();
@@ -53,18 +53,23 @@ public class WeatherCommand extends Listener {
             }
             boolean sent = false;
             for (String string : b) {
-                if (string.startsWith("TWC.pco")) {
-
-                    int humidity = Integer.parseInt(string.split("\"relativehumidity\":")[1].substring(0, 2).replace(",", "").replace("\"", ""));
-                    int wind = Integer.parseInt(string.split("\"windspeed\":")[1].substring(0, 2).replace(",", "").replace("\"", ""));
-                    int temp = Integer.parseInt(string.split("\"realtemp\":")[1].substring(0, 3).replace(",", "").replace("\"", ""));
-                    int zip = Integer.parseInt(string.split("\"zip\":")[1].substring(0, 7).replace("\"", ""));
-
-                    String answer = "Weather for " + zip + "-> Temp: " + temp + "F, Wind:  " + wind + "Humidity: " + humidity + "%";
-                    sendMessage(target, total + ": " + answer);
+                string = string.trim();
+                if (string.startsWith("<p class=\"large\"><span class=\"temperature\" tempf=\"")) {
+                    String answer = string.replace("<p class=\"large\"><span class=\"temperature\" tempf=\"", "").substring(0, 4);
+                    boolean passed = false;
+                    do {
+                        try {
+                            Integer.parseInt(answer);
+                            passed = true;
+                        } catch (NumberFormatException e) {
+                            answer = answer.substring(0, answer.length() - 1);
+                        }
+                    } while (!passed);
+                    sendMessage(target, total + ": The weather is " + answer + " F");
                     sent = true;
                     break;
                 }
+
             }
             if (!sent) {
                 sendMessage(target, total + ": Nothing found for that location ;-;");
@@ -92,6 +97,6 @@ public class WeatherCommand extends Listener {
 
     @Override
     public void declarePriorities() {
-        //priorities.put(EventType.Command, Priority.NORMAL);
+        priorities.put(EventType.Command, Priority.NORMAL);
     }
 }
