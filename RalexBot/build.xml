@@ -10,11 +10,6 @@
 <project name="RalexBot" default="default" basedir=".">
     <description>Builds, tests, and runs the project RalexBot.</description>
     <import file="nbproject/build-impl.xml"/>
-	<target name="run" depends="RalexBot-impl.jar">
-        <exec dir="bin" executable="launcher.exe">
-             <arg file="${dist.jar}"/>
-        </exec>
-    </target>
     <!--
 
     There exist several targets which are by default empty and which can be 
