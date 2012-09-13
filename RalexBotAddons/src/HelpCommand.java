@@ -20,7 +20,7 @@ public class HelpCommand extends Listener {
         String channel = event.getChannel();
         String[] help = new String[]{
             "My commands you can know about: ping, deadfly, ei, expand, google, "
-            + "help, login, mcf, mcfprofile, pingserver, slots, plugin, "
+            + "gis, help, login, mcf, mcfprofile, pingserver, slots, plugin, "
             + getPircBot().getNick().toLowerCase() + ", rem, siteping, "
             + "status, tell, yaml, youtube"
         };

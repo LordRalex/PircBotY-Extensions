@@ -42,7 +42,7 @@ public class RemCommand extends Listener {
             return;
         }
 
-        String command = event.getCommand();
+        String command = event.getCommand().toLowerCase();
         String channel = event.getChannel();
         String sender = event.getSender();
         String[] args = event.getArgs();

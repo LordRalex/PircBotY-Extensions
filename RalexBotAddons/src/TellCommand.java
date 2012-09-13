@@ -1,12 +1,14 @@
-
 import com.lordralex.ralexbot.RalexBotMain;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.EventType;
 import com.lordralex.ralexbot.api.events.JoinEvent;
+import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
 import com.lordralex.ralexbot.file.FileSystem;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @version 1.0
@@ -14,6 +16,8 @@ import com.lordralex.ralexbot.file.FileSystem;
  * @since 1.0
  */
 public class TellCommand extends Listener {
+
+    Map<String, Long> lastTold = new ConcurrentHashMap<>();
 
     @Override
     public void onJoin(JoinEvent event) {
@@ -25,7 +29,11 @@ public class TellCommand extends Listener {
 
         String[] tells = FileSystem.getTells(sender);
         if (tells.length > 0) {
-            getPircBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
+            Long timeAgo = lastTold.get(event.getSender());
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > FileSystem.getInt("refresh-minutes") * 1000 * 60) {
+                lastTold.put(event.getSender(), System.currentTimeMillis());
+                getPircBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
+            }
         }
     }
 
@@ -38,8 +46,31 @@ public class TellCommand extends Listener {
         String sender = event.getNewNick();
 
         String[] tells = FileSystem.getTells(sender);
+        Long timeAgo = lastTold.get(event.getOldNick());
+        lastTold.put(event.getNewNick(), timeAgo);
         if (tells.length > 0) {
-            getPircBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > FileSystem.getInt("refresh-minutes") * 1000 * 60) {
+                lastTold.put(event.getNewNick(), System.currentTimeMillis());
+                getPircBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
+            }
+        }
+    }
+
+    @Override
+    public void onMessage(MessageEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        final String sender = event.getSender();
+
+        String[] tells = FileSystem.getTells(sender);
+        if (tells.length > 0) {
+            Long timeAgo = lastTold.get(event.getSender());
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > FileSystem.getInt("refresh-minutes") * 1000 * 60) {
+                lastTold.put(event.getSender(), System.currentTimeMillis());
+                getPircBot().sendNotice(sender, "You have messages waiting for you, *st will show you them");
+            }
         }
     }
 
