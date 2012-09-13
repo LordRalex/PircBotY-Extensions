@@ -22,7 +22,7 @@ public class RalexBot {
      * The current version of the {@link RalexBot}
      */
     public static final String RBVERSION = "0.4.2";
-    private static List<String> autoJoinChannels = new ArrayList<>();
+    private static List<String> autoJoinChannels = new ArrayList<String>();
     private EventManager manager;
     private PircBotX bot;
 
@@ -71,7 +71,12 @@ public class RalexBot {
         bot.setVerbose(false);
         try {
             bot.connect("irc.esper.net");
-        } catch (IOException | IrcException ex) {
+        } catch (IOException ex) {
+            Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
+            bot.disconnect();
+            bot.quitServer();
+            return;
+        } catch (IrcException ex) {
             Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
             bot.disconnect();
             bot.quitServer();
@@ -91,7 +96,7 @@ public class RalexBot {
 
         autoJoinChannels = FileSystem.getStringList("auto-join");
         if (autoJoinChannels == null) {
-            autoJoinChannels = new ArrayList<>();
+            autoJoinChannels = new ArrayList<String>();
         }
         if (!debug) {
             for (String channel : autoJoinChannels) {
@@ -122,7 +127,6 @@ public class RalexBot {
      */
     public void forceStop() {
         bot.quitServer("Shutting down");
-        bot.disconnect();
     }
 
     /**

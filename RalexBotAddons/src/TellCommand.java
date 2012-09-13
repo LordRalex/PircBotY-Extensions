@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TellCommand extends Listener {
 
-    Map<String, Long> lastTold = new ConcurrentHashMap<>();
+    Map<String, Long> lastTold = new ConcurrentHashMap<String, Long>();
 
     @Override
     public void onJoin(JoinEvent event) {

@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class HelloBackListener extends Listener {
 
-    List<User> logins = new ArrayList<>();
-    List<String> hellos = new ArrayList<>();
+    List<User> logins = new ArrayList<User>();
+    List<String> hellos = new ArrayList<String>();
 
     public HelloBackListener() {
         hellos.add("hello");

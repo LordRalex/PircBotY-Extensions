@@ -23,7 +23,7 @@ public class Scheduler {
     public Scheduler(List<Listener> list) {
         listeners = list;
         counter = 0;
-        threads = new ConcurrentHashMap<>();
+        threads = new ConcurrentHashMap<Integer, Runnable>();
     }
 
     public int scheduleEvent(Event evt) {

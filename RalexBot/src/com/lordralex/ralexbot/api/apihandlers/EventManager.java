@@ -18,11 +18,11 @@ import org.pircbotx.hooks.ListenerAdapter;
  */
 public final class EventManager extends ListenerAdapter {
 
-    List<Listener> listeners = new ArrayList<>();
+    List<Listener> listeners = new ArrayList<Listener>();
     Scheduler scheduler;
 
     public EventManager() {
-        listeners = new ArrayList<>();
+        listeners = new ArrayList<Listener>();
         try {
             File extensionFolder = new File("extensions");
             extensionFolder.mkdirs();
@@ -43,7 +43,7 @@ public final class EventManager extends ListenerAdapter {
                             listeners.add(list);
                             System.out.println("  Added: " + list.getClass().getName());
                         }
-                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                    } catch (Exception ex) {
                         Logger.getLogger(EventManager.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }

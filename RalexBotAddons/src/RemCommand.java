@@ -17,8 +17,8 @@ import java.util.logging.Logger;
  */
 public class RemCommand extends Listener {
 
-    Map<String, String> remMap = new HashMap<>();
-    List<String> dontReply = new ArrayList<>();
+    Map<String, String> remMap = new HashMap<String, String>();
+    List<String> dontReply = new ArrayList<String>();
 
     @Override
     public void setup() {
@@ -26,10 +26,10 @@ public class RemCommand extends Listener {
         for (File file : new File("data" + File.separator + "rem").listFiles()) {
             try {
                 String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
-                try (Scanner reader = new Scanner(file)) {
-                    String line = reader.nextLine().trim();
-                    remMap.put(name, line);
-                }
+                Scanner reader = new Scanner(file);
+                String line = reader.nextLine().trim();
+                remMap.put(name, line);
+
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(RemCommand.class.getName()).log(Level.SEVERE, null, ex);
             }

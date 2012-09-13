@@ -1,3 +1,4 @@
+
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.CommandEvent;
@@ -22,22 +23,23 @@ public class ExpandCommand extends Listener {
         final String channel = event.getChannel();
         final String sender = event.getSender();
         final String[] args = event.getArgs();
+        String target = channel;
+        if (target == null) {
+            target = sender;
+        }
+        if (target == null) {
+            return;
+        }
         try {
-            String target = channel;
-            if (target == null) {
-                target = sender;
-            }
-            if (target == null) {
-                return;
-            }
             if (args.length == 0) {
                 sendMessage(target, "*expand <link>");
                 return;
             }
             String finalLink = parse(args[0]);
             sendMessage(target, finalLink);
-        } catch (IOException | URISyntaxException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
+            sendMessage(target, "There was a problem expanding that");
         }
 
     }

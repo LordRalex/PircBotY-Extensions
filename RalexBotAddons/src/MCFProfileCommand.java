@@ -44,15 +44,15 @@ public class MCFProfileCommand extends Listener {
 
 
         try {
-            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:www.minecraftforum.net/user%20viewing%20%22profile%20" + total.replace(" ", "%20") + "%22";
+            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:www.minecraftforum.net/user%20" + total.replace(" ", "%20") + "%22";
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
-            List<String> parts = new ArrayList<>();
+            List<String> parts = new ArrayList<String>();
             String s;
             while ((s = reader.readLine()) != null) {
                 parts.add(s);
             }
-            List<String> b = new ArrayList<>();
+            List<String> b = new ArrayList<String>();
             for (String part : parts) {
                 String[] c = part.split(",");
                 b.addAll(Arrays.asList(c));

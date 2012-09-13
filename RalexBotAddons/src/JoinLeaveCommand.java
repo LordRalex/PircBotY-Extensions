@@ -8,6 +8,7 @@ import com.lordralex.ralexbot.api.events.NickChangeEvent;
 import com.lordralex.ralexbot.file.FileSystem;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @version 1.0
@@ -16,7 +17,7 @@ import java.util.Map;
  */
 public class JoinLeaveCommand extends Listener {
 
-    private Map<String, String> channelList = new HashMap<>();
+    private Map<String, String> channelList = new ConcurrentHashMap<String, String>();
     private int MAX_CHANNELS;
 
     @Override

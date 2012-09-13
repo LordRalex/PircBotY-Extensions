@@ -41,12 +41,12 @@ public class WeatherCommand extends Listener {
             String url = "http://thefuckingweather.com/?where=colleyville%2c+txa" + total.replace(" ", "+").replace(",", "%2c");
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
-            List<String> parts = new ArrayList<>();
+            List<String> parts = new ArrayList<String>();
             String s;
             while ((s = reader.readLine()) != null) {
                 parts.add(s);
             }
-            List<String> b = new ArrayList<>();
+            List<String> b = new ArrayList<String>();
             for (String part : parts) {
                 String[] c = part.split(",");
                 b.addAll(Arrays.asList(c));

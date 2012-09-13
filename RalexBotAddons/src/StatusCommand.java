@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class StatusCommand extends Listener {
 
-    Map<String, Boolean> memStatus = new HashMap<>();
+    Map<String, Boolean> memStatus = new HashMap<String, Boolean>();
 
     @Override
     public void onPart(PartEvent event) {

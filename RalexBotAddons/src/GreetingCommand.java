@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class GreetingCommand extends Listener {
 
-    Map<String, String> greetings = new HashMap<>();
+    Map<String, String> greetings = new HashMap<String, String>();
 
     //TODO: Fix command
     @Override

@@ -15,7 +15,7 @@ public class ServerIPListener extends Listener {
 
     PingServerCommand pingServer = new PingServerCommand();
     boolean silence = false;
-    List<String> triggered = new ArrayList<>();
+    List<String> triggered = new ArrayList<String>();
 
     @Override
     public void onMessage(MessageEvent event) {
@@ -69,7 +69,7 @@ public class ServerIPListener extends Listener {
 
     private boolean isServer(String testString) {
         String test = testString.toLowerCase().trim();
-        List<String> tempList = new ArrayList<>();
+        List<String> tempList = new ArrayList<String>();
         int lastOccurance = 0;
         for (int i = 0; i < test.length(); i++) {
             if (test.charAt(i) == '.') {

@@ -21,7 +21,7 @@ import org.pircbotx.User;
  */
 public abstract class Listener {
 
-    public Map<EventType, Priority> priorities = new HashMap<>();
+    public Map<EventType, Priority> priorities = new HashMap<EventType, Priority>();
 
     public final void runEvent(Event event) {
         if (event instanceof MessageEvent) {

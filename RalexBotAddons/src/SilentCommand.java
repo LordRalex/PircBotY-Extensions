@@ -14,7 +14,7 @@ import org.pircbotx.User;
  */
 public class SilentCommand extends Listener {
 
-    List<String> silenced = new ArrayList<>();
+    List<String> silenced = new ArrayList<String>();
 
     @Override
     public void onCommand(CommandEvent event) {
@@ -24,39 +24,41 @@ public class SilentCommand extends Listener {
         if (!isOP(event.getSender(), event.getChannel())) {
             return;
         }
-        switch (event.getCommand()) {
-            case "silent":
-                if (event.getArgs().length == 0 && event.getChannel() != null) {
-                    String channel = event.getChannel().toLowerCase();
-                    silenced.remove(channel);
-                    silenced.add(channel);
-                    sendMessage(channel, "I am now going into quiet mode");
-                } else {
-                    String channel = event.getArgs()[0].toLowerCase();
-                    if (!channel.startsWith("#")) {
-                        channel = "#" + channel;
-                    }
-                    silenced.remove(channel);
-                    silenced.add(channel);
-                    sendMessage(event.getSender(), "I am now going into quiet mode for channel: " + channel);
+        if (event.getCommand().equalsIgnoreCase("silent")) {
+            if (event.getArgs().length == 0 && event.getChannel() != null) {
+                String channel = event.getChannel().toLowerCase();
+                silenced.remove(channel);
+                silenced.add(channel);
+                sendMessage(channel, "I am now going into quiet mode");
+            } else {
+                String channel = event.getArgs()[0].toLowerCase();
+                if (!channel.startsWith("#")) {
+                    channel = "#" + channel;
                 }
-                break;
-            case "unsilent":
-                if (event.getArgs().length == 0 && event.getChannel() != null) {
-                    String channel = event.getChannel().toLowerCase();
-                    silenced.remove(channel);
-                    sendMessage(channel, "I am now going into loud mode");
-                } else {
-                    String channel = event.getArgs()[0].toLowerCase();
-                    if (!channel.startsWith("#")) {
-                        channel = "#" + channel;
-                    }
-                    silenced.remove(channel);
-                    silenced.add(channel);
-                    sendMessage(event.getSender(), "I am now going into loud mode for channel: " + channel);
-                }
-                break;
+                silenced.remove(channel);
+                silenced.add(channel);
+                sendMessage(event.getSender(), "I am now going into quiet mode for channel: " + channel);
+            }
         }
+
+
+        if (event.getCommand().equalsIgnoreCase("unsilent")) {
+            if (event.getArgs().length == 0 && event.getChannel() != null) {
+                String channel = event.getChannel().toLowerCase();
+                silenced.remove(channel);
+                sendMessage(channel, "I am now going into loud mode");
+            } else {
+                String channel = event.getArgs()[0].toLowerCase();
+                if (!channel.startsWith("#")) {
+                    channel = "#" + channel;
+                }
+                silenced.remove(channel);
+                silenced.add(channel);
+                sendMessage(event.getSender(), "I am now going into loud mode for channel: " + channel);
+            }
+        }
+
+
         if (event.getChannel() != null && silenced.contains(event.getChannel().toLowerCase())) {
             String sender = event.getSender();
             boolean canUse = false;

@@ -161,14 +161,14 @@ public class PingServerCommand extends Listener {
     private String b() {
         String str1 = "";
         try {
-            try (BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(PingServerCommand.class.getResourceAsStream("/resources/font.txt"), "UTF-8"))) {
-                String str2;
-                while ((str2 = localBufferedReader.readLine()) != null) {
-                    if (!str2.startsWith("#")) {
-                        str1 = str1 + str2;
-                    }
+            BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(PingServerCommand.class.getResourceAsStream("/resources/font.txt"), "UTF-8"));
+            String str2;
+            while ((str2 = localBufferedReader.readLine()) != null) {
+                if (!str2.startsWith("#")) {
+                    str1 = str1 + str2;
                 }
             }
+
         } catch (Exception a) {
         }
         return str1;

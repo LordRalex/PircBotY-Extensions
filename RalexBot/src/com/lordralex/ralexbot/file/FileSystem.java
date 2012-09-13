@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class FileSystem {
 
-    private static Map<String, Object> settings = new HashMap<>();
+    private static Map<String, Object> settings = new HashMap<String, Object>();
 
     /**
      * Saves a new rem or overrides an existing rem on the disk. If a rem
@@ -25,12 +25,21 @@ public class FileSystem {
      * @param line The line to save for the rem
      */
     public static void saveRem(String name, String line) {
+        FileWriter writer = null;
         try {
-            try (FileWriter writer = new FileWriter(new File("data" + File.separator + "rem" + File.separator + name + ".txt"))) {
-                writer.write(line);
-            }
+            writer = new FileWriter(new File("data" + File.separator + "rem" + File.separator + name + ".txt"));
+            writer.write(line);
+
         } catch (IOException ex) {
             Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         }
     }
 
@@ -62,7 +71,7 @@ public class FileSystem {
                 String line = fileReader.nextLine().trim();
                 if (line.startsWith("-")) {
                     Object obj = settings.remove(lastAdded);
-                    List<String> list = new ArrayList<>();
+                    List<String> list = new ArrayList<String>();
                     if (obj instanceof List) {
                         list = (List<String>) obj;
                     } else {
@@ -73,7 +82,7 @@ public class FileSystem {
                     }
 
                     if (list == null) {
-                        list = new ArrayList<>();
+                        list = new ArrayList<String>();
                     }
                     list.add(line.substring(2));
                     settings.put(lastAdded, list);
@@ -119,10 +128,9 @@ public class FileSystem {
             "spam-time: 3500",
             "spam-dupe: 3"
         };
-        try (FileWriter writer = new FileWriter(new File("settings" + File.separator + "settings.txt"))) {
-            for (String line : lines) {
-                writer.write(line + "\n");
-            }
+        FileWriter writer = new FileWriter(new File("settings" + File.separator + "settings.txt"));
+        for (String line : lines) {
+            writer.write(line + "\n");
         }
     }
 
@@ -142,13 +150,13 @@ public class FileSystem {
         new File("data" + File.separator + "tells").mkdirs();
         new File("data" + File.separator + "tells" + File.separator + name + ".txt").delete();
         try {
-            try (FileWriter writer = new FileWriter(new File("data" + File.separator + "tells" + File.separator + name + ".txt"))) {
-                for (String line : lines) {
-                    writer.write(line + "\n");
-                }
+            FileWriter writer = new FileWriter(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
+            for (String line : lines) {
+                writer.write(line + "\n");
             }
         } catch (IOException e) {
-            Logger.getLogger(FileSystem.class.getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(FileSystem.class
+                    .getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -175,11 +183,10 @@ public class FileSystem {
             }
             name = name.toLowerCase();
             List<String> lines;
-            try (Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"))) {
-                lines = new ArrayList<>();
-                while (reader.hasNext()) {
-                    lines.add(reader.nextLine().trim());
-                }
+            Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
+            lines = new ArrayList<String>();
+            while (reader.hasNext()) {
+                lines.add(reader.nextLine().trim());
             }
             String[] result = lines.toArray(new String[0]);
             return result;
@@ -199,7 +206,7 @@ public class FileSystem {
         if (target == null || sender == null || message == null) {
             return;
         }
-        List<String> lines = new ArrayList<>();
+        List<String> lines = new ArrayList<String>();
         String[] old = getTells(target);
         lines.addAll(Arrays.asList(old));
         lines.add("From " + sender + "-> " + message);
@@ -238,7 +245,7 @@ public class FileSystem {
             List<String> list = (List<String>) obj;
             return list;
         }
-        return new ArrayList<>();
+        return new ArrayList<String>();
     }
 
     /**
