@@ -5,7 +5,6 @@ import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
-import com.sun.istack.internal.logging.Logger;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.ListenerAdapter;
 
@@ -185,7 +185,7 @@ public final class EventHandler extends ListenerAdapter {
                                             break;
                                     }
                                 } catch (Exception e) {
-                                    Logger.getLogger(EventHandler.class).log(Level.SEVERE, "Unhandled exception while running event", e);
+                                    Logger.getLogger(EventHandler.class.getName(), null).log(Level.SEVERE, "Unhandled exception on event execution", e);
                                 }
                             }
                         }
