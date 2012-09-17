@@ -1,7 +1,9 @@
 package com.lordralex.ralexbot;
 
+import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.Event;
+import com.lordralex.ralexbot.api.Priority;
+import com.lordralex.ralexbot.api.events.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,12 +39,11 @@ public final class EventHandler extends ListenerAdapter {
                         Object obj = cls.newInstance();
                         if (obj instanceof Listener) {
                             Listener list = (Listener) obj;
-                            //list.setup();
                             list.declareValues(list.getClass());
                             listeners.add(list);
                             System.out.println("  Added: " + list.getClass().getName());
                         }
-                    } catch (Exception ex) {
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                     }
                 }
             }
@@ -62,12 +63,25 @@ public final class EventHandler extends ListenerAdapter {
 
         @Override
         public void run() {
-            while(driver.isConnected())
-            {
+            while (driver.isConnected()) {
                 Event next = queue.poll();
-                if(next != null)
-                {
-                    
+                if (next != null) {
+                    EventField type = EventField.getEvent(next);
+                    if (type == null) {
+                        break;
+                    }
+                    for (Priority prio : Priority.values()) {
+                        for (Listener listener : listeners) {
+                            Priority temp = listener.priorities.get(type);
+                            if (temp != null && temp == prio) {
+                                switch (type) {
+                                    case Message:
+                                        listener.runEvent((MessageEvent) next);
+                                        break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

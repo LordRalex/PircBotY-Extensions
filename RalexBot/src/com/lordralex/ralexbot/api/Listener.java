@@ -4,18 +4,16 @@
  */
 package com.lordralex.ralexbot.api;
 
-import com.lordralex.ralexbot.api.events.MessageEvent;
-import java.lang.annotation.Annotation;
+import com.lordralex.ralexbot.api.events.*;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.pircbotx.PircBotX;
 
 public abstract class Listener {
 
-    Map<EventField, Priority> priorities = new HashMap<>();
+    public final Map<EventField, Priority> priorities = new HashMap<>();
 
     public abstract void setup();
 
@@ -36,7 +34,27 @@ public abstract class Listener {
         }
     }
 
-    @EventType(event = EventField.Message)
-    public void onMessage(MessageEvent event) {
+    public void runEvent(CommandEvent event) {
+    }
+
+    public void runEvent(MessageEvent event) {
+    }
+
+    public void runEvent(JoinEvent event) {
+    }
+
+    public void runEvent(NoticeEvent event) {
+    }
+
+    public void runEvent(PartEvent event) {
+    }
+
+    public void runEvent(PrivateMessageEvent event) {
+    }
+
+    public void runEvent(QuitEvent event) {
+    }
+
+    public void runEvent(NickChangeEvent event) {
     }
 }
