@@ -23,6 +23,13 @@ public final class EventHandler extends ListenerAdapter {
     private ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
     private PircBotX driver;
     EventRunner runner;
+    private static final List<Character> commandChars = new ArrayList<>();
+
+    static {
+        commandChars.clear();
+        commandChars.add('*');
+        commandChars.add('$');
+    }
 
     public EventHandler(PircBotX bot) {
         super();
@@ -58,7 +65,7 @@ public final class EventHandler extends ListenerAdapter {
     @Override
     public void onMessage(org.pircbotx.hooks.events.MessageEvent event) {
         Event nextEvt = null;
-        if (event.getMessage().startsWith("*")) {
+        if (isCommand(event.getMessage())) {
             nextEvt = new CommandEvent(event);
         } else {
             nextEvt = new MessageEvent(event);
@@ -67,6 +74,38 @@ public final class EventHandler extends ListenerAdapter {
         if (nextEvt != null) {
             fireEvent(nextEvt);
         }
+    }
+
+    @Override
+    public void onPrivateMessage(org.pircbotx.hooks.events.PrivateMessageEvent event) throws Exception {
+        Event nextEvt = null;
+        if (isCommand(event.getMessage())) {
+            nextEvt = new CommandEvent(event);
+        } else {
+            nextEvt = new PrivateMessageEvent(event);
+        }
+
+        if (nextEvt != null) {
+            fireEvent(nextEvt);
+        }
+    }
+
+    @Override
+    public void onNotice(org.pircbotx.hooks.events.NoticeEvent event) throws Exception {
+        Event nextEvt = null;
+        if (isCommand(event.getMessage())) {
+            nextEvt = new CommandEvent(event);
+        } else {
+            nextEvt = new NoticeEvent(event);
+        }
+
+        if (nextEvt != null) {
+            fireEvent(nextEvt);
+        }
+    }
+
+    private boolean isCommand(String message) {
+        return commandChars.contains(message.charAt(0));
     }
 
     private void fireEvent(final Event event) {
@@ -99,6 +138,27 @@ public final class EventHandler extends ListenerAdapter {
                                     switch (type) {
                                         case Message:
                                             listener.runEvent((MessageEvent) next);
+                                            break;
+                                        case Command:
+                                            listener.runEvent((CommandEvent) next);
+                                            break;
+                                        case Join:
+                                            listener.runEvent((JoinEvent) next);
+                                            break;
+                                        case NickChange:
+                                            listener.runEvent((NickChangeEvent) next);
+                                            break;
+                                        case Notice:
+                                            listener.runEvent((NoticeEvent) next);
+                                            break;
+                                        case Part:
+                                            listener.runEvent((PartEvent) next);
+                                            break;
+                                        case PrivateMessage:
+                                            listener.runEvent((PrivateMessageEvent) next);
+                                            break;
+                                        case Quit:
+                                            listener.runEvent((QuitEvent) next);
                                             break;
                                     }
                                 } catch (Exception e) {

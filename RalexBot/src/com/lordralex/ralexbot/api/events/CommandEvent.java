@@ -9,11 +9,31 @@ public final class CommandEvent extends Event {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
         sender = event.getUser().getNick();
-        if (event.getChannel() != null) {
-            channel = event.getChannel().getName();
-        } else {
-            channel = null;
+        channel = event.getChannel().getName();
+        hostName = event.getUser().getHostmask();
+        args = new String[temp.length - 1];
+        if (temp.length >= 2) {
+            System.arraycopy(temp, 1, args, 0, args.length);
         }
+    }
+
+    public CommandEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
+        String[] temp = event.getMessage().split(" ");
+        command = temp[0].substring(1).toLowerCase();
+        sender = event.getUser().getNick();
+        channel = null;
+        hostName = event.getUser().getHostmask();
+        args = new String[temp.length - 1];
+        if (temp.length >= 2) {
+            System.arraycopy(temp, 1, args, 0, args.length);
+        }
+    }
+
+    public CommandEvent(org.pircbotx.hooks.events.NoticeEvent event) {
+        String[] temp = event.getMessage().split(" ");
+        command = temp[0].substring(1).toLowerCase();
+        sender = event.getUser().getNick();
+        channel = null;
         hostName = event.getUser().getHostmask();
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
