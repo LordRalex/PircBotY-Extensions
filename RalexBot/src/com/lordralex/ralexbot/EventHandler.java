@@ -104,6 +104,29 @@ public final class EventHandler extends ListenerAdapter {
         }
     }
 
+    @Override
+    public void onJoin(org.pircbotx.hooks.events.JoinEvent event) throws Exception {
+        Event nextEvt = new JoinEvent(event);
+        fireEvent(nextEvt);
+    }
+
+    @Override
+    public void onNickChange(org.pircbotx.hooks.events.NickChangeEvent event) throws Exception {
+        super.onNickChange(event);
+    }
+
+    @Override
+    public void onQuit(org.pircbotx.hooks.events.QuitEvent event) throws Exception {
+        Event nextEvt = new QuitEvent(event);
+        fireEvent(nextEvt);
+    }
+
+    @Override
+    public void onPart(org.pircbotx.hooks.events.PartEvent event) throws Exception {
+        Event nextEvt = new PartEvent(event);
+        fireEvent(nextEvt);
+    }
+
     private boolean isCommand(String message) {
         return commandChars.contains(message.charAt(0));
     }
