@@ -2,10 +2,6 @@ package com.lordralex.ralexbot.api;
 
 import com.lordralex.ralexbot.api.events.*;
 
-/**
- *
- * @author Joshua
- */
 public enum EventField {
 
     Message(MessageEvent.class),

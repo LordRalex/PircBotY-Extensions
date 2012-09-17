@@ -1,13 +1,24 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lordralex.ralexbot.api.events;
 
-/**
- *
- * @author Joshua
- */
-public class NickChangeEvent implements Event{
+public class NickChangeEvent extends Event {
 
+    private final String oldNick, newNick, hostname;
+
+    public NickChangeEvent(org.pircbotx.hooks.events.NickChangeEvent event) {
+        oldNick = event.getOldNick();
+        newNick = event.getNewNick();
+        hostname = event.getUser().getHostmask();
+    }
+
+    public String getOldNick() {
+        return oldNick;
+    }
+
+    public String getNewNick() {
+        return newNick;
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
 }

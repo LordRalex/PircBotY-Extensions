@@ -1,13 +1,29 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lordralex.ralexbot.api.events;
 
-/**
- *
- * @author Joshua
- */
-public class MessageEvent implements Event{
+public final class MessageEvent extends Event {
 
+    private final String sender, channel, message, hostName;
+
+    public MessageEvent(org.pircbotx.hooks.events.MessageEvent event) {
+        sender = event.getUser().getNick();
+        channel = event.getChannel().getName();
+        message = event.getMessage();
+        hostName = event.getUser().getHostmask();
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getHostname() {
+        return hostName;
+    }
 }

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lordralex.ralexbot.api;
 
 import java.lang.annotation.ElementType;
@@ -14,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface EventType {
     EventField event();
     Priority priority() default Priority.NORMAL;
+    boolean ignoreCancel() default false;
 }

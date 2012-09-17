@@ -1,5 +1,6 @@
 package com.lordralex.ralexbot;
 
+import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +23,8 @@ public final class RalexBot {
         driver.setVerbose(false);
         driver.setName(Settings.getString("nick"));
         System.out.println("Nick of bot: " + driver.getNick());
+
+        Utils.setUtils(driver);
 
         eventHandler = new EventHandler(driver);
         boolean sucess = driver.getListenerManager().addListener(eventHandler);
@@ -79,7 +82,7 @@ public final class RalexBot {
         System.exit(0);
     }
 
-    private static class KeyboardListener extends Thread {
+    private final static class KeyboardListener extends Thread {
 
         Scanner keyboard;
 
@@ -89,7 +92,7 @@ public final class RalexBot {
 
         @Override
         public void run() {
-            String line = null;
+            String line;
             boolean run = true;
             while (run) {
                 line = keyboard.nextLine();

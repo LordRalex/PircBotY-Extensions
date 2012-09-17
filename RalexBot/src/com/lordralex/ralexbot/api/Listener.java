@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lordralex.ralexbot.api;
 
 import com.lordralex.ralexbot.api.events.*;
@@ -13,7 +9,7 @@ import java.util.logging.Logger;
 
 public abstract class Listener {
 
-    public final Map<EventField, Priority> priorities = new HashMap<>();
+    public final Map<EventField, EventType> priorities = new HashMap<>();
 
     public abstract void setup();
 
@@ -25,9 +21,7 @@ public abstract class Listener {
                 if (event == null) {
                     continue;
                 }
-                EventField eventType = event.event();
-                Priority prio = event.priority();
-                priorities.put(eventType, prio);
+                priorities.put(event.event(), event);
             }
         } catch (SecurityException ex) {
             Logger.getLogger(Listener.class.getName()).log(Level.SEVERE, null, ex);
