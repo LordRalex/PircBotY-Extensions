@@ -31,8 +31,7 @@ public abstract class Listener {
                 Priority prio = event.priority();
                 priorities.put(eventType, prio);
             }
-            thisClass.getDeclaredMethod("key", new Class[]{});
-        } catch (NoSuchMethodException | SecurityException ex) {
+        } catch (SecurityException ex) {
             Logger.getLogger(Listener.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
