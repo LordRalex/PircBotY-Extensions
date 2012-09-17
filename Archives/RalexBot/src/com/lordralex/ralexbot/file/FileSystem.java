@@ -196,12 +196,17 @@ public class FileSystem {
      * @param target The nick to send the message to
      * @param message The message to send
      */
-    public static void addTell(String sender, String target, String message) throws FileNotFoundException, IOException {
+    public static void addTell(String sender, String target, String message) throws IOException {
         if (target == null || sender == null || message == null) {
             return;
         }
         List<String> lines = new ArrayList<String>();
-        String[] old = getTells(target);
+        String[] old;
+        try {
+            old = getTells(target);
+        } catch (FileNotFoundException ex) {
+            old = new String[0];
+        }
         lines.addAll(Arrays.asList(old));
         lines.add("From " + sender + "-> " + message);
         saveTells(target, lines.toArray(new String[0]));
