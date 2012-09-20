@@ -74,4 +74,7 @@ public final class Settings {
         }
         return value;
     }
+
+    private Settings() {
+    }
 }

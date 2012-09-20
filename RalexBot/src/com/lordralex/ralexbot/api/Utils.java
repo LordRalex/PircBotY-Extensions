@@ -4,7 +4,17 @@
  */
 package com.lordralex.ralexbot.api;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.pircbotx.PircBotX;
+import org.pircbotx.User;
 
 /**
  *
@@ -22,6 +32,7 @@ public final class Utils {
     }
 
     public static void setNick(String newNick) {
+        bot.changeNick(newNick);
     }
 
     public static String getNick() {
@@ -41,7 +52,7 @@ public final class Utils {
             kick(nick, channel);
             return;
         }
-        if (bot.getUserBot().isIrcop()) {
+        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
             bot.kick(bot.getChannel(channel), bot.getUser(nick), reason);
         } else {
             bot.sendMessage("chanserv", "kick " + channel + " " + nick + " " + reason);
@@ -86,5 +97,94 @@ public final class Utils {
         for (String notice : notices) {
             bot.sendNotice(target, notice);
         }
+    }
+
+    public static boolean hasOP(String user, String channel) {
+        return bot.getChannel(channel).isOp(bot.getUser(user));
+    }
+
+    public static boolean hasVoice(String user, String channel) {
+        boolean is = bot.getChannel(channel).hasVoice(bot.getUser(user));
+        if (!is) {
+            is = hasOP(user, channel);
+        }
+        return is;
+    }
+
+    public static String toString(String[] args) {
+        String result = "";
+
+        for (String part : args) {
+            result += part + " ";
+        }
+        return result.trim();
+    }
+
+    public static String[] toArgs(String line) {
+        return line.split(" ");
+    }
+
+    /**
+     * @deprecated Use handleArgs instead
+     */
+    public static String replacePlaceHolders(String sender, String channel, String message, String[] args) {
+        if (message == null) {
+            return "";
+        }
+        if (sender == null) {
+            sender = "console";
+        }
+        if (sender != null) {
+            message = message.replace("{User}", sender);
+        }
+        if (channel != null) {
+            message = message.replace("{Channel}", channel);
+        }
+        try {
+            for (int i = 0; i < args.length; i++) {
+                if (args[i] != null) {
+                    message = message.replace("{" + i + "}", args[i]);
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        return message;
+    }
+
+    public static String parse(String html) throws MalformedURLException, IOException, URISyntaxException {
+        String url = html.replace(" ", "%20");
+        URL path = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection) path.openConnection();
+        connection.getInputStream();
+        connection.disconnect();
+        html = connection.getURL().toString();
+        return html;
+    }
+
+    public static String handleArgs(String message, Map<String, String> args) {
+        String newMessage = message;
+        for (String key : args.keySet()) {
+            String convert = args.get(key);
+            if (convert == null) {
+                convert = "";
+            }
+            message = message.replace("{" + key + "}", convert);
+        }
+        return newMessage;
+    }
+
+    public static String[] getUsers(String channel) {
+        if (channel == null) {
+            return new String[0];
+        }
+        Set<User> users = bot.getUsers(bot.getChannel(channel));
+        List<String> names = new ArrayList<>();
+        for (User user : users) {
+            names.add(user.getNick());
+        }
+        return names.toArray(new String[names.size()]);
+    }
+
+    private Utils() {
     }
 }

@@ -1,0 +1,1 @@
+java -jar "core\pircbotx.jar;core\snakeyaml.jar;core\RalexBot.jar" com.lordralex.ralexbot.RalexBot

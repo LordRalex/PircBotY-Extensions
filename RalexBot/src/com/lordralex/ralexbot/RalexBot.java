@@ -26,7 +26,7 @@ public final class RalexBot {
 
         Utils.setUtils(driver);
 
-        eventHandler = new EventHandler(driver);
+        eventHandler = new EventHandler();
         boolean sucess = driver.getListenerManager().addListener(eventHandler);
         if (sucess) {
             System.out.println("Listener hook attached to bot");
@@ -56,13 +56,12 @@ public final class RalexBot {
             for (String chan : channels) {
                 driver.joinChannel(chan);
             }
-        }
-        else
-        {
+        } else {
             driver.joinChannel("#ae97");
         }
 
         System.out.println("Initial loading complete, engaging listeners");
+        eventHandler.startQueue();
 
         KeyboardListener listener = new KeyboardListener();
         listener.start();

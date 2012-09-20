@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
@@ -21,7 +22,6 @@ public final class EventHandler extends ListenerAdapter {
 
     private List<Listener> listeners = new ArrayList<>();
     private ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
-    private PircBotX driver;
     EventRunner runner;
     private static final List<Character> commandChars = new ArrayList<>();
 
@@ -31,9 +31,8 @@ public final class EventHandler extends ListenerAdapter {
         commandChars.add('$');
     }
 
-    public EventHandler(PircBotX bot) {
+    public EventHandler() {
         super();
-        driver = bot;
         try {
             File extensionFolder = new File("extensions");
             extensionFolder.mkdirs();
@@ -49,6 +48,7 @@ public final class EventHandler extends ListenerAdapter {
                         Object obj = cls.newInstance();
                         if (obj instanceof Listener) {
                             Listener list = (Listener) obj;
+                            list.setup();
                             list.declareValues(list.getClass());
                             listeners.add(list);
                             System.out.println("  Added: " + list.getClass().getName());
@@ -60,6 +60,12 @@ public final class EventHandler extends ListenerAdapter {
         } catch (MalformedURLException ex) {
         }
         runner = new EventRunner();
+    }
+
+    public void startQueue() {
+        if (!runner.isAlive()) {
+            runner.start();
+        }
     }
 
     @Override
@@ -142,7 +148,7 @@ public final class EventHandler extends ListenerAdapter {
 
         @Override
         public void run() {
-            while (driver.isConnected()) {
+            while (true) {
                 Event next = queue.poll();
                 if (next != null) {
                     EventField type = EventField.getEvent(next);
@@ -152,6 +158,9 @@ public final class EventHandler extends ListenerAdapter {
                     for (Priority prio : Priority.values()) {
                         for (Listener listener : listeners) {
                             EventType info = listener.priorities.get(type);
+                            if (info == null) {
+                                continue;
+                            }
                             if (next.isCancelled() && !info.ignoreCancel()) {
                                 continue;
                             }
@@ -163,7 +172,9 @@ public final class EventHandler extends ListenerAdapter {
                                             listener.runEvent((MessageEvent) next);
                                             break;
                                         case Command:
-                                            listener.runEvent((CommandEvent) next);
+                                            if (Arrays.asList(listener.getAliases()).contains(((CommandEvent) next).getCommand().toLowerCase())) {
+                                                listener.runEvent((CommandEvent) next);
+                                            }
                                             break;
                                         case Join:
                                             listener.runEvent((JoinEvent) next);

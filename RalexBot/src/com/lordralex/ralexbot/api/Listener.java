@@ -1,6 +1,13 @@
 package com.lordralex.ralexbot.api;
 
-import com.lordralex.ralexbot.api.events.*;
+import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.events.JoinEvent;
+import com.lordralex.ralexbot.api.events.MessageEvent;
+import com.lordralex.ralexbot.api.events.NickChangeEvent;
+import com.lordralex.ralexbot.api.events.NoticeEvent;
+import com.lordralex.ralexbot.api.events.PartEvent;
+import com.lordralex.ralexbot.api.events.PrivateMessageEvent;
+import com.lordralex.ralexbot.api.events.QuitEvent;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +18,8 @@ public abstract class Listener {
 
     public final Map<EventField, EventType> priorities = new HashMap<>();
 
-    public abstract void setup();
+    public void setup() {
+    }
 
     public final void declareValues(Class thisClass) {
         try {
@@ -21,6 +29,7 @@ public abstract class Listener {
                 if (event == null) {
                     continue;
                 }
+                System.out.println("    *Event " + event.event().name() + " was added with priority " + event.priority().name());
                 priorities.put(event.event(), event);
             }
         } catch (SecurityException ex) {
@@ -50,5 +59,9 @@ public abstract class Listener {
     }
 
     public void runEvent(NickChangeEvent event) {
+    }
+
+    public String[] getAliases() {
+        return new String[0];
     }
 }
