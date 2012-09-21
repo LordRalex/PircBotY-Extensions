@@ -5,8 +5,11 @@ import com.lordralex.ralexbot.settings.Settings;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
+import org.pircbotx.exception.NickAlreadyInUseException;
 
 public final class RalexBot {
 
@@ -43,7 +46,15 @@ public final class RalexBot {
         if (port == 0) {
             port = 6667;
         }
-        driver.connect(network, port);
+        try {
+            driver.connect(network, port);
+        } catch (NickAlreadyInUseException ex) {
+            Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
+            driver.setName(driver.getNick() + "1");
+            driver.connect(network, port);
+            driver.sendMessage("chanserv", "ghost " + Settings.getString("nick") + " " + Settings.getString("nick-pw"));
+            driver.changeNick(Settings.getString("nick"));
+        }
 
         String id = Settings.getString("nick-pw");
         if (id != null && !id.isEmpty()) {

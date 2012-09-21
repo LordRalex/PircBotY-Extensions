@@ -168,7 +168,7 @@ public final class Utils {
             if (convert == null) {
                 convert = "";
             }
-            message = message.replace("{" + key + "}", convert);
+            newMessage = newMessage.replace("{" + key + "}", convert);
         }
         return newMessage;
     }

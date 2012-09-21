@@ -96,8 +96,7 @@ public class RemCommand extends Listener {
                 placers.put("Random", random);
             }
             reply = Utils.handleArgs(reply, placers);
-            reply = reply.replace("\n", "{NEXTLINE}");
-            String[] entire = reply.split("{NEXTLINE}");
+            String[] entire = reply.split("\n");
             if (channel == null) {
                 Utils.sendMessage(sender, entire);
             } else {
@@ -111,18 +110,8 @@ public class RemCommand extends Listener {
         }
 
         String[] part = buildRem(args);
-        String name = part[0];
+        String name = part[0].toLowerCase().trim();
         String reply = part[1];
-
-        if (remMap.containsKey(name)) {
-            if (channel == null) {
-                channel = sender;
-            }
-            if (sender != null) {
-                Utils.sendMessage(channel, name + " already exists");
-            }
-            return;
-        }
 
         if (reply == null || reply.equalsIgnoreCase("null") || reply.equalsIgnoreCase("forget")) {
             remMap.remove(name);
@@ -135,7 +124,16 @@ public class RemCommand extends Listener {
             }
             return;
         }
-        name = name.toLowerCase().trim();
+
+        if (remMap.containsKey(name)) {
+            if (channel == null) {
+                channel = sender;
+            }
+            if (sender != null) {
+                Utils.sendMessage(channel, name + " already exists");
+            }
+            return;
+        }
 
         remMap.put(name, reply);
         saveRem(name, reply);

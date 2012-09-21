@@ -22,9 +22,6 @@ public class JoinLeaveCommand extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
         String command = event.getCommand().toLowerCase().trim();
         String[] args = event.getArgs();
         String channel = event.getChannel();
@@ -57,7 +54,7 @@ public class JoinLeaveCommand extends Listener {
     }
 
     @Override
-    @EventType(event = EventField.Command)
+    @EventType(event = EventField.NickChange)
     public void runEvent(NickChangeEvent event) {
         String oldNick = event.getOldNick();
         String newNick = event.getNewNick();

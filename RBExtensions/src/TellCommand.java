@@ -34,7 +34,6 @@ public class TellCommand extends Listener {
         try {
             tells = getTells(sender);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(TellCommand.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
         if (tells.length > 0) {
@@ -54,7 +53,6 @@ public class TellCommand extends Listener {
         try {
             tells = getTells(sender);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(TellCommand.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
         Long timeAgo = lastTold.get(event.getOldNick());
@@ -80,7 +78,6 @@ public class TellCommand extends Listener {
         try {
             tells = getTells(sender);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(TellCommand.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
         if (tells.length > 0) {
