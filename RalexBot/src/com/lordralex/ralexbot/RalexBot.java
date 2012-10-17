@@ -1,6 +1,7 @@
 package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.IOException;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.logging.Logger;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
+import org.pircbotx.hooks.events.PrivateMessageEvent;
 
 public final class RalexBot {
 

@@ -48,9 +48,9 @@ public final class EventHandler extends ListenerAdapter {
                         if (obj instanceof Listener) {
                             Listener list = (Listener) obj;
                             list.setup();
+                            System.out.println("  Added: " + list.getClass().getName());
                             list.declareValues(list.getClass());
                             listeners.add(list);
-                            System.out.println("  Added: " + list.getClass().getName());
                         }
                     } catch (Exception ex) {
                         Logger.getLogger(EventHandler.class.getName(), null).log(Level.SEVERE, "", ex);
@@ -138,7 +138,7 @@ public final class EventHandler extends ListenerAdapter {
         return commandChars.contains(message.charAt(0));
     }
 
-    private void fireEvent(final Event event) {
+    public void fireEvent(final Event event) {
         queue.add(event);
         runner.ping();
     }

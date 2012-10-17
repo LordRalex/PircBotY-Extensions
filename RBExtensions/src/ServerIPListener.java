@@ -4,6 +4,7 @@ import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.api.events.PartEvent;
 import com.lordralex.ralexbot.api.events.QuitEvent;
@@ -12,8 +13,16 @@ import java.util.List;
 
 public class ServerIPListener extends Listener {
 
-    PingServerCommand pingServer = new PingServerCommand();
-    List<String> triggered = new ArrayList<String>();
+    protected PingServerCommand pingServer;
+    protected List<String> triggered;
+    protected List<String> ignorePeople;
+
+    @Override
+    public void setup() {
+        pingServer = new PingServerCommand();
+        triggered = new ArrayList<String>();
+        ignorePeople = new ArrayList<String>();
+    }
 
     @Override
     @EventType(event = EventField.Message, priority = Priority.HIGH)
@@ -24,18 +33,29 @@ public class ServerIPListener extends Listener {
 
         boolean silence = false;
 
+        if (ignorePeople.contains(sender.toLowerCase())) {
+            return;
+        }
+
         if (triggered.contains(sender.toLowerCase())) {
+            silence = true;
+        } else if (triggered.contains(event.getHostname().toLowerCase())) {
             silence = true;
         }
         String[] messageParts = message.split(" ");
         for (String part : messageParts) {
+            System.out.println("Testing " + part);
             if (isServer(part)) {
+                System.out.println("  Was an IP");
                 if (!silence) {
                     Utils.sendMessage(channel, "Please do not advertise servers here");
                     triggered.remove(sender.toLowerCase());
+                    triggered.remove(event.getHostname().toLowerCase());
                     triggered.add(sender.toLowerCase());
+                    triggered.add(event.getHostname().toLowerCase());
                 } else if (triggered.contains(sender.toLowerCase())) {
                     Utils.kick(sender, channel, "Server advertisement");
+                    event.setCancelled(true);
                 }
                 break;
             }
@@ -45,26 +65,51 @@ public class ServerIPListener extends Listener {
     @Override
     @EventType(event = EventField.Part)
     public void runEvent(PartEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
         triggered.remove(event.getSender().toLowerCase());
     }
 
     @Override
     @EventType(event = EventField.Quit)
     public void runEvent(QuitEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
         triggered.remove(event.getSender().toLowerCase());
+    }
+
+    @Override
+    @EventType(event = EventField.Command)
+    public void runEvent(CommandEvent event) {
+
+        if (event.getCommand().equalsIgnoreCase("ignoread")) {
+            if (Utils.hasOP(event.getSender(), event.getChannel())) {
+                if (event.getArgs().length == 1) {
+                    if (ignorePeople.add(event.getArgs()[0])) {
+                        Utils.sendMessage(event.getChannel(), "He will be ignored with IPs now");
+                    }
+                }
+            }
+        } else if (event.getCommand().equalsIgnoreCase("unignoread")) {
+            if (Utils.hasOP(event.getSender(), event.getChannel())) {
+                if (event.getArgs().length == 1) {
+                    if (ignorePeople.remove(event.getArgs()[0])) {
+                        Utils.sendMessage(event.getChannel(), "He will be not ignored with IPs now");
+                    }
+                }
+            }
+        } else if (event.getCommand().equalsIgnoreCase("reset")) {
+            if (Utils.hasOP(event.getSender(), event.getChannel())) {
+                if (event.getArgs().length == 1) {
+                    if (triggered.remove(event.getArgs()[0])) {
+                        Utils.sendMessage(event.getChannel(), "His counter was removed");
+                    }
+                }
+            }
+        }
     }
 
     private boolean isServer(String testString) {
         String test = testString.toLowerCase().trim();
 
-        if (test.split(".").length == 4) {
-            String[] parts = test.split(".");
+        String[] parts = split(test, ".");
+        if (parts.length == 4) {
             if (parts[3].contains(":")) {
                 parts[3] = parts[3].split(":")[0];
             }
@@ -77,7 +122,22 @@ public class ServerIPListener extends Listener {
             }
             return true;
         }
-
         return false;
+    }
+
+    private String[] split(String message, String lookFor) {
+        List<String> parts = new ArrayList<String>();
+        String test = message.toString();
+        while (test.contains(lookFor)) {
+            int id = test.indexOf(lookFor);
+            if (id == -1) {
+                break;
+            }
+            parts.add(test.substring(0, id));
+            test = test.substring(id + 1);
+        }
+        parts.add(test);
+
+        return parts.toArray(new String[0]);
     }
 }
