@@ -14,17 +14,41 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class RalexBot {
 
     private static PircBotX driver;
-    public static String VERSION = "0.0.1";
+    public static String VERSION = "0.0.2";
     private static EventHandler eventHandler;
+    private static RalexBot instance;
 
-    public static void main(String[] args) throws IOException, IrcException {
+    public static void main(String[] args) {
+        try {
+            instance = new RalexBot();
+            synchronized (instance) {
+                try {
+                    instance.wait();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IrcException ex) {
+            Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Exiting bot");
+        eventHandler.stopRunner();
+        System.exit(0);
+    }
 
+    private RalexBot() throws IOException, IrcException {
         Settings.loadSettings();
 
         driver = new PircBotX();
         driver.setVersion(VERSION);
         driver.setVerbose(false);
-        driver.setName(Settings.getString("nick"));
+        String nick = Settings.getString("nick");
+        if (nick == null || nick.isEmpty()) {
+            nick = "DebugBot";
+        }
+        driver.setName(nick);
         System.out.println("Nick of bot: " + driver.getNick());
 
         Utils.setUtils(driver);
@@ -76,28 +100,15 @@ public final class RalexBot {
 
         KeyboardListener listener = new KeyboardListener();
         listener.start();
-
-        while (driver.isConnected() && listener.isAlive()) {
-        }
-
-        System.out.println("Bot terminating from server");
-        if (driver.isConnected()) {
-            driver.shutdown();
-        }
-        if (listener.isAlive()) {
-            listener.interrupt();
-        }
-        System.out.println("Bot shut down");
-
-        System.exit(0);
     }
 
     private final static class KeyboardListener extends Thread {
 
-        Scanner keyboard;
+        Scanner kb;
 
         public KeyboardListener() {
-            keyboard = new Scanner(System.in);
+            setName("Keyboard_Listener_Thread");
+            kb = new Scanner(System.in);
         }
 
         @Override
@@ -105,11 +116,15 @@ public final class RalexBot {
             String line;
             boolean run = true;
             while (run) {
-                line = keyboard.nextLine();
+                line = kb.nextLine();
                 if (line == null || line.trim().equalsIgnoreCase("stop")) {
                     run = false;
                 }
             }
+            synchronized (instance) {
+                instance.notify();
+            }
+            System.out.println("Ending keyboard listener");
         }
     }
 }

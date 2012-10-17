@@ -15,16 +15,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RemCommand extends Listener {
 
-    Map<String, String> remMap = new HashMap<>();
-    List<String> dontReply = new ArrayList<>();
+    Map<String, String> remMap = new ConcurrentHashMap<String, String>();
+    List<String> dontReply = new ArrayList<String>();
 
     @Override
     public void setup() {
+        remMap.clear();
         new File("data" + File.separator + "rem").mkdirs();
         for (File file : new File("data" + File.separator + "rem").listFiles()) {
             try {
@@ -32,7 +34,6 @@ public class RemCommand extends Listener {
                 Scanner reader = new Scanner(file);
                 String line = reader.nextLine().trim();
                 remMap.put(name, line);
-
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(RemCommand.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -78,12 +79,18 @@ public class RemCommand extends Listener {
             return;
         }
 
+        if (command.equalsIgnoreCase("remupdate")) {
+            setup();
+            Utils.sendMessage(sender, "Rems updated");
+            return;
+        }
+
         if (isRem(command)) {
             String reply = remMap.get(command);
             if (sender == null) {
                 return;
             }
-            Map<String, String> placers = new HashMap<>();
+            Map<String, String> placers = new HashMap<String, String>();
             placers.put("User", sender);
             placers.put("Channel", channel);
             for (int i = 0; i < args.length; i++) {
@@ -163,11 +170,12 @@ public class RemCommand extends Listener {
 
     @Override
     public String[] getAliases() {
-        List<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<String>();
         list.add("rem");
         list.add("r");
         list.add("remember");
         list.add("remshutup");
+        list.add("remupdate");
         for (Object command : remMap.keySet()) {
             list.add(((String) command).toLowerCase());
         }

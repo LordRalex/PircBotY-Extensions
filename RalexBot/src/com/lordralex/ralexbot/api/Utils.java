@@ -124,33 +124,6 @@ public final class Utils {
         return line.split(" ");
     }
 
-    /**
-     * @deprecated Use handleArgs instead
-     */
-    public static String replacePlaceHolders(String sender, String channel, String message, String[] args) {
-        if (message == null) {
-            return "";
-        }
-        if (sender == null) {
-            sender = "console";
-        }
-        if (sender != null) {
-            message = message.replace("{User}", sender);
-        }
-        if (channel != null) {
-            message = message.replace("{Channel}", channel);
-        }
-        try {
-            for (int i = 0; i < args.length; i++) {
-                if (args[i] != null) {
-                    message = message.replace("{" + i + "}", args[i]);
-                }
-            }
-        } catch (IndexOutOfBoundsException e) {
-        }
-        return message;
-    }
-
     public static String parse(String html) throws MalformedURLException, IOException, URISyntaxException {
         String url = html.replace(" ", "%20");
         URL path = new URL(url);
@@ -178,7 +151,7 @@ public final class Utils {
             return new String[0];
         }
         Set<User> users = bot.getUsers(bot.getChannel(channel));
-        List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<String>();
         for (User user : users) {
             names.add(user.getNick());
         }

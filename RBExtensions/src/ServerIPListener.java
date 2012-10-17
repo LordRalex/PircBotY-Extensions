@@ -2,6 +2,7 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
+import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.api.events.PartEvent;
@@ -12,15 +13,16 @@ import java.util.List;
 public class ServerIPListener extends Listener {
 
     PingServerCommand pingServer = new PingServerCommand();
-    boolean silence = false;
-    List<String> triggered = new ArrayList<>();
+    List<String> triggered = new ArrayList<String>();
 
     @Override
-    @EventType(event = EventField.Message)
+    @EventType(event = EventField.Message, priority = Priority.HIGH)
     public void runEvent(MessageEvent event) {
-        final String channel = event.getChannel();
-        final String sender = event.getSender();
-        final String message = event.getMessage();
+        String channel = event.getChannel();
+        String sender = event.getSender();
+        String message = event.getMessage();
+
+        boolean silence = false;
 
         if (triggered.contains(sender.toLowerCase())) {
             silence = true;
@@ -35,14 +37,13 @@ public class ServerIPListener extends Listener {
                 } else if (triggered.contains(sender.toLowerCase())) {
                     Utils.kick(sender, channel, "Server advertisement");
                 }
-                silence = true;
+                break;
             }
         }
-        silence = false;
     }
 
     @Override
-    @EventType(event = EventField.Command)
+    @EventType(event = EventField.Part)
     public void runEvent(PartEvent event) {
         if (event.isCancelled()) {
             return;
@@ -51,7 +52,7 @@ public class ServerIPListener extends Listener {
     }
 
     @Override
-    @EventType(event = EventField.Command)
+    @EventType(event = EventField.Quit)
     public void runEvent(QuitEvent event) {
         if (event.isCancelled()) {
             return;
@@ -61,30 +62,22 @@ public class ServerIPListener extends Listener {
 
     private boolean isServer(String testString) {
         String test = testString.toLowerCase().trim();
-        List<String> tempList = new ArrayList<>();
-        int lastOccurance = 0;
-        for (int i = 0; i < test.length(); i++) {
-            if (test.charAt(i) == '.') {
-                tempList.add(test.substring(lastOccurance, i));
-                lastOccurance = i;
+
+        if (test.split(".").length == 4) {
+            String[] parts = test.split(".");
+            if (parts[3].contains(":")) {
+                parts[3] = parts[3].split(":")[0];
             }
+            for (int i = 0; i < 4; i++) {
+                try {
+                    Integer.parseInt(parts[i]);
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+            return true;
         }
-        String[] parts = tempList.toArray(new String[0]);
-        if (parts.length == 2 || parts.length == 3 || parts.length == 4) {
-            String ip = test.split(":")[0];
-            String port = "25565";
-            if (test.split(":").length == 2) {
-                port = test.split(":")[1];
-            }
-            int p;
-            try {
-                p = Integer.parseInt(port);
-                Object[] result = pingServer.test(ip, p);
-                return (result[0] == Boolean.TRUE);
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
+
         return false;
     }
 }

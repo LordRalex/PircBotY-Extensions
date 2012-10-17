@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 
 public class TellCommand extends Listener {
 
-    Map<String, Long> lastTold = new ConcurrentHashMap<>();
+    Map<String, Long> lastTold = new ConcurrentHashMap<String, Long>();
 
     @Override
     @EventType(event = EventField.Join)
@@ -136,11 +136,7 @@ public class TellCommand extends Listener {
             } else {
                 Utils.sendNotice(sender, messages);
             }
-            try {
-                clearTells(sender);
-            } catch (IOException ex) {
-                Logger.getLogger(TellCommand.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            clearTells(sender);
         }
     }
 
@@ -154,21 +150,32 @@ public class TellCommand extends Listener {
                 };
     }
 
-    public void saveTells(String name, String[] lines) throws IOException {
+    public void saveTells(String name, String[] lines) {
         if (name == null || lines == null || name.length() == 0) {
             return;
         }
         name = name.toLowerCase();
         new File("data" + File.separator + "tells").mkdirs();
         new File("data" + File.separator + "tells" + File.separator + name + ".txt").delete();
-        try (FileWriter writer = new FileWriter(new File("data" + File.separator + "tells" + File.separator + name + ".txt"))) {
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
             for (String line : lines) {
                 writer.write(line + "\n");
+            }
+        } catch (IOException e) {
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(TellCommand.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }
 
-    public void clearTells(String name) throws IOException {
+    public void clearTells(String name) {
         saveTells(name, new String[0]);
     }
 
@@ -177,7 +184,7 @@ public class TellCommand extends Listener {
             return new String[0];
         }
         name = name.toLowerCase();
-        List<String> lines = new ArrayList<>();
+        List<String> lines = new ArrayList<String>();
         Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
         while (reader.hasNext()) {
             lines.add(reader.nextLine().trim());
@@ -190,7 +197,7 @@ public class TellCommand extends Listener {
         if (target == null || sender == null || message == null) {
             return;
         }
-        List<String> lines = new ArrayList<>();
+        List<String> lines = new ArrayList<String>();
         String[] old;
         try {
             old = getTells(target);

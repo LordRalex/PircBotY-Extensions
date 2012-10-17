@@ -15,7 +15,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 public final class Settings {
 
-    private static final Map<String, Object> settings = new ConcurrentHashMap<>();
+    private static final Map<String, Object> settings = new ConcurrentHashMap<String, Object>();
 
     public static void loadSettings() {
         File settingsFile = new File("settings", "config.yml");
@@ -26,14 +26,14 @@ public final class Settings {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Settings.class.getName()).log(Level.SEVERE, null, ex);
         }
-        for (Object in : it) {
-            Set set = ((LinkedHashMap) in).keySet();
-            //currently does not do nested vars, only outer, have to loop for LinkedHashMaps for that
-            for (Object key : set) {
-                System.out.println("Key is " + ((String) key));
-                System.out.println("Value was " + ((LinkedHashMap) in).get(key));
-                if (((LinkedHashMap) in).get(key) != null) {
-                    settings.put((String) key, ((LinkedHashMap) in).get(key));
+        if (it != null) {
+            for (Object in : it) {
+                Set set = ((LinkedHashMap) in).keySet();
+                //currently does not do nested vars, only outer, have to loop for LinkedHashMaps for that
+                for (Object key : set) {
+                    if (((LinkedHashMap) in).get(key) != null) {
+                        settings.put((String) key, ((LinkedHashMap) in).get(key));
+                    }
                 }
             }
         }

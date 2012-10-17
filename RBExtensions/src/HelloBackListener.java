@@ -9,15 +9,17 @@ import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
 import com.lordralex.ralexbot.api.events.PartEvent;
 import com.lordralex.ralexbot.api.events.QuitEvent;
+import com.lordralex.ralexbot.settings.Settings;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HelloBackListener extends Listener {
 
-    List<User> logins = new ArrayList<>();
-    List<String> hellos = new ArrayList<>();
+    List<User> logins = new ArrayList<User>();
+    List<String> hellos = new ArrayList<String>();
 
-    public HelloBackListener() {
+    @Override
+    public void setup() {
         hellos.add("hello");
         hellos.add("hi");
         hellos.add("o/");
@@ -25,6 +27,13 @@ public class HelloBackListener extends Listener {
         hellos.add("allo");
         hellos.add("is anyone here");
         hellos.add("anyone here");
+
+        List<String> more = Settings.getStringList("greetings");
+        if (more != null && !more.isEmpty()) {
+            for (String string : more) {
+                hellos.add(string.toLowerCase());
+            }
+        }
     }
 
     @Override
@@ -33,8 +42,9 @@ public class HelloBackListener extends Listener {
         String message = event.getMessage();
         String channel = event.getChannel();
         String sender = event.getSender();
-        if (message.equalsIgnoreCase("Hello " + Utils.getNick()) || message.equalsIgnoreCase("Hello, " + Utils.getNick())) {
-            Utils.sendMessage(channel, "Why hello there " + sender + ", thank you for telling me hi. I <3 you");
+        if (message.equalsIgnoreCase("Hello " + Utils.getNick()) || message.equalsIgnoreCase("Hello, " + Utils.getNick())
+                || message.equalsIgnoreCase("Hi, " + Utils.getNick()) || message.equalsIgnoreCase("Hi " + Utils.getNick())) {
+            Utils.sendMessage(channel, "Why hello there " + sender + ", thank you for telling me hello. I <3 you");
         } else if (isGreeting(message)) {
             for (int i = 0; i < logins.size(); i++) {
                 if (logins.get(i).equals(sender, channel)) {
@@ -100,46 +110,12 @@ public class HelloBackListener extends Listener {
     }
 
     public boolean isGreeting(String message) {
-        String[] parts = message.toLowerCase().trim().split(" ");
-        for (String messagePart : parts) {
-            for (String greeting : hellos) {
-                if (messagePart.equalsIgnoreCase(greeting)) {
-                    return true;
-                }
+        for (String greeting : hellos) {
+            if (message.contains(greeting)) {
+                return true;
             }
         }
         return false;
-    }
-
-    @Override
-    @EventType(event = EventField.Command)
-    public void runEvent(CommandEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        String[] args = event.getArgs();
-        String channel = event.getChannel();
-        String sender = event.getSender();
-        if (args.length != 0) {
-            String newHello = "";
-            for (String string : args) {
-                newHello += string + " ";
-            }
-            newHello = newHello.trim().toLowerCase();
-            hellos.add(newHello);
-            if (channel != null) {
-                Utils.sendMessage(channel, "Added new response: " + newHello);
-            } else if (sender != null) {
-                Utils.sendMessage(sender, "Added new response: " + newHello);
-            }
-        }
-    }
-
-    @Override
-    public String[] getAliases() {
-        return new String[]{
-                    "addhello"
-                };
     }
 
     private class User {

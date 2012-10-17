@@ -6,6 +6,7 @@ import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
 import java.io.File;
+import java.lang.Thread.State;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -15,20 +16,18 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.ListenerAdapter;
 
 public final class EventHandler extends ListenerAdapter {
 
-    private List<Listener> listeners = new ArrayList<>();
-    private ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
+    private List<Listener> listeners = new ArrayList<Listener>();
+    private ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<Event>();
     EventRunner runner;
-    private static final List<Character> commandChars = new ArrayList<>();
+    private static final List<Character> commandChars = new ArrayList<Character>();
 
     static {
         commandChars.clear();
         commandChars.add('*');
-        commandChars.add('$');
     }
 
     public EventHandler() {
@@ -53,13 +52,15 @@ public final class EventHandler extends ListenerAdapter {
                             listeners.add(list);
                             System.out.println("  Added: " + list.getClass().getName());
                         }
-                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                    } catch (Exception ex) {
+                        Logger.getLogger(EventHandler.class.getName(), null).log(Level.SEVERE, "", ex);
                     }
                 }
             }
         } catch (MalformedURLException ex) {
         }
         runner = new EventRunner();
+        runner.setName("Event_Handler_Thread");
     }
 
     public void startQueue() {
@@ -139,18 +140,29 @@ public final class EventHandler extends ListenerAdapter {
 
     private void fireEvent(final Event event) {
         queue.add(event);
+        runner.ping();
+    }
+
+    public void stopRunner() {
+        runner.interrupt();
     }
 
     private class EventRunner extends Thread {
 
-        public EventRunner() {
-        }
-
         @Override
         public void run() {
-            while (true) {
+            boolean run = true;
+            while (run) {
                 Event next = queue.poll();
-                if (next != null) {
+                if (next == null) {
+                    synchronized (this) {
+                        try {
+                            this.wait();
+                        } catch (InterruptedException ex) {
+                            run = false;
+                        }
+                    }
+                } else if (next != null) {
                     EventField type = EventField.getEvent(next);
                     if (type == null) {
                         break;
@@ -201,6 +213,19 @@ public final class EventHandler extends ListenerAdapter {
                             }
                         }
                     }
+                }
+            }
+            System.out.println("Ending event listener");
+        }
+
+        public void ping() {
+            if (this.getState() == State.WAITING) {
+                try {
+                    synchronized (this) {
+                        this.notify();
+                    }
+                } catch (IllegalMonitorStateException e) {
+                    Logger.getLogger(EventHandler.class.getName(), null).log(Level.SEVERE, e.toString(), e);
                 }
             }
         }
