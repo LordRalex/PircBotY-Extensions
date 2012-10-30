@@ -50,20 +50,18 @@ public class YamlCommand extends Listener {
                 if (line.contains("\t")) {
                     errorLog.add("On line " + (i + 1) + ", you have a tab.");
                 }
-                {
-                    int counter = 0;
-                    for (char ch : line.toCharArray()) {
-                        if (ch == '\'') {
-                            counter++;
-                        }
+                int counter = 0;
+                for (char ch : line.toCharArray()) {
+                    if (ch == '\'') {
+                        counter++;
                     }
-                    if (counter != 2) {
-                        if (counter == 1) {
-                            errorLog.add("On line " + (i + 1) + ", you did not put enough 's");
-                        }
-                        if (counter > 2) {
-                            errorLog.add("On line " + (i + 1) + ", you have too many 's");
-                        }
+                }
+                if (counter != 2) {
+                    if (counter == 1) {
+                        errorLog.add("On line " + (i + 1) + ", you did not put enough 's");
+                    }
+                    if (counter > 2) {
+                        errorLog.add("On line " + (i + 1) + ", you have too many 's");
                     }
                 }
             }

@@ -6,7 +6,7 @@ import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import java.util.Random;
 import org.pircbotx.Colors;
-        
+
 public class EightBallCommand extends Listener {
 
     @Override
@@ -21,7 +21,7 @@ public class EightBallCommand extends Listener {
         }
 
         int random = new Random().nextInt(10);
-        String reply = "";
+        String reply;
 
         switch (random) {
             case 0:

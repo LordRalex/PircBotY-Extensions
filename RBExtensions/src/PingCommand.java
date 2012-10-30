@@ -10,9 +10,6 @@ public class PingCommand extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
         String channel = event.getChannel();
         String sender = event.getSender();
         String target = null;

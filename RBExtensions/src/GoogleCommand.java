@@ -19,20 +19,15 @@ public class GoogleCommand extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
         final String channel = event.getChannel();
         final String sender = event.getSender();
         final String[] args = event.getArgs();
         BufferedReader reader = null;
         String target = channel;
-        if (target
-                == null) {
+        if (target == null) {
             target = sender;
         }
-        if (target
-                == null) {
+        if (target == null) {
             return;
         }
         String total = Utils.toString(args);
@@ -41,7 +36,6 @@ public class GoogleCommand extends Listener {
             Utils.sendMessage(target, "http://www.google.com");
             return;
         }
-
 
         try {
             String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=" + total.replace(" ", "%20");

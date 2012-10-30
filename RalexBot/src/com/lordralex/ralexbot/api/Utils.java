@@ -158,6 +158,13 @@ public final class Utils {
         return names.toArray(new String[names.size()]);
     }
 
+    public static boolean isIdentifedAs(String current, String amIHim) {
+        if (!bot.getUser(current).isIdentified()) {
+            return false;
+        }
+        return (bot.getUser(current).getLogin().equalsIgnoreCase(amIHim));
+    }
+
     private Utils() {
     }
 }

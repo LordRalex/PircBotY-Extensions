@@ -19,9 +19,6 @@ public class MCFProfileCommand extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
         final String channel = event.getChannel();
         final String sender = event.getSender();
         final String[] args = event.getArgs();

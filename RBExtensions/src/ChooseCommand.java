@@ -33,7 +33,13 @@ public class ChooseCommand extends Listener {
         } else {
             choices = total.split(" ");
         }
-        if (choices.length <= 1) {
+        boolean same = true;
+        for (int i = 0; i < choices.length - 1 && same; i++) {
+            if (!choices[i].equalsIgnoreCase(choices[i + 1])) {
+                same = false;
+            }
+        }
+        if (choices.length <= 1 || same) {
             Utils.sendMessage(target, "What kind of a choice is that?");
             return;
         }

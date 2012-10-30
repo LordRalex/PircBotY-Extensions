@@ -21,8 +21,8 @@ import java.util.logging.Logger;
 
 public class RemCommand extends Listener {
 
-    Map<String, String> remMap = new ConcurrentHashMap<String, String>();
-    List<String> dontReply = new ArrayList<String>();
+    private Map<String, String> remMap = new ConcurrentHashMap<String, String>();
+    private List<String> dontReply = new ArrayList<String>();
 
     @Override
     public void setup() {
