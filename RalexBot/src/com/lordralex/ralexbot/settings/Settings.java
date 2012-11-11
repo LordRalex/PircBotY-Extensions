@@ -15,7 +15,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 public final class Settings {
 
-    private static final Map<String, Object> settings = new ConcurrentHashMap<String, Object>();
+    private static final Map<String, Object> settings = new ConcurrentHashMap<>();
 
     public static void loadSettings() {
         File settingsFile = new File("settings", "config.yml");

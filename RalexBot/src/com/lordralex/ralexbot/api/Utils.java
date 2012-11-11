@@ -151,7 +151,7 @@ public final class Utils {
             return new String[0];
         }
         Set<User> users = bot.getUsers(bot.getChannel(channel));
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (User user : users) {
             names.add(user.getNick());
         }

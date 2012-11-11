@@ -10,14 +10,13 @@ import com.lordralex.ralexbot.api.events.PrivateMessageEvent;
 import com.lordralex.ralexbot.api.events.QuitEvent;
 import java.lang.reflect.Method;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class Listener {
 
-    public final Map<EventField, EventType> priorities = new EnumMap<EventField, EventType>(EventField.class);
+    public final Map<EventField, EventType> priorities = new EnumMap<>(EventField.class);
 
     public void setup() {
     }

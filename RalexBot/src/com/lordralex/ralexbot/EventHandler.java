@@ -20,10 +20,10 @@ import org.pircbotx.hooks.ListenerAdapter;
 
 public final class EventHandler extends ListenerAdapter {
 
-    private List<Listener> listeners = new ArrayList<Listener>();
-    private ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<Event>();
-    EventRunner runner;
-    private static final List<Character> commandChars = new ArrayList<Character>();
+    private List<Listener> listeners = new ArrayList<>();
+    private ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
+    private EventRunner runner;
+    private static final List<Character> commandChars = new ArrayList<>();
 
     static {
         commandChars.clear();
@@ -52,7 +52,7 @@ public final class EventHandler extends ListenerAdapter {
                             list.declareValues(list.getClass());
                             listeners.add(list);
                         }
-                    } catch (Exception ex) {
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                         Logger.getLogger(EventHandler.class.getName(), null).log(Level.SEVERE, "", ex);
                     }
                 }

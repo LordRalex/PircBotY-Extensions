@@ -1,7 +1,6 @@
 package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.Utils;
-import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.IOException;
 import java.util.List;
@@ -11,18 +10,21 @@ import java.util.logging.Logger;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
-import org.pircbotx.hooks.events.PrivateMessageEvent;
 
 public final class RalexBot {
 
     private static PircBotX driver;
     public static String VERSION = "0.0.2";
     private static EventHandler eventHandler;
-    private static RalexBot instance;
+    private static final RalexBot instance;
+
+    static {
+        instance = new RalexBot();
+    }
 
     public static void main(String[] args) {
         try {
-            instance = new RalexBot();
+            instance.createInstance();
             synchronized (instance) {
                 try {
                     instance.wait();
@@ -30,9 +32,7 @@ public final class RalexBot {
                     Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        } catch (IOException ex) {
-            Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IrcException ex) {
+        } catch (IOException | IrcException ex) {
             Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("Exiting bot");
@@ -40,7 +40,10 @@ public final class RalexBot {
         System.exit(0);
     }
 
-    private RalexBot() throws IOException, IrcException {
+    private RalexBot() {
+    }
+
+    private void createInstance() throws IOException, IrcException {
         Settings.loadSettings();
 
         driver = new PircBotX();
