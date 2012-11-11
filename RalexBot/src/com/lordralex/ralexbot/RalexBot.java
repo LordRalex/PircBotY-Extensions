@@ -14,9 +14,10 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class RalexBot {
 
     private static PircBotX driver;
-    public static String VERSION = "0.0.2";
+    public static String VERSION = "0.0.3";
     private static EventHandler eventHandler;
     private static final RalexBot instance;
+    private static KeyboardListener kblistener;
 
     static {
         instance = new RalexBot();
@@ -25,18 +26,20 @@ public final class RalexBot {
     public static void main(String[] args) {
         try {
             instance.createInstance();
-            synchronized (instance) {
-                try {
-                    instance.wait();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
         } catch (IOException | IrcException ex) {
             Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
         }
+        synchronized (instance) {
+            try {
+                instance.wait();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         System.out.println("Exiting bot");
         eventHandler.stopRunner();
+        kblistener.interrupt();
         System.exit(0);
     }
 
@@ -55,6 +58,7 @@ public final class RalexBot {
         }
         driver.setName(nick);
         driver.setLogin(nick);
+
         System.out.println("Nick of bot: " + driver.getNick());
 
         Utils.setUtils(driver);
@@ -73,17 +77,20 @@ public final class RalexBot {
         if (network == null || network.isEmpty()) {
             network = "irc.esper.net";
         }
-        if (port == 0) {
+        if (port == 0 || port < 0) {
             port = 6667;
         }
         try {
             driver.connect(network, port);
         } catch (NickAlreadyInUseException ex) {
             Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
-            driver.setName(driver.getNick() + "1");
+            driver.changeNick(Settings.getString("nick") + "_");
             driver.connect(network, port);
             driver.sendMessage("chanserv", "ghost " + Settings.getString("nick") + " " + Settings.getString("nick-pw"));
             driver.changeNick(Settings.getString("nick"));
+            if (!Settings.getString("nick").equalsIgnoreCase(driver.getNick())) {
+                System.err.println("Could not claim the nick " + Settings.getString("nick"));
+            }
         }
 
         String id = Settings.getString("nick-pw");
@@ -104,8 +111,8 @@ public final class RalexBot {
         System.out.println("Initial loading complete, engaging listeners");
         eventHandler.startQueue();
 
-        KeyboardListener listener = new KeyboardListener();
-        listener.start();
+        kblistener = new KeyboardListener();
+        kblistener.start();
     }
 
     private final static class KeyboardListener extends Thread {
