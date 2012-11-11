@@ -3,7 +3,6 @@ import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Utils;
-import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.JoinEvent;
 import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
@@ -15,19 +14,11 @@ import java.util.List;
 
 public class HelloBackListener extends Listener {
 
-    List<User> logins = new ArrayList<User>();
-    List<String> hellos = new ArrayList<String>();
+    List<User> logins = new ArrayList<>();
+    List<String> hellos = new ArrayList<>();
 
     @Override
     public void setup() {
-        hellos.add("hello");
-        hellos.add("hi");
-        hellos.add("o/");
-        hellos.add("greetings");
-        hellos.add("allo");
-        hellos.add("is anyone here");
-        hellos.add("anyone here");
-
         List<String> more = Settings.getStringList("greetings");
         if (more != null && !more.isEmpty()) {
             for (String string : more) {

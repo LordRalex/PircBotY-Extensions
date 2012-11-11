@@ -35,12 +35,12 @@ public class PluginCommand extends Listener {
             String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:http://dev.bukkit.org%20" + search.replace(" ", "%20");
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
-            List<String> parts = new ArrayList<String>();
+            List<String> parts = new ArrayList<>();
             String s;
             while ((s = reader.readLine()) != null) {
                 parts.add(s);
             }
-            List<String> b = new ArrayList<String>();
+            List<String> b = new ArrayList<>();
             for (String part : parts) {
                 String[] c = part.split(",");
                 b.addAll(Arrays.asList(c));

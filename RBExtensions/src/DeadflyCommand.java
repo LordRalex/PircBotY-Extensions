@@ -43,12 +43,12 @@ public class DeadflyCommand extends Listener {
             String url = args[0].replace(" ", "%20");
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
-            List<String> parts = new ArrayList<String>();
+            List<String> parts = new ArrayList<>();
             String s;
             while ((s = reader.readLine()) != null) {
                 parts.add(s);
             }
-            List<String> b = new ArrayList<String>();
+            List<String> b = new ArrayList<>();
             for (String part : parts) {
                 String[] c = part.split(",");
                 b.addAll(Arrays.asList(c));
@@ -67,7 +67,7 @@ public class DeadflyCommand extends Listener {
                     break;
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
             Utils.sendMessage(target, "There was a problem handling the link");
         } finally {

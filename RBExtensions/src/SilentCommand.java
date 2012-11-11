@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SilentCommand extends Listener {
 
-    List<String> silenced = new ArrayList<String>();
+    List<String> silenced = new ArrayList<>();
 
     @Override
     @EventType(event = EventField.Command, priority = Priority.HIGH)

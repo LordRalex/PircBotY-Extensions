@@ -21,7 +21,7 @@ public class EightBallCommand extends Listener {
         }
 
         int random = new Random().nextInt(10);
-        String reply = "";
+        String reply;
 
         switch (random) {
             case 0:

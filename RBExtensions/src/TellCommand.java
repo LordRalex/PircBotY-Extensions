@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 
 public class TellCommand extends Listener {
 
-    Map<String, Long> lastTold = new ConcurrentHashMap<String, Long>();
+    Map<String, Long> lastTold = new ConcurrentHashMap<>();
 
     @Override
     @EventType(event = EventField.Join)
@@ -184,7 +184,7 @@ public class TellCommand extends Listener {
             return new String[0];
         }
         name = name.toLowerCase();
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
         while (reader.hasNext()) {
             lines.add(reader.nextLine().trim());
@@ -197,7 +197,7 @@ public class TellCommand extends Listener {
         if (target == null || sender == null || message == null) {
             return;
         }
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         String[] old;
         try {
             old = getTells(target);

@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class AntiSpamListener extends Listener {
 
-    private final Map<String, Posts> logs = new HashMap<String, Posts>();
+    private final Map<String, Posts> logs = new HashMap<>();
     private int MAX_MESSAGES;
     private int SPAM_RATE;
     private int DUPE_RATE;
@@ -55,7 +55,7 @@ public class AntiSpamListener extends Listener {
 
     private class Posts {
 
-        List<Post> posts = new ArrayList<Post>();
+        List<Post> posts = new ArrayList<>();
 
         public boolean addPost(String lastPost) {
             posts.add(new Post(System.currentTimeMillis(), lastPost));

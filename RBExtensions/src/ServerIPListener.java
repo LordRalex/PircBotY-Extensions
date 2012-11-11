@@ -20,8 +20,8 @@ public class ServerIPListener extends Listener {
     @Override
     public void setup() {
         pingServer = new PingServerCommand();
-        triggered = new ArrayList<String>();
-        ignorePeople = new ArrayList<String>();
+        triggered = new ArrayList<>();
+        ignorePeople = new ArrayList<>();
     }
 
     @Override
@@ -44,9 +44,7 @@ public class ServerIPListener extends Listener {
         }
         String[] messageParts = message.split(" ");
         for (String part : messageParts) {
-            System.out.println("Testing " + part);
             if (isServer(part)) {
-                System.out.println("  Was an IP");
                 if (!silence) {
                     Utils.sendMessage(channel, "Please do not advertise servers here");
                     triggered.remove(sender.toLowerCase());
@@ -81,9 +79,8 @@ public class ServerIPListener extends Listener {
         if (event.getCommand().equalsIgnoreCase("ignoread")) {
             if (Utils.hasOP(event.getSender(), event.getChannel())) {
                 if (event.getArgs().length == 1) {
-                    if (ignorePeople.add(event.getArgs()[0])) {
-                        Utils.sendMessage(event.getChannel(), "He will be ignored with IPs now");
-                    }
+                    ignorePeople.add(event.getArgs()[0]);
+                    Utils.sendMessage(event.getChannel(), "He will be ignored with IPs now");
                 }
             }
         } else if (event.getCommand().equalsIgnoreCase("unignoread")) {
@@ -126,7 +123,7 @@ public class ServerIPListener extends Listener {
     }
 
     private String[] split(String message, String lookFor) {
-        List<String> parts = new ArrayList<String>();
+        List<String> parts = new ArrayList<>();
         String test = message.toString();
         while (test.contains(lookFor)) {
             int id = test.indexOf(lookFor);

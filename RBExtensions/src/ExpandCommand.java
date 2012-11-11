@@ -35,7 +35,7 @@ public class ExpandCommand extends Listener {
             }
             String finalLink = Utils.parse(args[0]);
             Utils.sendMessage(target, finalLink);
-        } catch (Exception ex) {
+        } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
             Utils.sendMessage(target, "There was a problem expanding that");
         }

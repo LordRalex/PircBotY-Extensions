@@ -21,8 +21,8 @@ import java.util.logging.Logger;
 
 public class RemCommand extends Listener {
 
-    Map<String, String> remMap = new ConcurrentHashMap<String, String>();
-    List<String> dontReply = new ArrayList<String>();
+    Map<String, String> remMap = new ConcurrentHashMap<>();
+    List<String> dontReply = new ArrayList<>();
 
     @Override
     public void setup() {
@@ -90,7 +90,7 @@ public class RemCommand extends Listener {
             if (sender == null) {
                 return;
             }
-            Map<String, String> placers = new HashMap<String, String>();
+            Map<String, String> placers = new HashMap<>();
             placers.put("User", sender);
             placers.put("Channel", channel);
             for (int i = 0; i < args.length; i++) {
@@ -170,7 +170,7 @@ public class RemCommand extends Listener {
 
     @Override
     public String[] getAliases() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("rem");
         list.add("r");
         list.add("remember");

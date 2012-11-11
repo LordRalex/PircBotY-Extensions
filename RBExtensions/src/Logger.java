@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.Level;
 
-
-
 public class Logger extends Listener {
 
     PrintStream logs;
@@ -28,7 +26,9 @@ public class Logger extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        logs.append(event.getSender() + " used " + event.getCommand() + " " + Utils.toString(event.getArgs()) + "\r");
-        logs.flush();
+        if (logs != null) {
+            logs.append(event.getSender() + " used " + event.getCommand() + " " + Utils.toString(event.getArgs()) + "\r");
+            logs.flush();
+        }
     }
 }

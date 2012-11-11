@@ -4,8 +4,18 @@ import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.settings.Settings;
+import java.util.List;
 
 public class HelpCommand extends Listener {
+
+    public String[] help;
+
+    @Override
+    public void setup() {
+        List<String> helpLines = Settings.getStringList("help-list");
+        help = helpLines.toArray(new String[0]);
+    }
 
     @Override
     @EventType(event = EventField.Command)
@@ -15,19 +25,18 @@ public class HelpCommand extends Listener {
         }
         String sender = event.getSender();
         String channel = event.getChannel();
-        String[] help = new String[]{
-            "My commands you can know about: ping, deadfly, ei, expand, google, "
-            + "gis, help, login, mcf, mcfprofile, pingserver, slots, plugin, "
-            + Utils.getNick().toLowerCase() + ", rem, siteping, "
-            + "status, tell, yaml, youtube"
-        };
+        String helpLine = "My commands you can know about: ";
+        for (String name : help) {
+            helpLine += name + ", ";
+        }
+        helpLine = helpLine.trim();
         if (channel == null) {
             channel = sender;
         }
         if (channel == null) {
             return;
         }
-        Utils.sendMessage(channel, help);
+        Utils.sendMessage(channel, helpLine);
     }
 
     @Override

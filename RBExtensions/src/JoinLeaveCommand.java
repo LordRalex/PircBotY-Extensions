@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class JoinLeaveCommand extends Listener {
 
-    private Map<String, String> channelList = new ConcurrentHashMap<String, String>();
+    private Map<String, String> channelList = new ConcurrentHashMap<>();
     private int MAX_CHANNELS;
 
     @Override

@@ -15,7 +15,7 @@ public class NickCommand extends Listener {
         }
         String sender = event.getSender(), channel = event.getChannel();
         String[] args = event.getArgs();
-        if (Utils.hasOP(sender, channel)) {
+        if (!Utils.hasOP(sender, channel)) {
             return;
         }
         String newNick;

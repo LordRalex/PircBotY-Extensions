@@ -44,7 +44,6 @@ public class LoginCommand extends Listener {
                     lastTest = true;
                 }
             } catch (UnsupportedEncodingException ex) {
-                ex.printStackTrace();
             }
         }
         if (!lastTest) {
@@ -96,19 +95,20 @@ public class LoginCommand extends Listener {
                 }
                 throw new IOException("Public key mismatch");
             }
-            DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
-            wr.writeBytes(urlParameters);
-            wr.flush();
-            wr.close();
-            InputStream is = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = rd.readLine()) != null) {
-                response.append(line);
-                response.append('\r');
+            try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
+                wr.writeBytes(urlParameters);
+                wr.flush();
             }
-            rd.close();
+            InputStream is = connection.getInputStream();
+            StringBuilder response;
+            try (BufferedReader rd = new BufferedReader(new InputStreamReader(is))) {
+                response = new StringBuilder();
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    response.append(line);
+                    response.append('\r');
+                }
+            }
             String str1 = response.toString();
             return str1;
         } catch (IOException e) {
