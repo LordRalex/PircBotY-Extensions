@@ -54,6 +54,7 @@ public final class RalexBot {
             nick = "DebugBot";
         }
         driver.setName(nick);
+        driver.setLogin(nick);
         System.out.println("Nick of bot: " + driver.getNick());
 
         Utils.setUtils(driver);
