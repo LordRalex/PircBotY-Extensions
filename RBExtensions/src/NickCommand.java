@@ -10,9 +10,12 @@ public class NickCommand extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
         String sender = event.getSender(), channel = event.getChannel();
         String[] args = event.getArgs();
-        if (!Utils.hasOP(sender, channel)) {
+        if (Utils.hasOP(sender, channel)) {
             return;
         }
         String newNick;

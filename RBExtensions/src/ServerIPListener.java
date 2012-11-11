@@ -44,7 +44,9 @@ public class ServerIPListener extends Listener {
         }
         String[] messageParts = message.split(" ");
         for (String part : messageParts) {
+            System.out.println("Testing " + part);
             if (isServer(part)) {
+                System.out.println("  Was an IP");
                 if (!silence) {
                     Utils.sendMessage(channel, "Please do not advertise servers here");
                     triggered.remove(sender.toLowerCase());
@@ -75,36 +77,32 @@ public class ServerIPListener extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (event.getArgs().length == 1) {
-            return;
-        }
-        if (!Utils.hasOP(event.getSender(), event.getChannel())) {
-            return;
-        }
-        if (event.getCommand().equalsIgnoreCase("ignoread")) {
-            if (ignorePeople.add(event.getArgs()[0])) {
-                Utils.sendMessage(event.getChannel(), "He will be ignored with IPs now");
 
+        if (event.getCommand().equalsIgnoreCase("ignoread")) {
+            if (Utils.hasOP(event.getSender(), event.getChannel())) {
+                if (event.getArgs().length == 1) {
+                    if (ignorePeople.add(event.getArgs()[0])) {
+                        Utils.sendMessage(event.getChannel(), "He will be ignored with IPs now");
+                    }
+                }
             }
         } else if (event.getCommand().equalsIgnoreCase("unignoread")) {
-            if (ignorePeople.remove(event.getArgs()[0])) {
-                Utils.sendMessage(event.getChannel(), "He will be not ignored with IPs now");
-
+            if (Utils.hasOP(event.getSender(), event.getChannel())) {
+                if (event.getArgs().length == 1) {
+                    if (ignorePeople.remove(event.getArgs()[0])) {
+                        Utils.sendMessage(event.getChannel(), "He will be not ignored with IPs now");
+                    }
+                }
             }
         } else if (event.getCommand().equalsIgnoreCase("reset")) {
-            if (triggered.remove(event.getArgs()[0])) {
-                Utils.sendMessage(event.getChannel(), "His counter was removed");
+            if (Utils.hasOP(event.getSender(), event.getChannel())) {
+                if (event.getArgs().length == 1) {
+                    if (triggered.remove(event.getArgs()[0])) {
+                        Utils.sendMessage(event.getChannel(), "His counter was removed");
+                    }
+                }
             }
         }
-    }
-
-    @Override
-    public String[] getAliases() {
-        return new String[]{
-                    "reset",
-                    "ignoread",
-                    "unignoread"
-                };
     }
 
     private boolean isServer(String testString) {

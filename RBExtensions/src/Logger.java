@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.Level;
 
+
+
 public class Logger extends Listener {
 
     PrintStream logs;

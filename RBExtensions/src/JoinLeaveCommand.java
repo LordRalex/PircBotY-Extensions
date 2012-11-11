@@ -44,8 +44,7 @@ public class JoinLeaveCommand extends Listener {
                 channel = args[0];
             }
             String getJoin = channelList.get(channel);
-            if (Utils.hasOP(sender, channel) || sender.equalsIgnoreCase(getJoin)
-                    || Utils.isIdentifedAs(sender, "Lord_Ralex")) {
+            if (Utils.hasOP(sender, channel) || sender.equalsIgnoreCase(getJoin)) {
                 channelList.remove(channel);
                 Utils.leaveChannel(channel);
             } else {

@@ -5,12 +5,8 @@ import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -24,6 +20,10 @@ public class DeadflyCommand extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
         final String sender = event.getSender();
         final String[] args = event.getArgs();
         final String channel = event.getChannel();
@@ -63,7 +63,7 @@ public class DeadflyCommand extends Listener {
                     if (!string.startsWith("https://adf.ly/")) {
                         string = "https://adf.ly/" + string;
                     }
-                    Utils.sendMessage(target, getLink(string));
+                    Utils.sendMessage(target, Utils.parse(string));
                     break;
                 }
             }
@@ -87,29 +87,5 @@ public class DeadflyCommand extends Listener {
                     "deadfly",
                     "df"
                 };
-    }
-
-    private String getLink(String u) throws IOException {
-        URL url = new URL(u);
-        HttpURLConnection newC = (HttpURLConnection) url.openConnection();
-        DataInputStream reader = new DataInputStream(newC.getInputStream());
-        List<String> lines = new ArrayList<String>();
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line.trim());
-            }
-        } catch (EOFException e) {
-            reader.close();
-        }
-
-        String result = url.toExternalForm();
-
-        for (String line : lines) {
-            if (line.startsWith("<META")) {
-                result = line.split("URL=")[1].replace("\"", "").replace(">", "");
-            }
-        }
-        return result;
     }
 }
