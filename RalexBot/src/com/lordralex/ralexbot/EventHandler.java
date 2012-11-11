@@ -113,24 +113,25 @@ public final class EventHandler extends ListenerAdapter {
 
     @Override
     public void onJoin(org.pircbotx.hooks.events.JoinEvent event) throws Exception {
-        Event nextEvt = new JoinEvent(event);
+        JoinEvent nextEvt = new JoinEvent(event);
         fireEvent(nextEvt);
     }
 
     @Override
     public void onNickChange(org.pircbotx.hooks.events.NickChangeEvent event) throws Exception {
-        super.onNickChange(event);
+        NickChangeEvent nextEvt = new NickChangeEvent(event);
+        fireEvent(nextEvt);
     }
 
     @Override
     public void onQuit(org.pircbotx.hooks.events.QuitEvent event) throws Exception {
-        Event nextEvt = new QuitEvent(event);
+        QuitEvent nextEvt = new QuitEvent(event);
         fireEvent(nextEvt);
     }
 
     @Override
     public void onPart(org.pircbotx.hooks.events.PartEvent event) throws Exception {
-        Event nextEvt = new PartEvent(event);
+        PartEvent nextEvt = new PartEvent(event);
         fireEvent(nextEvt);
     }
 
@@ -184,7 +185,11 @@ public final class EventHandler extends ListenerAdapter {
                                             listener.runEvent((MessageEvent) next);
                                             break;
                                         case Command:
-                                            if (Arrays.asList(listener.getAliases()).contains(((CommandEvent) next).getCommand().toLowerCase())) {
+
+                                            List<String> aliases = Arrays.asList(listener.getAliases());
+                                            String cmd = ((CommandEvent) next).getCommand().toLowerCase();
+                                            if (listener.getAliases().length == 0
+                                                    || aliases.contains(cmd)) {
                                                 listener.runEvent((CommandEvent) next);
                                             }
                                             break;
