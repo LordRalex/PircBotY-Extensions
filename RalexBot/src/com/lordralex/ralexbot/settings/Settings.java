@@ -76,6 +76,12 @@ public final class Settings {
         return value;
     }
 
+    /**
+     * Sets a new value for a key and saves the file.
+     *
+     * @param key Key
+     * @param newValue The new value, this can be lists
+     */
     public void set(String key, Object newValue) {
         if (key == null || key.isEmpty()) {
             throw new NullPointerException("KEY CANNOT BE NULL");
