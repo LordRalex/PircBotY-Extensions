@@ -124,7 +124,7 @@ public final class Utils {
         return line.split(" ");
     }
 
-    public static String parse(String html) throws MalformedURLException, IOException, URISyntaxException {
+    public static String resolve(String html) throws MalformedURLException, IOException, URISyntaxException {
         String url = html.replace(" ", "%20");
         URL path = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) path.openConnection();
