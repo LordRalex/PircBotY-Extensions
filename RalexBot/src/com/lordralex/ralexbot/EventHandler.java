@@ -5,17 +5,25 @@ import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.Thread.State;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.pircbotx.hooks.ListenerAdapter;
 
 public final class EventHandler extends ListenerAdapter {
@@ -32,35 +40,93 @@ public final class EventHandler extends ListenerAdapter {
 
     public EventHandler() {
         super();
+        File extensionFolder = new File("extensions");
+        File temp = new File("tempDir");
+        for (File file : temp.listFiles()) {
+            file.delete();
+        }
+        temp.delete();
+        extensionFolder.mkdirs();
+        listeners.clear();
+        for (File file : extensionFolder.listFiles()) {
+            if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
+                String className = file.getName();
+                loadClass(className);
+            } else if (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")) {
+                ZipFile zipFile = null;
+                try {
+                    zipFile = new ZipFile(file);
+                    Enumeration entries = zipFile.entries();
+                    while (entries.hasMoreElements()) {
+                        ZipEntry entry = (ZipEntry) entries.nextElement();
+                        if (entry.getName().contains("/")) {
+                            (new File(temp, entry.getName().split("/")[0])).mkdir();
+                        }
+                        if (entry.isDirectory()) {
+                            new File(temp, entry.getName()).mkdirs();
+                            continue;
+                        }
+                        copyInputStream(zipFile.getInputStream(entry),
+                                new BufferedOutputStream(new FileOutputStream(temp + File.separator + entry.getName())));
+                    }
+
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.out);
+                } finally {
+                    if (zipFile != null) {
+                        try {
+                            zipFile.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace(System.out);
+                        }
+                    }
+                }
+            }
+        }
+        for (File file : temp.listFiles()) {
+            if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
+                String className = file.getName();
+                loadClass(className);
+            }
+        }
+        runner = new EventRunner();
+        runner.setName("Event_Handler_Thread");
+    }
+
+    private void loadClass(String className) {
         try {
+            className = className.replace("tempDir" + File.separator, "").replace("extension" + File.separator, "").replace(".class", "");
             File extensionFolder = new File("extensions");
             extensionFolder.mkdirs();
             listeners.clear();
             URL[] urls = new URL[]{extensionFolder.toURI().toURL()};
             ClassLoader cl = new URLClassLoader(urls);
-            for (File file : extensionFolder.listFiles()) {
-                if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                    try {
-                        String className = file.getName();
-                        className = className.replace("extension" + File.separator, "").replace(".class", "");
-                        Class cls = cl.loadClass(className);
-                        Object obj = cls.newInstance();
-                        if (obj instanceof Listener) {
-                            Listener list = (Listener) obj;
-                            list.setup();
-                            System.out.println("  Added: " + list.getClass().getName());
-                            list.declareValues(list.getClass());
-                            listeners.add(list);
-                        }
-                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-                        Logger.getLogger(EventHandler.class.getName(), null).log(Level.SEVERE, "", ex);
-                    }
-                }
+            Class cls = cl.loadClass(className);
+            Object obj = cls.newInstance();
+            if (obj instanceof Listener) {
+                Listener list = (Listener) obj;
+                list.setup();
+                System.out.println("  Added: " + list.getClass().getName());
+                list.declareValues(list.getClass());
+                listeners.add(list);
             }
-        } catch (MalformedURLException ex) {
+        } catch (ClassNotFoundException | MalformedURLException | InstantiationException | IllegalAccessException ex) {
+            Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        runner = new EventRunner();
-        runner.setName("Event_Handler_Thread");
+    }
+
+    private void copyInputStream(InputStream in, OutputStream out) {
+        try {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = in.read(buffer)) >= 0) {
+                out.write(buffer, 0, len);
+            }
+            in.close();
+            out.close();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.out);
+        }
     }
 
     public void startQueue() {
@@ -71,7 +137,7 @@ public final class EventHandler extends ListenerAdapter {
 
     @Override
     public void onMessage(org.pircbotx.hooks.events.MessageEvent event) {
-        Event nextEvt = null;
+        Event nextEvt;
         if (isCommand(event.getMessage())) {
             nextEvt = new CommandEvent(event);
         } else {
@@ -85,7 +151,7 @@ public final class EventHandler extends ListenerAdapter {
 
     @Override
     public void onPrivateMessage(org.pircbotx.hooks.events.PrivateMessageEvent event) throws Exception {
-        Event nextEvt = null;
+        Event nextEvt;
         if (isCommand(event.getMessage())) {
             nextEvt = new CommandEvent(event);
         } else {
@@ -99,7 +165,7 @@ public final class EventHandler extends ListenerAdapter {
 
     @Override
     public void onNotice(org.pircbotx.hooks.events.NoticeEvent event) throws Exception {
-        Event nextEvt = null;
+        Event nextEvt;
         if (isCommand(event.getMessage())) {
             nextEvt = new CommandEvent(event);
         } else {
