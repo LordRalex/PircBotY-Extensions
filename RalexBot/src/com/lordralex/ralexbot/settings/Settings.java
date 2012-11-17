@@ -3,7 +3,12 @@ package com.lordralex.ralexbot.settings;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +77,8 @@ public final class Settings {
         Object val = settings.get(key);
         if (val instanceof List) {
             value = (List<String>) val;
+        } else if (val instanceof String[]) {
+            value = Arrays.asList((String[]) val);
         }
         return value;
     }
@@ -82,14 +89,14 @@ public final class Settings {
      * @param key Key
      * @param newValue The new value, this can be lists
      */
-    public void set(String key, Object newValue) {
+    public static void set(String key, Object newValue) throws IOException {
         if (key == null || key.isEmpty()) {
             throw new NullPointerException("KEY CANNOT BE NULL");
         }
         Yaml yml = new Yaml(new SafeConstructor());
         settings.put(key, newValue);
-        yml.dump(settings, new PrintWriter(System.out));
-
+        FileWriter out = new FileWriter(new File("settings", "config.yml"));
+        yml.dump(settings, out);
     }
 
     private Settings() {
