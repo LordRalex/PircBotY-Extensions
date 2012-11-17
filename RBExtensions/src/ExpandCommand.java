@@ -33,7 +33,7 @@ public class ExpandCommand extends Listener {
                 Utils.sendMessage(target, "*expand <link>");
                 return;
             }
-            String finalLink = Utils.parse(args[0]);
+            String finalLink = Utils.resolve(args[0]);
             Utils.sendMessage(target, finalLink);
         } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
