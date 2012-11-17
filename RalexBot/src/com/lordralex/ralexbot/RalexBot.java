@@ -18,6 +18,7 @@ public final class RalexBot {
     private static EventHandler eventHandler;
     private static final RalexBot instance;
     private static KeyboardListener kblistener;
+    private static Settings globalSettings;
 
     static {
         instance = new RalexBot();
@@ -47,12 +48,12 @@ public final class RalexBot {
     }
 
     private void createInstance() throws IOException, IrcException {
-        Settings.loadSettings();
+        globalSettings = Settings.loadGlobalSettings();
 
         driver = new PircBotX();
         driver.setVersion(VERSION);
         driver.setVerbose(false);
-        String nick = Settings.getString("nick");
+        String nick = globalSettings.getString("nick");
         if (nick == null || nick.isEmpty()) {
             nick = "DebugBot";
         }
@@ -71,8 +72,8 @@ public final class RalexBot {
             System.out.println("Listener hook was unable to attach to the bot");
         }
 
-        String network = Settings.getString("network");
-        int port = Settings.getInt("port");
+        String network = globalSettings.getString("network");
+        int port = globalSettings.getInt("port");
 
         if (network == null || network.isEmpty()) {
             network = "irc.esper.net";
@@ -84,22 +85,22 @@ public final class RalexBot {
             driver.connect(network, port);
         } catch (NickAlreadyInUseException ex) {
             Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
-            driver.changeNick(Settings.getString("nick") + "_");
+            driver.changeNick(globalSettings.getString("nick") + "_");
             driver.connect(network, port);
-            driver.sendMessage("chanserv", "ghost " + Settings.getString("nick") + " " + Settings.getString("nick-pw"));
-            driver.changeNick(Settings.getString("nick"));
-            if (!Settings.getString("nick").equalsIgnoreCase(driver.getNick())) {
-                System.err.println("Could not claim the nick " + Settings.getString("nick"));
+            driver.sendMessage("chanserv", "ghost " + globalSettings.getString("nick") + " " + globalSettings.getString("nick-pw"));
+            driver.changeNick(globalSettings.getString("nick"));
+            if (!globalSettings.getString("nick").equalsIgnoreCase(driver.getNick())) {
+                System.err.println("Could not claim the nick " + globalSettings.getString("nick"));
             }
         }
 
-        String id = Settings.getString("nick-pw");
+        String id = globalSettings.getString("nick-pw");
         if (id != null && !id.isEmpty()) {
             driver.sendMessage("nickserv", "identify " + id);
             System.out.println("Logging in to nickserv with " + id);
         }
 
-        List<String> channels = Settings.getStringList("channels");
+        List<String> channels = globalSettings.getStringList("channels");
         if (channels != null && !channels.isEmpty()) {
             for (String chan : channels) {
                 driver.joinChannel(chan);
