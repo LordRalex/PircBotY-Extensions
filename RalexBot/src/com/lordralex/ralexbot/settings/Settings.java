@@ -24,6 +24,9 @@ public final class Settings {
 
     public Settings(File aFileToLoad) {
         name = aFileToLoad;
+        if (settings.containsKey(name)) {
+            return;
+        }
         Map<String, Object> local = new HashMap<>();
         Yaml yml = new Yaml(new SafeConstructor());
         Iterable<Object> it = null;
