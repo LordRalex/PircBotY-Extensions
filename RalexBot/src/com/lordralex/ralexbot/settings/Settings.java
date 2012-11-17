@@ -21,6 +21,11 @@ public final class Settings {
 
     private static final Map<File, Map<String, Object>> settings = new ConcurrentHashMap<>();
     private File name;
+    private static final Settings global;
+    
+    static {
+        global = loadGlobalSettings();
+    }
 
     public Settings(File aFileToLoad) {
         name = aFileToLoad;
@@ -52,6 +57,10 @@ public final class Settings {
     public static Settings loadGlobalSettings() {
         File settingsFile = new File("settings", "config.yml");
         return new Settings(settingsFile);
+    }
+    
+    public static Settings getGlobalSettings() {
+        return (global == null ? loadGlobalSettings() : global);
     }
 
     public String getString(String key) {
