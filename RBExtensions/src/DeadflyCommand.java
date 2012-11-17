@@ -63,7 +63,7 @@ public class DeadflyCommand extends Listener {
                     if (!string.startsWith("https://adf.ly/")) {
                         string = "https://adf.ly/" + string;
                     }
-                    Utils.sendMessage(target, Utils.parse(string));
+                    Utils.sendMessage(target, Utils.resolve(string));
                     break;
                 }
             }
