@@ -3,6 +3,7 @@ package com.lordralex.ralexbot.settings;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,16 @@ public final class Settings {
             value = (List<String>) val;
         }
         return value;
+    }
+
+    public void set(String key, Object newValue) {
+        if (key == null || key.isEmpty()) {
+            throw new NullPointerException("KEY CANNOT BE NULL");
+        }
+        Yaml yml = new Yaml(new SafeConstructor());
+        settings.put(key, newValue);
+        yml.dump(settings, new PrintWriter(System.out));
+
     }
 
     private Settings() {
