@@ -9,17 +9,20 @@ import com.lordralex.ralexbot.api.events.NickChangeEvent;
 import com.lordralex.ralexbot.api.events.PartEvent;
 import com.lordralex.ralexbot.api.events.QuitEvent;
 import com.lordralex.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HelloBackListener extends Listener {
 
-    List<User> logins = new ArrayList<>();
-    List<String> hellos = new ArrayList<>();
+    private List<User> logins = new ArrayList<>();
+    private List<String> hellos = new ArrayList<>();
+    private Settings settings;
 
     @Override
     public void setup() {
-        List<String> more = Settings.getStringList("greetings");
+        settings = new Settings(new File("settings", "config.yml"));
+        List<String> more = settings.getStringList("greetings");
         if (more != null && !more.isEmpty()) {
             for (String string : more) {
                 hellos.add(string.toLowerCase());

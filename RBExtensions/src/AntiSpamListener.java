@@ -6,6 +6,7 @@ import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,12 +18,14 @@ public class AntiSpamListener extends Listener {
     private int MAX_MESSAGES;
     private int SPAM_RATE;
     private int DUPE_RATE;
+    private Settings settings;
 
     @Override
     public void setup() {
-        MAX_MESSAGES = Settings.getInt("spam-message");
-        SPAM_RATE = Settings.getInt("spam-time");
-        DUPE_RATE = Settings.getInt("spam-dupe");
+        settings = new Settings(new File("settings", "config.yml"));
+        MAX_MESSAGES = settings.getInt("spam-message");
+        SPAM_RATE = settings.getInt("spam-time");
+        DUPE_RATE = settings.getInt("spam-dupe");
     }
 
     @Override

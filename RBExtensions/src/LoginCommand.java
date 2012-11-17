@@ -9,6 +9,7 @@ import com.lordralex.ralexbot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,8 +23,14 @@ import org.pircbotx.Colors;
 
 public class LoginCommand extends Listener {
 
-    boolean useCache = false;
-    boolean lastTest = true;
+    private boolean useCache = false;
+    private boolean lastTest = true;
+    private Settings settings;
+
+    @Override
+    public void setup() {
+        settings = new Settings(new File("settings", "config.yml"));
+    }
 
     @Override
     @EventType(event = EventField.Command)
@@ -31,8 +38,8 @@ public class LoginCommand extends Listener {
         final String channel = event.getChannel();
         final String sender = event.getSender();
         if (!useCache) {
-            String userName = Settings.getString("mcnick");
-            String password = Settings.getString("mcpass");
+            String userName = settings.getString("mcnick");
+            String password = settings.getString("mcpass");
             try {
                 String parameters;
                 parameters = "user=" + URLEncoder.encode(userName, "UTF-8") + "&password=" + URLEncoder.encode(password, "UTF-8") + "&version=" + 13;

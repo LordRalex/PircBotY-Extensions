@@ -6,6 +6,7 @@ import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
 import com.lordralex.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,10 +14,12 @@ public class JoinLeaveCommand extends Listener {
 
     private Map<String, String> channelList = new ConcurrentHashMap<>();
     private int MAX_CHANNELS;
+    private Settings settings;
 
     @Override
     public void setup() {
-        MAX_CHANNELS = Settings.getInt("max-channels");
+        settings = new Settings(new File("settings", "config.yml"));
+        MAX_CHANNELS = settings.getInt("max-channels");
     }
 
     @Override

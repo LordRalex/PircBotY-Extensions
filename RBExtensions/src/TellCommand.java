@@ -23,7 +23,13 @@ import java.util.logging.Logger;
 
 public class TellCommand extends Listener {
 
-    Map<String, Long> lastTold = new ConcurrentHashMap<>();
+    private Map<String, Long> lastTold = new ConcurrentHashMap<>();
+    private Settings settings;
+
+    @Override
+    public void setup() {
+        settings = new Settings(new File("settings", "config.yml"));
+    }
 
     @Override
     @EventType(event = EventField.Join)
@@ -38,7 +44,7 @@ public class TellCommand extends Listener {
         }
         if (tells.length > 0) {
             Long timeAgo = lastTold.get(event.getSender());
-            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > Settings.getInt("refresh-minutes") * 1000 * 60) {
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
                 lastTold.put(event.getSender(), System.currentTimeMillis());
                 Utils.sendNotice(sender, "You have messages waiting for you, *st will show you them");
             }
@@ -60,7 +66,7 @@ public class TellCommand extends Listener {
             lastTold.put(event.getNewNick(), timeAgo);
         }
         if (tells.length > 0) {
-            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > Settings.getInt("refresh-minutes") * 1000 * 60) {
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
                 lastTold.put(event.getNewNick(), System.currentTimeMillis());
                 Utils.sendNotice(sender, "You have messages waiting for you, *st will show you them");
             }
@@ -82,7 +88,7 @@ public class TellCommand extends Listener {
         }
         if (tells.length > 0) {
             Long timeAgo = lastTold.get(event.getSender());
-            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > Settings.getInt("refresh-minutes") * 1000 * 60) {
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
                 lastTold.put(event.getSender(), System.currentTimeMillis());
                 Utils.sendNotice(sender, "You have messages waiting for you, *st will show you them");
             }

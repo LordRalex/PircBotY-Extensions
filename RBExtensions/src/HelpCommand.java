@@ -5,15 +5,18 @@ import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.List;
 
 public class HelpCommand extends Listener {
 
-    public String[] help;
+    private String[] help;
+    private Settings settings;
 
     @Override
     public void setup() {
-        List<String> helpLines = Settings.getStringList("help-list");
+        settings = new Settings(new File("settings", "config.yml"));
+        List<String> helpLines = settings.getStringList("help-list");
         help = helpLines.toArray(new String[0]);
     }
 
