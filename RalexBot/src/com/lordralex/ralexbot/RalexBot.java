@@ -10,15 +10,19 @@ import java.util.logging.Logger;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
+import org.pircbotx.hooks.Event;
+import org.pircbotx.hooks.events.PrivateMessageEvent;
 
-public final class RalexBot {
+public final class RalexBot extends Thread {
 
     private static PircBotX driver;
-    public static String VERSION = "0.0.3";
+    public static String VERSION = "0.0.4";
     private static EventHandler eventHandler;
     private static final RalexBot instance;
     private static KeyboardListener kblistener;
     private static Settings globalSettings;
+    private static int exitCode = 0;
+    private static KeepAliveThread kaThread;
 
     static {
         instance = new RalexBot();
@@ -33,15 +37,27 @@ public final class RalexBot {
         synchronized (instance) {
             try {
                 instance.wait();
+                exitCode = 0;
             } catch (InterruptedException ex) {
                 Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
+                exitCode = 1;
             }
         }
 
-        System.out.println("Exiting bot");
+        switch (exitCode) {
+            case 0:
+                System.out.println("Exiting bot");
+            case 1:
+                System.out.println("Bot returned exit code 1, restarting");
+        }
         eventHandler.stopRunner();
         kblistener.interrupt();
-        System.exit(0);
+
+        if (exitCode == 0) {
+            System.exit(0);
+        } else if (exitCode == 1) {
+            main(args);
+        }
     }
 
     private RalexBot() {
@@ -112,8 +128,18 @@ public final class RalexBot {
         System.out.println("Initial loading complete, engaging listeners");
         eventHandler.startQueue();
 
+
+        System.out.println("Starting keyboard listener");
         kblistener = new KeyboardListener();
         kblistener.start();
+
+        int pingTime = globalSettings.getInt("ping-time");
+        if (pingTime == 0) {
+            pingTime = 120;
+        }
+        System.out.println("Starting keep alive thread, pinging every " + pingTime + " seconds");
+        kaThread = new KeepAliveThread(pingTime);
+        kaThread.start();
     }
 
     private final static class KeyboardListener extends Thread {
@@ -141,4 +167,69 @@ public final class RalexBot {
             System.out.println("Ending keyboard listener");
         }
     }
+
+    private static final class KeepAliveThread extends Thread {
+
+        int time = 120;
+
+        public KeepAliveThread(int value) {
+            time = value;
+        }
+
+        @Override
+        public void run() {
+            boolean stop = false;
+            while (driver.isConnected() && !stop) {
+                synchronized (this) {
+                    try {
+                        wait(time * 1000);
+                    } catch (InterruptedException ex) {
+                        stop = true;
+                    }
+                }
+                driver.sendRawLine("PING");
+                try {
+                    PingThread pinger = new PingThread(this);
+                    boolean wasEvent = false;
+                    while (wasEvent) {
+                        Event evt = driver.waitFor(Event.class);
+                        if (evt instanceof PrivateMessageEvent) {
+                        } else {
+                            eventHandler.fireEvent(evt);
+                        }
+                    }
+                    pinger.interrupt();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if (!driver.isConnected()) {
+                    instance.interrupt();
+                }
+            }
+        }
+    }
+
+    private static class PingThread extends Thread {
+
+        Thread parentThread;
+
+        public PingThread(Thread parent) {
+            parentThread = parent;
+        }
+
+        @Override
+        public void run() {
+            synchronized (this) {
+                try {
+                    wait(30 * 1000);
+                    System.out.println("Time expired, killing parent " + parentThread.getName());
+                    parentThread.interrupt();
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
+    }
 }
+
+
+

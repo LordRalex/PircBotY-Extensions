@@ -42,16 +42,30 @@ public final class EventHandler extends ListenerAdapter {
         super();
         File extensionFolder = new File("extensions");
         File temp = new File("tempDir");
-        for (File file : temp.listFiles()) {
-            file.delete();
+        if (temp != null && temp.listFiles() != null) {
+            for (File file : temp.listFiles()) {
+                if (file != null) {
+                    file.delete();
+                }
+            }
         }
         temp.delete();
         extensionFolder.mkdirs();
         listeners.clear();
+        URL[] urls = new URL[0];
+        try {
+            urls = new URL[]{
+                extensionFolder.toURI().toURL(),
+                temp.toURI().toURL()
+            };
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        ClassLoader cl = new URLClassLoader(urls);
         for (File file : extensionFolder.listFiles()) {
             if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
                 String className = file.getName();
-                loadClass(className);
+                loadClass(className, cl);
             } else if (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")) {
                 ZipFile zipFile = null;
                 try {
@@ -86,21 +100,16 @@ public final class EventHandler extends ListenerAdapter {
         for (File file : temp.listFiles()) {
             if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
                 String className = file.getName();
-                loadClass(className);
+                loadClass(className, cl);
             }
         }
         runner = new EventRunner();
         runner.setName("Event_Handler_Thread");
     }
 
-    private void loadClass(String className) {
+    private void loadClass(String className, ClassLoader cl) {
         try {
             className = className.replace("tempDir" + File.separator, "").replace("extension" + File.separator, "").replace(".class", "");
-            File extensionFolder = new File("extensions");
-            extensionFolder.mkdirs();
-            listeners.clear();
-            URL[] urls = new URL[]{extensionFolder.toURI().toURL()};
-            ClassLoader cl = new URLClassLoader(urls);
             Class cls = cl.loadClass(className);
             Object obj = cls.newInstance();
             if (obj instanceof Listener) {
@@ -110,7 +119,7 @@ public final class EventHandler extends ListenerAdapter {
                 list.declareValues(list.getClass());
                 listeners.add(list);
             }
-        } catch (ClassNotFoundException | MalformedURLException | InstantiationException | IllegalAccessException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
             Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -208,6 +217,10 @@ public final class EventHandler extends ListenerAdapter {
     public void fireEvent(final Event event) {
         queue.add(event);
         runner.ping();
+    }
+    
+    public void fireEvent(final org.pircbotx.hooks.Event event) {
+        
     }
 
     public void stopRunner() {
