@@ -2,16 +2,15 @@ package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.settings.Settings;
+import com.lordralex.ralexbot.threads.KeepAliveThread;
+import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.IOException;
 import java.util.List;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
-import org.pircbotx.hooks.Event;
-import org.pircbotx.hooks.events.PrivateMessageEvent;
 
 public final class RalexBot extends Thread {
 
@@ -130,7 +129,7 @@ public final class RalexBot extends Thread {
 
 
         System.out.println("Starting keyboard listener");
-        kblistener = new KeyboardListener();
+        kblistener = new KeyboardListener(instance);
         kblistener.start();
 
         int pingTime = globalSettings.getInt("ping-time");
@@ -138,98 +137,11 @@ public final class RalexBot extends Thread {
             pingTime = 120;
         }
         System.out.println("Starting keep alive thread, pinging every " + pingTime + " seconds");
-        kaThread = new KeepAliveThread(pingTime);
+        kaThread = new KeepAliveThread(this, driver, pingTime);
         kaThread.start();
     }
-
-    private final static class KeyboardListener extends Thread {
-
-        Scanner kb;
-
-        public KeyboardListener() {
-            setName("Keyboard_Listener_Thread");
-            kb = new Scanner(System.in);
-        }
-
-        @Override
-        public void run() {
-            String line;
-            boolean run = true;
-            while (run) {
-                line = kb.nextLine();
-                if (line == null || line.trim().equalsIgnoreCase("stop")) {
-                    run = false;
-                }
-            }
-            synchronized (instance) {
-                instance.notify();
-            }
-            System.out.println("Ending keyboard listener");
-        }
-    }
-
-    private static final class KeepAliveThread extends Thread {
-
-        int time = 120;
-
-        public KeepAliveThread(int value) {
-            time = value;
-        }
-
-        @Override
-        public void run() {
-            boolean stop = false;
-            while (driver.isConnected() && !stop) {
-                synchronized (this) {
-                    try {
-                        wait(time * 1000);
-                    } catch (InterruptedException ex) {
-                        stop = true;
-                    }
-                }
-                driver.sendRawLine("PING");
-                try {
-                    PingThread pinger = new PingThread(this);
-                    boolean wasEvent = false;
-                    while (wasEvent) {
-                        Event evt = driver.waitFor(Event.class);
-                        if (evt instanceof PrivateMessageEvent) {
-                        } else {
-                            eventHandler.fireEvent(evt);
-                        }
-                    }
-                    pinger.interrupt();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                if (!driver.isConnected()) {
-                    instance.interrupt();
-                }
-            }
-        }
-    }
-
-    private static class PingThread extends Thread {
-
-        Thread parentThread;
-
-        public PingThread(Thread parent) {
-            parentThread = parent;
-        }
-
-        @Override
-        public void run() {
-            synchronized (this) {
-                try {
-                    wait(30 * 1000);
-                    System.out.println("Time expired, killing parent " + parentThread.getName());
-                    parentThread.interrupt();
-                } catch (InterruptedException ex) {
-                }
-            }
-        }
+    
+    public EventHandler getEventHandler() {
+        return eventHandler;
     }
 }
-
-
-
