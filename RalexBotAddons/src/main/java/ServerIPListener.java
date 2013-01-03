@@ -12,31 +12,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServerIPListener extends Listener {
-
+    
     protected PingServerCommand pingServer;
     protected List<String> triggered;
     protected List<String> ignorePeople;
-
+    
     @Override
     public void setup() {
         pingServer = new PingServerCommand();
         triggered = new ArrayList<>();
         ignorePeople = new ArrayList<>();
     }
-
+    
     @Override
     @EventType(event = EventField.Message, priority = Priority.HIGH)
     public void runEvent(MessageEvent event) {
         String channel = event.getChannel();
         String sender = event.getSender();
         String message = event.getMessage();
-
+        
         boolean silence = false;
-
-        if (ignorePeople.contains(sender.toLowerCase())) {
+        
+        if (ignorePeople.contains(sender.toLowerCase()) || ignorePeople.contains(channel.toLowerCase())) {
             return;
         }
-
+        
         if (triggered.contains(sender.toLowerCase())) {
             silence = true;
         } else if (triggered.contains(event.getHostname().toLowerCase())) {
@@ -59,23 +59,23 @@ public class ServerIPListener extends Listener {
             }
         }
     }
-
+    
     @Override
     @EventType(event = EventField.Part)
     public void runEvent(PartEvent event) {
         triggered.remove(event.getSender().toLowerCase());
     }
-
+    
     @Override
     @EventType(event = EventField.Quit)
     public void runEvent(QuitEvent event) {
         triggered.remove(event.getSender().toLowerCase());
     }
-
+    
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-
+        
         if (event.getCommand().equalsIgnoreCase("ignoread")) {
             if (Utils.hasOP(event.getSender(), event.getChannel())) {
                 if (event.getArgs().length == 1) {
@@ -101,10 +101,10 @@ public class ServerIPListener extends Listener {
             }
         }
     }
-
+    
     private boolean isServer(String testString) {
         String test = testString.toLowerCase().trim();
-
+        
         String[] parts = split(test, ".");
         if (parts.length == 4) {
             if (parts[3].contains(":")) {
@@ -121,7 +121,7 @@ public class ServerIPListener extends Listener {
         }
         return false;
     }
-
+    
     private String[] split(String message, String lookFor) {
         List<String> parts = new ArrayList<>();
         String test = message.toString();
@@ -134,7 +134,7 @@ public class ServerIPListener extends Listener {
             test = test.substring(id + 1);
         }
         parts.add(test);
-
+        
         return parts.toArray(new String[0]);
     }
 }
