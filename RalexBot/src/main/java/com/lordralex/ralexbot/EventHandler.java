@@ -97,10 +97,12 @@ public final class EventHandler extends ListenerAdapter {
                 }
             }
         }
-        for (File file : temp.listFiles()) {
-            if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                String className = file.getName();
-                loadClass(className, cl);
+        if (!(temp == null || temp.listFiles() == null)) {
+            for (File file : temp.listFiles()) {
+                if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
+                    String className = file.getName();
+                    loadClass(className, cl);
+                }
             }
         }
         runner = new EventRunner();
@@ -119,7 +121,7 @@ public final class EventHandler extends ListenerAdapter {
                 list.declareValues(list.getClass());
                 listeners.add(list);
             }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -218,9 +220,8 @@ public final class EventHandler extends ListenerAdapter {
         queue.add(event);
         runner.ping();
     }
-    
+
     public void fireEvent(final org.pircbotx.hooks.Event event) {
-        
     }
 
     public void stopRunner() {

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jline.console.ConsoleReader;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
@@ -63,6 +64,7 @@ public final class RalexBot extends Thread {
     }
 
     private void createInstance() throws IOException, IrcException {
+        kblistener = new KeyboardListener(instance);
         globalSettings = Settings.loadGlobalSettings();
 
         driver = new PircBotX();
@@ -129,7 +131,6 @@ public final class RalexBot extends Thread {
 
 
         System.out.println("Starting keyboard listener");
-        kblistener = new KeyboardListener(instance);
         kblistener.start();
 
         int pingTime = globalSettings.getInt("ping-time");
@@ -140,8 +141,12 @@ public final class RalexBot extends Thread {
         kaThread = new KeepAliveThread(this, driver, pingTime);
         kaThread.start();
     }
-    
+
     public EventHandler getEventHandler() {
         return eventHandler;
+    }
+
+    public ConsoleReader getConsole() {
+        return kblistener.getJLine();
     }
 }

@@ -19,7 +19,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 public final class Settings {
 
-    private static final Map<File, Map<String, Object>> settings = new ConcurrentHashMap<>();
+    private static final Map<File, SettingsMap<String, Object>> settings = new ConcurrentHashMap<>();
     private File name;
     private static final Settings global;
 
@@ -51,7 +51,7 @@ public final class Settings {
                 }
             }
         }
-        settings.put(name, local);
+        settings.put(name, new SettingsMap<>(local));
     }
 
     public static Settings loadGlobalSettings() {
