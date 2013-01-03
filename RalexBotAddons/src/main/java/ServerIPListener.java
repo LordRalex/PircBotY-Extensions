@@ -79,14 +79,14 @@ public class ServerIPListener extends Listener {
         if (event.getCommand().equalsIgnoreCase("ignoread")) {
             if (Utils.hasOP(event.getSender(), event.getChannel())) {
                 if (event.getArgs().length == 1) {
-                    ignorePeople.add(event.getArgs()[0]);
+                    ignorePeople.add(event.getArgs()[0].toLowerCase());
                     Utils.sendMessage(event.getChannel(), "He will be ignored with IPs now");
                 }
             }
         } else if (event.getCommand().equalsIgnoreCase("unignoread")) {
             if (Utils.hasOP(event.getSender(), event.getChannel())) {
                 if (event.getArgs().length == 1) {
-                    if (ignorePeople.remove(event.getArgs()[0])) {
+                    if (ignorePeople.remove(event.getArgs()[0].toLowerCase())) {
                         Utils.sendMessage(event.getChannel(), "He will be not ignored with IPs now");
                     }
                 }
@@ -94,7 +94,7 @@ public class ServerIPListener extends Listener {
         } else if (event.getCommand().equalsIgnoreCase("reset")) {
             if (Utils.hasOP(event.getSender(), event.getChannel())) {
                 if (event.getArgs().length == 1) {
-                    if (triggered.remove(event.getArgs()[0])) {
+                    if (triggered.remove(event.getArgs()[0].toLowerCase())) {
                         Utils.sendMessage(event.getChannel(), "His counter was removed");
                     }
                 }
