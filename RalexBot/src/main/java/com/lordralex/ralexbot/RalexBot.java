@@ -1,6 +1,7 @@
 package com.lordralex.ralexbot;
 
-import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.Utilities;
+import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.settings.Settings;
 import com.lordralex.ralexbot.threads.KeepAliveThread;
 import com.lordralex.ralexbot.threads.KeyboardListener;
@@ -16,7 +17,7 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class RalexBot extends Thread {
 
     private static PircBotX driver;
-    public static String VERSION = "0.0.4";
+    public static String VERSION = "0.0.5";
     private static EventHandler eventHandler;
     private static final RalexBot instance;
     private static KeyboardListener kblistener;
@@ -60,9 +61,6 @@ public final class RalexBot extends Thread {
         }
     }
 
-    private RalexBot() {
-    }
-
     private void createInstance() throws IOException, IrcException {
         kblistener = new KeyboardListener(instance);
         globalSettings = Settings.loadGlobalSettings();
@@ -79,7 +77,7 @@ public final class RalexBot extends Thread {
 
         System.out.println("Nick of bot: " + driver.getNick());
 
-        Utils.setUtils(driver);
+        Utilities.setUtils(driver);
 
         eventHandler = new EventHandler();
         boolean sucess = driver.getListenerManager().addListener(eventHandler);
@@ -111,19 +109,21 @@ public final class RalexBot extends Thread {
             }
         }
 
+        BotUser bot = new BotUser();
+
         String id = globalSettings.getString("nick-pw");
         if (id != null && !id.isEmpty()) {
-            driver.sendMessage("nickserv", "identify " + id);
+            bot.sendMessage("nickserv", "identify " + id);
             System.out.println("Logging in to nickserv with " + id);
         }
 
         List<String> channels = globalSettings.getStringList("channels");
         if (channels != null && !channels.isEmpty()) {
             for (String chan : channels) {
-                driver.joinChannel(chan);
+                bot.joinChannel(chan);
             }
         } else {
-            driver.joinChannel("#ae97");
+            bot.joinChannel("#ae97");
         }
 
         System.out.println("Initial loading complete, engaging listeners");
@@ -148,5 +148,8 @@ public final class RalexBot extends Thread {
 
     public ConsoleReader getConsole() {
         return kblistener.getJLine();
+    }
+
+    private RalexBot() {
     }
 }

@@ -5,7 +5,8 @@
 package com.lordralex.ralexbot.threads;
 
 import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
+import com.lordralex.ralexbot.api.users.BotUser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,11 +21,13 @@ public final class KeyboardListener extends Thread {
 
     ConsoleReader kb;
     final RalexBot instance;
+    final BotUser bot;
 
-    public KeyboardListener(RalexBot a) throws IOException {
+    public KeyboardListener(RalexBot a) throws IOException, NickNotOnlineException {
         setName("Keyboard_Listener_Thread");
         kb = new ConsoleReader();
         instance = a;
+        bot = new BotUser();
     }
 
     @Override
@@ -47,7 +50,7 @@ public final class KeyboardListener extends Thread {
                             } else if (cmd.equalsIgnoreCase("stop")) {
                                 run = false;
                             } else if (cmd.equalsIgnoreCase("join")) {
-                                Utils.joinChannel(line.split(" ")[1]);
+                                bot.joinChannel(line.split(" ")[1]);
                             } else if (cmd.equalsIgnoreCase("kick")) {
                                 List<String> args = new ArrayList<>();
                                 String[] parts = line.split(" ");
@@ -67,18 +70,18 @@ public final class KeyboardListener extends Thread {
                                     }
                                     reason = reason.trim();
                                 } else {
-                                    reason = Utils.getNick() + " has kicked " + target + " from the channel";
+                                    reason = bot.getNick() + " has kicked " + target + " from the channel";
                                 }
-                                if (Utils.hasOP(Utils.getNick(), chan)) {
-                                    Utils.kick(target, chan, reason);
+                                if (bot.hasOP(chan)) {
+                                    bot.kick(target, chan, reason);
                                 } else {
-                                    Utils.sendMessage("chanserv", "kick " + chan + " " + target + " " + reason);
+                                    bot.sendMessage("chanserv", "kick " + chan + " " + target + " " + reason);
                                 }
                             }
                         } else {
                             if (currentChan == null || currentChan.isEmpty()) {
                             } else {
-                                Utils.sendMessage(currentChan, line);
+                                bot.sendMessage(currentChan, line);
                             }
                         }
                     }
@@ -94,7 +97,7 @@ public final class KeyboardListener extends Thread {
         kb.shutdown();
         System.out.println("Ending keyboard listener");
     }
-    
+
     public ConsoleReader getJLine() {
         return kb;
     }
