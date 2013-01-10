@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lordralex.ralexbot.api.users;
 
 import com.lordralex.ralexbot.api.Utilities;
-import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
 import com.lordralex.ralexbot.api.sender.Sender;
 import org.pircbotx.Channel;
 

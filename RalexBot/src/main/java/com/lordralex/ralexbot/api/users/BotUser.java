@@ -1,12 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.lordralex.ralexbot.api.users;
-
-import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -14,17 +6,12 @@ import java.util.logging.Logger;
  */
 public class BotUser extends User {
 
-    public BotUser() throws NickNotOnlineException {
+    public BotUser() {
         super(bot.getNick());
     }
 
     public static BotUser getBotUser() {
-        try {
-            return new BotUser();
-        } catch (NickNotOnlineException ex) {
-            Logger.getLogger(BotUser.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return new BotUser();
     }
 
     public void setNick(String newNick) {
