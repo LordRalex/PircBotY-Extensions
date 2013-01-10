@@ -1,24 +1,27 @@
 package com.lordralex.ralexbot.api.events;
 
+import com.lordralex.ralexbot.api.channels.Channel;
+import com.lordralex.ralexbot.api.users.User;
+
 public class PartEvent extends Event {
 
-    private final String sender, channel, hostname;
+    private final User sender;
+    private final Channel channel;
 
     public PartEvent(org.pircbotx.hooks.events.PartEvent event) {
-        sender = event.getUser().getNick();
-        hostname = event.getUser().getHostmask();
-        channel = event.getChannel().getName();
+        sender = User.getUser(event.getUser().getNick());
+        channel = Channel.getChannel(event.getChannel().getName());
     }
 
-    public String getChannel() {
+    public Channel getChannel() {
         return channel;
     }
 
-    public String getSender() {
+    public User getSender() {
         return sender;
     }
 
     public String getHostname() {
-        return hostname;
+        return sender.getIP();
     }
 }

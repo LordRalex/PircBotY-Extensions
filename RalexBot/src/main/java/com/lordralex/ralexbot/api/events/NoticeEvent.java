@@ -1,16 +1,18 @@
 package com.lordralex.ralexbot.api.events;
 
+import com.lordralex.ralexbot.api.users.User;
+
 public class NoticeEvent extends Event {
 
-    private final String sender, hostname, message;
+    private final String message;
+    private final User sender;
 
     public NoticeEvent(org.pircbotx.hooks.events.NoticeEvent event) {
-        sender = event.getUser().getNick();
-        hostname = event.getUser().getHostmask();
+        sender = User.getUser(event.getUser().getNick());
         message = event.getMessage();
     }
 
-    public String getSender() {
+    public User getSender() {
         return sender;
     }
 
@@ -19,6 +21,6 @@ public class NoticeEvent extends Event {
     }
 
     public String getHostname() {
-        return hostname;
+        return sender.getIP();
     }
 }

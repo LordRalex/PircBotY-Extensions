@@ -5,6 +5,8 @@
 package com.lordralex.ralexbot.api.users;
 
 import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -16,8 +18,13 @@ public class BotUser extends User {
         super(bot.getNick());
     }
 
-    public BotUser getBotUser() throws NickNotOnlineException {
-        return new BotUser();
+    public static BotUser getBotUser() {
+        try {
+            return new BotUser();
+        } catch (NickNotOnlineException ex) {
+            Logger.getLogger(BotUser.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     public void setNick(String newNick) {

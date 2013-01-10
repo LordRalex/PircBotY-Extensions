@@ -17,14 +17,11 @@ public class User extends Utilities implements Sender {
 
     protected org.pircbotx.User pircbotxUser;
 
-    protected User(String nick) throws NickNotOnlineException {
+    protected User(String nick) {
         pircbotxUser = bot.getUser(nick);
-        if (pircbotxUser == null) {
-            throw new NickNotOnlineException();
-        }
     }
 
-    public static User getUser(String nick) throws NickNotOnlineException {
+    public static User getUser(String nick) {
         return new User(nick);
     }
 

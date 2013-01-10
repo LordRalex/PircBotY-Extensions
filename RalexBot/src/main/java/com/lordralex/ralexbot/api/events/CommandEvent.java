@@ -1,15 +1,21 @@
 package com.lordralex.ralexbot.api.events;
 
+import com.lordralex.ralexbot.api.channels.Channel;
+import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
+import com.lordralex.ralexbot.api.users.User;
+
 public final class CommandEvent extends Event {
 
-    private final String command, sender, channel, hostName;
+    private final String command, hostName;
+    private final User sender;
+    private final Channel channel;
     private final String[] args;
 
     public CommandEvent(org.pircbotx.hooks.events.MessageEvent event) {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
-        sender = event.getUser().getNick();
-        channel = event.getChannel().getName();
+        sender = User.getUser(event.getUser().getNick());
+        channel = Channel.getChannel(event.getChannel().getName());
         hostName = event.getUser().getHostmask();
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
@@ -20,7 +26,7 @@ public final class CommandEvent extends Event {
     public CommandEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
-        sender = event.getUser().getNick();
+        sender = User.getUser(event.getUser().getNick());
         channel = null;
         hostName = event.getUser().getHostmask();
         args = new String[temp.length - 1];
@@ -29,10 +35,10 @@ public final class CommandEvent extends Event {
         }
     }
 
-    public CommandEvent(org.pircbotx.hooks.events.NoticeEvent event) {
+    public CommandEvent(org.pircbotx.hooks.events.NoticeEvent event) throws NickNotOnlineException {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
-        sender = event.getUser().getNick();
+        sender = User.getUser(event.getUser().getNick());
         channel = null;
         hostName = event.getUser().getHostmask();
         args = new String[temp.length - 1];
@@ -45,19 +51,15 @@ public final class CommandEvent extends Event {
         return command;
     }
 
-    public String getSender() {
+    public User getSender() {
         return sender;
     }
 
-    public String getChannel() {
+    public Channel getChannel() {
         return channel;
     }
 
     public String[] getArgs() {
         return args;
-    }
-
-    public String getHost() {
-        return hostName;
     }
 }
