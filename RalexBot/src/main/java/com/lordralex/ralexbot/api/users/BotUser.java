@@ -18,10 +18,6 @@ public class BotUser extends User {
         bot.changeNick(newNick);
     }
 
-    public String getNick() {
-        return bot.getNick();
-    }
-
     public void kick(String nick, String channel) {
         if (bot.getUserBot().isIrcop()) {
             bot.kick(bot.getChannel(channel), bot.getUser(nick));

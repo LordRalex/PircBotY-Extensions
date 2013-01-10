@@ -68,4 +68,8 @@ public class User extends Utilities implements Sender {
     public String getIP() {
         return pircbotxUser.getHostmask();
     }
+
+    public String getNick() {
+        return pircbotxUser.getNick();
+    }
 }

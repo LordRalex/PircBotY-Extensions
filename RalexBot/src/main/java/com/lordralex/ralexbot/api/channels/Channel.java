@@ -70,6 +70,10 @@ public class Channel extends Utilities implements Sender {
         return pircbotxChannel.hasVoice(bot.getUser(name));
     }
 
+    public String getName() {
+        return pircbotxChannel.getName();
+    }
+
     public static Channel getChannel(String channel) {
         return new Channel(channel);
     }
