@@ -1,14 +1,15 @@
 package com.lordralex.ralexbot.api.events;
 
+import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.users.User;
 
 public class JoinEvent extends Event {
 
-    private final String channel;
+    private final Channel channel;
     private final User sender;
 
     public JoinEvent(org.pircbotx.hooks.events.JoinEvent event) {
-        channel = event.getChannel().getName();
+        channel = Channel.getChannel(event.getChannel().getName());
         sender = User.getUser(event.getUser().getNick());
     }
 
@@ -16,7 +17,7 @@ public class JoinEvent extends Event {
         return sender;
     }
 
-    public String getChannel() {
+    public Channel getChannel() {
         return channel;
     }
 
