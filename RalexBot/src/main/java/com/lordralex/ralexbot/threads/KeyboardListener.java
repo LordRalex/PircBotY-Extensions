@@ -17,17 +17,17 @@ public final class KeyboardListener extends Thread {
 
     ConsoleReader kb;
     final RalexBot instance;
-    final BotUser bot;
+    BotUser bot;
 
     public KeyboardListener(RalexBot a) throws IOException, NickNotOnlineException {
         setName("Keyboard_Listener_Thread");
         kb = new ConsoleReader();
         instance = a;
-        bot = new BotUser();
     }
 
     @Override
     public void run() {
+        bot = new BotUser();
         String line;
         boolean run = true;
         String currentChan = "";
