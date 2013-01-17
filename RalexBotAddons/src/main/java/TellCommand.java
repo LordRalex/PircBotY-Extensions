@@ -2,11 +2,12 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.JoinEvent;
 import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
+import com.lordralex.ralexbot.api.users.User;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,19 +35,19 @@ public class TellCommand extends Listener {
     @Override
     @EventType(event = EventField.Join)
     public void runEvent(JoinEvent event) {
-        final String sender = event.getSender();
+        User sender = event.getSender();
 
         String[] tells;
         try {
-            tells = getTells(sender);
+            tells = getTells(sender.getNick());
         } catch (FileNotFoundException ex) {
             return;
         }
         if (tells.length > 0) {
-            Long timeAgo = lastTold.get(event.getSender());
+            Long timeAgo = lastTold.get(event.getSender().getNick());
             if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
-                lastTold.put(event.getSender(), System.currentTimeMillis());
-                Utils.sendNotice(sender, "You have messages waiting for you, *st will show you them");
+                lastTold.put(event.getSender().getNick(), System.currentTimeMillis());
+                sender.sendMessage("You have messages waiting for you, use *st will show you them");
             }
         }
     }
@@ -68,7 +69,7 @@ public class TellCommand extends Listener {
         if (tells.length > 0) {
             if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
                 lastTold.put(event.getNewNick(), System.currentTimeMillis());
-                Utils.sendNotice(sender, "You have messages waiting for you, *st will show you them");
+                User.getUser(sender).sendMessage("You have messages waiting for you, use *st will show you them");
             }
         }
     }
@@ -79,18 +80,18 @@ public class TellCommand extends Listener {
         if (event.isCancelled()) {
             return;
         }
-        final String sender = event.getSender();
+        User sender = event.getSender();
         String[] tells;
         try {
-            tells = getTells(sender);
+            tells = getTells(sender.getNick());
         } catch (FileNotFoundException ex) {
             return;
         }
         if (tells.length > 0) {
-            Long timeAgo = lastTold.get(event.getSender());
+            Long timeAgo = lastTold.get(event.getSender().getNick());
             if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
-                lastTold.put(event.getSender(), System.currentTimeMillis());
-                Utils.sendNotice(sender, "You have messages waiting for you, *st will show you them");
+                lastTold.put(event.getSender().getNick(), System.currentTimeMillis());
+                sender.sendMessage("You have messages waiting for you, use *st will show you them");
             }
         }
     }
@@ -98,11 +99,11 @@ public class TellCommand extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        String channel = event.getChannel();
-        String sender = event.getSender();
+        Channel channel = event.getChannel();
+        User sender = event.getSender();
         String[] args = event.getArgs();
         String command = event.getCommand();
-        if (sender == null || sender.isEmpty()) {
+        if (sender == null || sender.getNick().isEmpty()) {
             return;
         }
         if (command.equalsIgnoreCase("t") || command.equalsIgnoreCase("tell")) {
@@ -113,20 +114,20 @@ public class TellCommand extends Listener {
             message = message.trim();
             String target = args[0];
             try {
-                addTell(sender, target, message);
+                addTell(sender.getNick(), target, message);
             } catch (IOException ex) {
                 Logger.getLogger(TellCommand.class.getName()).log(Level.SEVERE, null, ex);
                 if (channel != null) {
-                    Utils.sendMessage(channel, "An error occurred, get Lord_Ralex to see what went wrong");
+                    channel.sendMessage("An error occurred, get Lord_Ralex to see what went wrong");
                 } else if (sender != null) {
-                    Utils.sendMessage(sender, "An error occurred, get Lord_Ralex to see what went wrong");
+                    sender.sendMessage("An error occurred, get Lord_Ralex to see what went wrong");
                 }
                 return;
             }
             if (channel != null) {
-                Utils.sendMessage(channel, "Message will be delivered to " + target);
+                channel.sendMessage("Message will be delivered to " + target);
             } else if (sender != null) {
-                Utils.sendMessage(sender, "Message will be delivered to " + target);
+                sender.sendMessage("Message will be delivered to " + target);
             }
         } else if (command.equalsIgnoreCase("st") || command.equalsIgnoreCase("showtells")) {
             if (sender == null) {
@@ -134,15 +135,15 @@ public class TellCommand extends Listener {
             }
             String[] messages = null;
             try {
-                messages = getTells(sender);
+                messages = getTells(sender.getNick());
             } catch (FileNotFoundException ex) {
             }
             if (messages == null || messages.length == 0) {
-                Utils.sendNotice(sender, "I have no messages for you");
+                sender.sendMessage("I have no messages for you");
             } else {
-                Utils.sendNotice(sender, messages);
+                sender.sendMessage(messages);
             }
-            clearTells(sender);
+            clearTells(sender.getNick());
         }
     }
 

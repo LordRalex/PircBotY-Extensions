@@ -3,8 +3,10 @@ import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.MessageEvent;
+import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.api.users.User;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.File;
 import java.util.ArrayList;
@@ -35,23 +37,23 @@ public class AntiSpamListener extends Listener {
             if (event.isCancelled()) {
                 return;
             }
-            String channel = event.getChannel();
-            String sender = event.getSender();
+            Channel channel = event.getChannel();
+            User sender = event.getSender();
             String message = event.getMessage();
             String hostname = event.getHostname();
-            if (Utils.hasOP(sender, channel) || Utils.hasVoice(sender, channel) || sender.equalsIgnoreCase(Utils.getNick())) {
+            if (sender.hasOP(channel.getName()) || sender.hasVoice(channel.getName()) || sender.getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
                 return;
             }
             message = message.toString().toLowerCase();
-            Posts posts = logs.remove(sender);
+            Posts posts = logs.remove(sender.getNick());
             if (posts == null) {
                 posts = new Posts();
             }
             if (posts.addPost(message)) {
-                Utils.kick(sender, channel, "Triggered Spam Guard (IP=" + hostname + ")");
+                BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + hostname + ")");
                 event.setCancelled(true);
             } else {
-                logs.put(sender, posts);
+                logs.put(sender.getNick(), posts);
             }
         }
     }

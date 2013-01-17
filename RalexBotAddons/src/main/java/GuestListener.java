@@ -2,9 +2,8 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.JoinEvent;
-
+import com.lordralex.ralexbot.api.users.User;
 
 public class GuestListener extends Listener {
 
@@ -14,11 +13,11 @@ public class GuestListener extends Listener {
         if (event.isCancelled()) {
             return;
         }
-        String sender = event.getSender();
-        sender = sender.toLowerCase().trim();
-        if (sender.startsWith("guest") || sender.startsWith("mib_")) {
-            Utils.sendNotice(sender, "Please use /nick <name> to change your name");
-            Utils.sendNotice(sender, "I am only a bot though, so i will not reply to your pms");
+        User sender = event.getSender();
+        String nick = sender.getNick().toLowerCase().trim();
+        if (nick.startsWith("guest") || nick.startsWith("mib_")) {
+            sender.sendNotice("Please use /nick <name> to change your name");
+            sender.sendNotice("I am only a bot though, so i will not reply to your pms");
         }
     }
 }

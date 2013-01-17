@@ -2,9 +2,11 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
+import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.api.users.User;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.File;
 import java.util.Map;
@@ -27,31 +29,31 @@ public class JoinLeaveCommand extends Listener {
     public void runEvent(CommandEvent event) {
         String command = event.getCommand().toLowerCase().trim();
         String[] args = event.getArgs();
-        String channel = event.getChannel();
-        String sender = event.getSender();
+        Channel channel = event.getChannel();
+        User sender = event.getSender();
         if (command.equalsIgnoreCase("join")) {
             if (args.length != 1) {
                 return;
             }
-            channel = args[0];
-            if (channelList.containsKey(channel)) {
+            channel = Channel.getChannel(args[0]);
+            if (channelList.containsKey(channel.getName())) {
                 return;
             }
             if (channelList.size() >= MAX_CHANNELS) {
                 return;
             }
-            channelList.put(channel, sender);
-            Utils.joinChannel(channel);
+            channelList.put(channel.getName(), sender.getNick());
+            BotUser.getBotUser().joinChannel(channel.getName());
         } else if (command.equalsIgnoreCase("leave")) {
             if (args.length == 1) {
-                channel = args[0];
+                channel = Channel.getChannel(args[0]);
             }
-            String getJoin = channelList.get(channel);
-            if (Utils.hasOP(sender, channel) || sender.equalsIgnoreCase(getJoin)) {
-                channelList.remove(channel);
-                Utils.leaveChannel(channel);
+            String getJoin = channelList.get(channel.getName());
+            if (sender.hasOP(channel.getName()) || sender.getNick().equalsIgnoreCase(getJoin)) {
+                channelList.remove(channel.getName());
+                BotUser.getBotUser().leaveChannel(channel.getName());
             } else {
-                Utils.sendMessage(sender, "You did not have him join this channel");
+                sender.sendMessage("You did not have him join this channel");
             }
         }
     }

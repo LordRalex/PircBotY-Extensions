@@ -2,8 +2,10 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.sender.Sender;
+import com.lordralex.ralexbot.api.users.BotUser;
 import java.util.Random;
 
 public class ChooseCommand extends Listener {
@@ -11,7 +13,7 @@ public class ChooseCommand extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        String target = event.getChannel();
+        Sender target = event.getChannel();
         if (target == null) {
             target = event.getSender();
         }
@@ -19,13 +21,15 @@ public class ChooseCommand extends Listener {
             return;
         }
 
+        BotUser botUser = BotUser.getBotUser();
+
         String[] args = event.getArgs();
         if (args.length == 0) {
-            Utils.sendMessage(target, "Command use: *choose [choices] (you can use spaces or , to separate them)");
+            target.sendMessage("Command use: *choose [choices] (you can use spaces or , to separate them)");
             return;
         }
 
-        String total = Utils.toString(args);
+        String total = Utilities.toString(args);
 
         String[] choices;
         if (total.contains(",")) {
@@ -34,16 +38,16 @@ public class ChooseCommand extends Listener {
             choices = total.split(" ");
         }
         if (choices.length <= 1) {
-            Utils.sendMessage(target, "What kind of a choice is that?");
+            target.sendMessage("What kind of a choice is that?");
             return;
         }
 
         String answer = choices[new Random().nextInt(choices.length)];
         answer = answer.trim();
         if (event.getSender() != null) {
-            Utils.sendMessage(target, event.getSender() + ": " + answer);
+            target.sendMessage(event.getSender() + ": " + answer);
         } else {
-            Utils.sendMessage(target, answer);
+            target.sendMessage(answer);
         }
     }
 

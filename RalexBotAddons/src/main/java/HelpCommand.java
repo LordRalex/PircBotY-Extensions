@@ -2,8 +2,8 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.sender.Sender;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.File;
 import java.util.List;
@@ -26,20 +26,20 @@ public class HelpCommand extends Listener {
         if (event.isCancelled()) {
             return;
         }
-        String sender = event.getSender();
-        String channel = event.getChannel();
+        Sender target = event.getChannel();
+        if (target == null) {
+            target = event.getSender();
+        }
+        if (target == null) {
+            return;
+        }
         String helpLine = "My commands you can know about: ";
         for (String name : help) {
             helpLine += name + ", ";
         }
         helpLine = helpLine.trim();
-        if (channel == null) {
-            channel = sender;
-        }
-        if (channel == null) {
-            return;
-        }
-        Utils.sendMessage(channel, helpLine);
+
+        target.sendMessage(helpLine);
     }
 
     @Override

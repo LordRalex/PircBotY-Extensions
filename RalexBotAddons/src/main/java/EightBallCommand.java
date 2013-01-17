@@ -2,17 +2,17 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.sender.Sender;
 import java.util.Random;
 import org.pircbotx.Colors;
-        
+
 public class EightBallCommand extends Listener {
 
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        String dest = event.getChannel();
+        Sender dest = event.getChannel();
         if (dest == null) {
             dest = event.getSender();
             if (dest == null) {
@@ -59,7 +59,7 @@ public class EightBallCommand extends Listener {
                 break;
         }
 
-        Utils.sendMessage(dest, event.getSender() + ": " + reply);
+        dest.sendMessage(event.getSender().getNick() + ": " + reply);
     }
 
     @Override

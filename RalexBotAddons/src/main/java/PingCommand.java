@@ -2,8 +2,8 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utils;
 import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.sender.Sender;
 
 public class PingCommand extends Listener {
 
@@ -13,19 +13,16 @@ public class PingCommand extends Listener {
         if (event.isCancelled()) {
             return;
         }
-        String channel = event.getChannel();
-        String sender = event.getSender();
-        String target = null;
-        if (channel != null) {
-            target = channel;
-        } else if (sender != null) {
-            target = sender;
+        Sender target = event.getChannel();
+        if (target == null) {
+            target = event.getSender();
         }
         if (target == null) {
             return;
         }
 
-        Utils.sendMessage(target, "Yes, i can hear you");
+        target.sendMessage(
+                "Yes, i can hear you");
     }
 
     @Override

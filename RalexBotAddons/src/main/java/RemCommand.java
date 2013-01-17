@@ -3,8 +3,10 @@ import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.Utilities;
+import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.users.User;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -13,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -44,70 +45,65 @@ public class RemCommand extends Listener {
     @EventType(event = EventField.Command, priority = Priority.LOW)
     public void runEvent(CommandEvent event) {
         String command = event.getCommand().toLowerCase();
-        String channel = event.getChannel();
-        String sender = event.getSender();
         String[] args = event.getArgs();
 
+        User user = event.getSender();
+        Channel channel = event.getChannel();
+
         if (command.equalsIgnoreCase("remshutup")) {
-            if (!Utils.hasOP(sender, channel)) {
+            if (!user.hasOP(channel.getName())) {
                 return;
             }
-            String target = channel;
+            String target = channel.getName();
             if (args.length != 0) {
                 target = args[0];
             }
             target = target.toLowerCase();
-            boolean wasThere = dontReply.remove(channel);
+            boolean wasThere = dontReply.remove(channel.getName());
             if (wasThere) {
                 if (channel != null) {
-                    Utils.sendMessage(channel, "Returning to normal");
+                    channel.sendMessage("Returning to normal");
                 } else {
-                    Utils.sendMessage(sender, "Returning to normal");
+                    user.sendMessage("Returning to normal");
                 }
             } else {
                 dontReply.add(target);
                 if (channel != null) {
-                    Utils.sendMessage(channel, "Shutting up");
+                    channel.sendMessage("Shutting up");
                 } else {
-                    Utils.sendMessage(sender, "Shutting up");
+                    user.sendMessage("Shutting up");
                 }
             }
             return;
         }
 
-        if (dontReply.contains(channel)) {
+        if (dontReply.contains(channel.getName())) {
             return;
         }
 
         if (command.equalsIgnoreCase("remupdate")) {
             setup();
-            Utils.sendMessage(sender, "Rems updated");
+            user.sendMessage("Rems updated");
             return;
         }
 
         if (isRem(command)) {
             String reply = remMap.get(command);
-            if (sender == null) {
+            if (user == null) {
                 return;
             }
             Map<String, String> placers = new HashMap<>();
-            placers.put("User", sender);
-            placers.put("Channel", channel);
+            placers.put("User", user.getNick());
+            placers.put("Channel", channel.getName());
             for (int i = 0; i < args.length; i++) {
                 placers.put(new Integer(i).toString(), args[i]);
             }
-            Random gen = new Random();
-            String[] names = Utils.getUsers(channel);
-            if (names.length > 0) {
-                String random = names[gen.nextInt(names.length)];
-                placers.put("Random", random);
-            }
-            reply = Utils.handleArgs(reply, placers);
+            reply = Utilities.handleArgs(reply, placers);
             String[] entire = reply.split("\n");
-            if (channel == null) {
-                Utils.sendMessage(sender, entire);
+            if (channel != null) {
+                channel.sendMessage(entire);
             } else {
-                Utils.sendMessage(channel, entire);
+                user.sendMessage(entire);
             }
             return;
         }
@@ -123,31 +119,30 @@ public class RemCommand extends Listener {
         if (reply == null || reply.equalsIgnoreCase("null") || reply.equalsIgnoreCase("forget")) {
             remMap.remove(name);
             deleteRem(name);
-            if (channel == null) {
-                channel = sender;
-            }
-            if (sender != null) {
-                Utils.sendMessage(channel, name + " is now forgotten");
+            if (channel != null) {
+                channel.sendMessage(name + " is now forgotten");
+            } else {
+                user.sendMessage(name + " is now forgotten");
             }
             return;
         }
 
         if (remMap.containsKey(name)) {
-            if (channel == null) {
-                channel = sender;
-            }
-            if (sender != null) {
-                Utils.sendMessage(channel, name + " already exists");
+            if (channel != null) {
+                channel.sendMessage(name + " is already known");
+            } else {
+                user.sendMessage(name + " is already known");
             }
             return;
         }
 
         remMap.put(name, reply);
         saveRem(name, reply);
-        if (channel == null) {
-            channel = sender;
+        if (channel != null) {
+            channel.sendMessage(name + " is now known");
+        } else {
+            user.sendMessage(name + " is now known");
         }
-        Utils.sendMessage(channel, name + " is now saved");
     }
 
     private String[] buildRem(String[] args) {

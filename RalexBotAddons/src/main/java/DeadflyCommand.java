@@ -2,8 +2,11 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utils;
+import com.lordralex.ralexbot.api.Utilities;
+import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.sender.Sender;
+import com.lordralex.ralexbot.api.users.User;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,11 +27,11 @@ public class DeadflyCommand extends Listener {
             return;
         }
 
-        final String sender = event.getSender();
+        final User sender = event.getSender();
         final String[] args = event.getArgs();
-        final String channel = event.getChannel();
+        final Channel channel = event.getChannel();
         BufferedReader reader = null;
-        String target = channel;
+        Sender target = channel;
         if (target == null) {
             target = sender;
         }
@@ -36,7 +39,7 @@ public class DeadflyCommand extends Listener {
             return;
         }
         if (args.length == 0) {
-            Utils.sendMessage(target, "*deadfly <link>");
+            target.sendMessage("*deadfly <link>");
             return;
         }
         try {
@@ -63,13 +66,13 @@ public class DeadflyCommand extends Listener {
                     if (!string.startsWith("https://adf.ly/")) {
                         string = "https://adf.ly/" + string;
                     }
-                    Utils.sendMessage(target, Utils.resolve(string));
+                    target.sendMessage(Utilities.resolve(string));
                     break;
                 }
             }
         } catch (IOException | URISyntaxException ex) {
             Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
-            Utils.sendMessage(target, "There was a problem handling the link");
+            target.sendMessage("There was a problem handling the link");
         } finally {
             try {
                 if (reader != null) {
