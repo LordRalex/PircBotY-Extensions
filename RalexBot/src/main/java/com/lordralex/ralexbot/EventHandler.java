@@ -40,6 +40,12 @@ public final class EventHandler extends ListenerAdapter {
 
     public EventHandler() {
         super();
+    }
+
+    public void load() {
+        if (runner != null) {
+            stopRunner();
+        }
         File extensionFolder = new File("extensions");
         File temp = new File("tempDir");
         if (temp != null && temp.listFiles() != null) {
@@ -217,15 +223,22 @@ public final class EventHandler extends ListenerAdapter {
     }
 
     public void fireEvent(final Event event) {
+        //if (event instanceof CommandEvent) {
+        //  CommandEvent cmd = (CommandEvent) event;
+        //  if (cmd.getCommand().equalsIgnoreCase("reload")) {
+        //      queue.clear();
+        //      load();
+        //      return;
+        //  }
+        //}
         queue.add(event);
         runner.ping();
     }
 
-    public void fireEvent(final org.pircbotx.hooks.Event event) {
-    }
-
     public void stopRunner() {
-        runner.interrupt();
+        synchronized (runner) {
+            runner.interrupt();
+        }
     }
 
     private class EventRunner extends Thread {
