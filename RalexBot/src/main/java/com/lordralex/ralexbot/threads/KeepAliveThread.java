@@ -42,7 +42,7 @@ public class KeepAliveThread extends Thread {
                     Event evt = driver.waitFor(Event.class);
                     if (evt instanceof PrivateMessageEvent) {
                     } else {
-                        instance.getEventHandler().fireEvent(evt);
+                        //instance.getEventHandler().fireEvent(evt);
                     }
                 }
                 pinger.interrupt();
