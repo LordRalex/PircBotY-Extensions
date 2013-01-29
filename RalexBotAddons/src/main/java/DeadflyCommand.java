@@ -2,7 +2,6 @@
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.sender.Sender;
@@ -10,7 +9,6 @@ import com.lordralex.ralexbot.api.users.User;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +28,8 @@ public class DeadflyCommand extends Listener {
         final User sender = event.getSender();
         final String[] args = event.getArgs();
         final Channel channel = event.getChannel();
-        BufferedReader reader = null;
+        BufferedReader reader = null, redirectReader = null;
+        URL redirectURL = null, path = null;
         Sender target = channel;
         if (target == null) {
             target = sender;
@@ -42,9 +41,10 @@ public class DeadflyCommand extends Listener {
             target.sendMessage("*deadfly <link>");
             return;
         }
+        String reply = "";
         try {
             String url = args[0].replace(" ", "%20");
-            URL path = new URL(url);
+            path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
             List<String> parts = new ArrayList<>();
             String s;
@@ -56,6 +56,7 @@ public class DeadflyCommand extends Listener {
                 String[] c = part.split(",");
                 b.addAll(Arrays.asList(c));
             }
+            String forward = null;
             for (String string : b) {
                 string = string.trim();
                 if (string.startsWith("var url")) {
@@ -64,15 +65,34 @@ public class DeadflyCommand extends Listener {
                     string = string.replace(";", "");
                     string = string.trim();
                     if (!string.startsWith("https://adf.ly/")) {
-                        string = "https://adf.ly/" + string;
+                        forward = "https://adf.ly" + string;
                     }
-                    target.sendMessage(Utilities.resolve(string));
-                    break;
                 }
             }
-        } catch (IOException | URISyntaxException ex) {
-            Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
-            target.sendMessage("There was a problem handling the link");
+            if (forward == null) {
+                throw new IOException("Parse failed on the link: " + args[0]);
+            }
+            redirectURL = new URL(url);
+            redirectReader = new BufferedReader(new InputStreamReader(redirectURL.openStream()));
+            List<String> parts2 = new ArrayList<>();
+            String e;
+            while ((e = redirectReader.readLine()) != null) {
+                parts2.add(e);
+            }
+            List<String> d = new ArrayList<>();
+            for (String part : parts2) {
+                String[] c = part.split(",");
+                d.addAll(Arrays.asList(c));
+            }
+            for (String string : d) {
+                string = string.trim();
+                if (string.startsWith("var url")) {
+                    reply = "";
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(DeadflyCommand.class.getName()).log(Level.SEVERE, null, ex);
+            reply = "There was a problem handling the link";
         } finally {
             try {
                 if (reader != null) {
@@ -81,7 +101,15 @@ public class DeadflyCommand extends Listener {
             } catch (IOException ex) {
                 Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
             }
+            try {
+                if (redirectReader != null) {
+                    redirectReader.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+        target.sendMessage(reply);
     }
 
     @Override
