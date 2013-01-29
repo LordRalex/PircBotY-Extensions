@@ -17,7 +17,7 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class RalexBot extends Thread {
 
     private static PircBotX driver;
-    public static String VERSION = "0.0.5";
+    public static String VERSION = "0.0.6";
     private static EventHandler eventHandler;
     private static final RalexBot instance;
     private static KeyboardListener kblistener;
@@ -80,6 +80,7 @@ public final class RalexBot extends Thread {
         Utilities.setUtils(driver);
 
         eventHandler = new EventHandler();
+        eventHandler.load();
         boolean sucess = driver.getListenerManager().addListener(eventHandler);
         if (sucess) {
             System.out.println("Listener hook attached to bot");
