@@ -19,8 +19,8 @@ public class RalexBotCommand extends Listener {
             if (target == null) {
                 return;
             }
-            target.sendMessage("Hello. I am " + BotUser.getBotUser().getNick() + " " + RalexBot.VERSION + " using PircBotX " + PircBotX.VERSION);
         }
+        target.sendMessage("Hello. I am " + BotUser.getBotUser().getNick() + " " + RalexBot.VERSION + " using PircBotX " + PircBotX.VERSION);
     }
 
     @Override
