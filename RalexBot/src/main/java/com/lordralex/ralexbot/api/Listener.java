@@ -1,13 +1,6 @@
 package com.lordralex.ralexbot.api;
 
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.events.MessageEvent;
-import com.lordralex.ralexbot.api.events.NickChangeEvent;
-import com.lordralex.ralexbot.api.events.NoticeEvent;
-import com.lordralex.ralexbot.api.events.PartEvent;
-import com.lordralex.ralexbot.api.events.PrivateMessageEvent;
-import com.lordralex.ralexbot.api.events.QuitEvent;
+import com.lordralex.ralexbot.api.events.*;
 import java.lang.reflect.Method;
 import java.util.EnumMap;
 import java.util.Map;
@@ -59,6 +52,9 @@ public abstract class Listener {
     }
 
     public void runEvent(NickChangeEvent event) {
+    }
+    
+    public void runEvent(ActionEvent event) {
     }
 
     public String[] getAliases() {
