@@ -11,7 +11,8 @@ public enum EventField {
     Notice(NoticeEvent.class),
     Part(PartEvent.class),
     PrivateMessage(PrivateMessageEvent.class),
-    Quit(QuitEvent.class);
+    Quit(QuitEvent.class),
+    Action(ActionEvent.class);
     
     private Class eventClass;
 
