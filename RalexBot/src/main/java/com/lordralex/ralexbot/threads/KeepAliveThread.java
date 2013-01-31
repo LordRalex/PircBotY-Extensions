@@ -10,19 +10,26 @@ import org.pircbotx.hooks.events.PrivateMessageEvent;
 /**
  *
  * @author Joshua
+ * @deprecated Waiting for better class to handle this
  */
 public class KeepAliveThread extends Thread {
 
-    int time = 120;
-    RalexBot instance;
-    PircBotX driver;
+    private int time = 120;
+    private RalexBot instance;
+    private PircBotX driver;
 
+    /**
+     * @deprecated Waiting for better class to handle this
+     */
     public KeepAliveThread(RalexBot a, PircBotX b, int value) {
         instance = a;
         driver = b;
         time = value;
     }
 
+    /**
+     * @deprecated Waiting for better class to handle this
+     */
     @Override
     public void run() {
         boolean stop = false;
