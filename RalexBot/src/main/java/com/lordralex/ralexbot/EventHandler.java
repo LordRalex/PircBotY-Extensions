@@ -217,6 +217,12 @@ public final class EventHandler extends ListenerAdapter {
         PartEvent nextEvt = new PartEvent(event);
         fireEvent(nextEvt);
     }
+    
+    @Override
+    public void onAction(org.pircbotx.hooks.events.ActionEvent event) throws Exception {
+        ActionEvent nextEvt = new ActionEvent(event);
+        fireEvent(nextEvt);
+    }
 
     private boolean isCommand(String message) {
         return commandChars.contains(message.charAt(0));
