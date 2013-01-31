@@ -6,7 +6,7 @@ import com.lordralex.ralexbot.api.users.User;
 
 public final class CommandEvent extends Event {
 
-    private final String command, hostName;
+    private final String command;
     private final User sender;
     private final Channel channel;
     private final String[] args;
@@ -16,7 +16,6 @@ public final class CommandEvent extends Event {
         command = temp[0].substring(1).toLowerCase();
         sender = User.getUser(event.getUser().getNick());
         channel = Channel.getChannel(event.getChannel().getName());
-        hostName = event.getUser().getHostmask();
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
             System.arraycopy(temp, 1, args, 0, args.length);
@@ -28,7 +27,6 @@ public final class CommandEvent extends Event {
         command = temp[0].substring(1).toLowerCase();
         sender = User.getUser(event.getUser().getNick());
         channel = null;
-        hostName = event.getUser().getHostmask();
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
             System.arraycopy(temp, 1, args, 0, args.length);
@@ -40,7 +38,6 @@ public final class CommandEvent extends Event {
         command = temp[0].substring(1).toLowerCase();
         sender = User.getUser(event.getUser().getNick());
         channel = null;
-        hostName = event.getUser().getHostmask();
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
             System.arraycopy(temp, 1, args, 0, args.length);
