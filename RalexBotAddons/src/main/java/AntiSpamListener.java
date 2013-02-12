@@ -18,10 +18,12 @@ import java.util.Map;
 public class AntiSpamListener extends Listener {
 
     private final Map<String, Posts> logs = new HashMap<>();
+    //private final Map<String, String> joinLeaveMap = new HashMap<>();
     private int MAX_MESSAGES;
     private int SPAM_RATE;
     private int DUPE_RATE;
     private Settings settings;
+    private final List<String> channels = new ArrayList<>();
 
     @Override
     public void setup() {
@@ -29,16 +31,18 @@ public class AntiSpamListener extends Listener {
         MAX_MESSAGES = settings.getInt("spam-message");
         SPAM_RATE = settings.getInt("spam-time");
         DUPE_RATE = settings.getInt("spam-dupe");
+        channels.clear();
+        channels.addAll(settings.getStringList("spam-channels"));
     }
 
     @Override
     @EventType(event = EventField.Message, priority = Priority.LOW)
     public void runEvent(MessageEvent event) {
         synchronized (logs) {
-            if (event.isCancelled()) {
+            Channel channel = event.getChannel();
+            if (!channels.contains(channel.getName().toLowerCase())) {
                 return;
             }
-            Channel channel = event.getChannel();
             User sender = event.getSender();
             String message = event.getMessage();
             String hostname = event.getHostname();

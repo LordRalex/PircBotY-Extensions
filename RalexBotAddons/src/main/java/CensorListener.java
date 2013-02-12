@@ -17,17 +17,23 @@ import java.util.List;
  */
 public class CensorListener extends Listener {
 
-    List<String> censor = new ArrayList<>();
+    private final List<String> censor = new ArrayList<>();
+    private final List<String> channels = new ArrayList<>();
 
     @Override
     public void setup() {
         censor.clear();
         censor.addAll(Settings.getGlobalSettings().getStringList("censor"));
+        channels.clear();
+        channels.addAll(Settings.getGlobalSettings().getStringList("spam-channels"));
     }
 
     @Override
     @EventType(event = EventField.Message)
     public void runEvent(MessageEvent event) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+            return;
+        }
         String message = event.getMessage().toLowerCase();
         for (String word : censor) {
             if (message.contains(word.toLowerCase())) {
@@ -40,6 +46,9 @@ public class CensorListener extends Listener {
     @Override
     @EventType(event = EventField.Notice)
     public void runEvent(ActionEvent event) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+            return;
+        }
         String message = event.getAction().toLowerCase();
         for (String word : censor) {
             if (message.contains(word.toLowerCase())) {
@@ -66,6 +75,9 @@ public class CensorListener extends Listener {
     @Override
     @EventType(event = EventField.Join)
     public void runEvent(JoinEvent event) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+            return;
+        }
         String message = event.getSender().getNick().toLowerCase();
         for (String word : censor) {
             if (message.contains(word.toLowerCase())) {

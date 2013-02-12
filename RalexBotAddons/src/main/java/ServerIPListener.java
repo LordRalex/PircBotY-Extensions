@@ -10,6 +10,7 @@ import com.lordralex.ralexbot.api.events.PartEvent;
 import com.lordralex.ralexbot.api.events.QuitEvent;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.api.users.User;
+import com.lordralex.ralexbot.settings.Settings;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,19 +18,26 @@ public class ServerIPListener extends Listener {
 
     protected List<String> triggered;
     protected List<String> ignorePeople;
+    private final List<String> channels = new ArrayList<>();
 
     @Override
     public void setup() {
         triggered = new ArrayList<>();
         ignorePeople = new ArrayList<>();
+        channels.clear();
+        channels.addAll(Settings.getGlobalSettings().getStringList("ip-channels"));
     }
 
     @Override
     @EventType(event = EventField.Message, priority = Priority.HIGH)
     public void runEvent(MessageEvent event) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+            return;
+        }
         String message = event.getMessage();
         User sender = event.getSender();
         Channel channel = event.getChannel();
+
 
         boolean silence = false;
 

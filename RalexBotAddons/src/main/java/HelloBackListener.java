@@ -18,6 +18,7 @@ public class HelloBackListener extends Listener {
     private List<HBLUser> logins = new ArrayList<>();
     private List<String> hellos = new ArrayList<>();
     private Settings settings;
+    private final List<String> channels = new ArrayList<>();
 
     @Override
     public void setup() {
@@ -28,11 +29,16 @@ public class HelloBackListener extends Listener {
                 hellos.add(string.toLowerCase());
             }
         }
+        channels.clear();
+        channels.addAll(Settings.getGlobalSettings().getStringList("hello-channels"));
     }
 
     @Override
     @EventType(event = EventField.Message)
     public void runEvent(MessageEvent event) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+            return;
+        }
         String message = event.getMessage();
         Channel channel = event.getChannel();
         User sender = event.getSender();
