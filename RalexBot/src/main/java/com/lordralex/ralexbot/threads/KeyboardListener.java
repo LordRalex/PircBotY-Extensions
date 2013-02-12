@@ -47,6 +47,8 @@ public final class KeyboardListener extends Thread {
                                 run = false;
                             } else if (cmd.equalsIgnoreCase("join")) {
                                 bot.joinChannel(line.split(" ")[1]);
+                            } else if (cmd.equalsIgnoreCase("leave")) {
+                                bot.leaveChannel(line.split(" ")[1]);
                             } else if (cmd.equalsIgnoreCase("kick")) {
                                 List<String> args = new ArrayList<>();
                                 String[] parts = line.split(" ");

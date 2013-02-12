@@ -3,7 +3,6 @@ package com.lordralex.ralexbot;
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.settings.Settings;
-import com.lordralex.ralexbot.threads.KeepAliveThread;
 import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.IOException;
 import java.util.List;
@@ -17,13 +16,12 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class RalexBot extends Thread {
 
     private static PircBotX driver;
-    public static String VERSION = "0.0.6";
+    public static String VERSION = "0.0.7";
     private static EventHandler eventHandler;
     private static final RalexBot instance;
     private static KeyboardListener kblistener;
     private static Settings globalSettings;
     private static int exitCode = 0;
-    private static KeepAliveThread kaThread;
 
     static {
         instance = new RalexBot();
@@ -81,8 +79,8 @@ public final class RalexBot extends Thread {
 
         eventHandler = new EventHandler();
         eventHandler.load();
-        boolean sucess = driver.getListenerManager().addListener(eventHandler);
-        if (sucess) {
+        boolean success = driver.getListenerManager().addListener(eventHandler);
+        if (success) {
             System.out.println("Listener hook attached to bot");
         } else {
             System.out.println("Listener hook was unable to attach to the bot");
@@ -115,7 +113,7 @@ public final class RalexBot extends Thread {
         String id = globalSettings.getString("nick-pw");
         if (id != null && !id.isEmpty()) {
             bot.sendMessage("nickserv", "identify " + id);
-            System.out.println("Logging in to nickserv with " + id);
+            System.out.println("Logging in to nickserv");
         }
 
         List<String> channels = globalSettings.getStringList("channels");
@@ -133,14 +131,8 @@ public final class RalexBot extends Thread {
 
         System.out.println("Starting keyboard listener");
         kblistener.start();
-
-        int pingTime = globalSettings.getInt("ping-time");
-        if (pingTime == 0) {
-            pingTime = 120;
-        }
-        System.out.println("Starting keep alive thread, pinging every " + pingTime + " seconds");
-        kaThread = new KeepAliveThread(this, driver, pingTime);
-        kaThread.start();
+        
+        System.out.println("All systems operational");
     }
 
     public EventHandler getEventHandler() {

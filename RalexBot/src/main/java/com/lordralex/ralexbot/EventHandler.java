@@ -30,22 +30,22 @@ public final class EventHandler extends ListenerAdapter {
 
     private List<Listener> listeners = new ArrayList<>();
     private ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
-    private EventRunner runner;
-    private static final List<Character> commandChars = new ArrayList<>();
+    private final EventRunner runner;
+    private static final List<String> commandChars = new ArrayList<>();
 
     static {
         commandChars.clear();
-        commandChars.add('*');
+        commandChars.add("**");
+        commandChars.add("*");
     }
 
     public EventHandler() {
         super();
+        runner = new EventRunner();
+        runner.setName("Event_Handler_Thread");
     }
 
     public void load() {
-        if (runner != null) {
-            stopRunner();
-        }
         File extensionFolder = new File("extensions");
         File temp = new File("tempDir");
         if (temp != null && temp.listFiles() != null) {
@@ -111,8 +111,6 @@ public final class EventHandler extends ListenerAdapter {
                 }
             }
         }
-        runner = new EventRunner();
-        runner.setName("Event_Handler_Thread");
     }
 
     private void loadClass(String className, ClassLoader cl) {
@@ -217,7 +215,7 @@ public final class EventHandler extends ListenerAdapter {
         PartEvent nextEvt = new PartEvent(event);
         fireEvent(nextEvt);
     }
-    
+
     @Override
     public void onAction(org.pircbotx.hooks.events.ActionEvent event) throws Exception {
         ActionEvent nextEvt = new ActionEvent(event);
@@ -225,7 +223,12 @@ public final class EventHandler extends ListenerAdapter {
     }
 
     private boolean isCommand(String message) {
-        return commandChars.contains(message.charAt(0));
+        for (String code : commandChars) {
+            if (message.startsWith(code)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void fireEvent(final Event event) {
