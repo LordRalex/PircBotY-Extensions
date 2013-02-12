@@ -25,7 +25,7 @@ public class CensorListener extends Listener {
         censor.clear();
         censor.addAll(Settings.getGlobalSettings().getStringList("censor"));
         channels.clear();
-        channels.addAll(Settings.getGlobalSettings().getStringList("spam-channels"));
+        channels.addAll(Settings.getGlobalSettings().getStringList("censor-channels"));
     }
 
     @Override
