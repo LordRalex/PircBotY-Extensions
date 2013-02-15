@@ -1,4 +1,5 @@
 
+import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
@@ -45,7 +46,6 @@ public class AntiSpamListener extends Listener {
             }
             User sender = event.getSender();
             String message = event.getMessage();
-            String hostname = event.getHostname();
             if (sender.hasOP(channel.getName()) || sender.hasVoice(channel.getName()) || sender.getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
                 return;
             }
@@ -55,7 +55,13 @@ public class AntiSpamListener extends Listener {
                 posts = new Posts();
             }
             if (posts.addPost(message)) {
-                BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + hostname + ")");
+                if (RalexBot.getDebugMode()) {
+                    BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"),
+                            "Would have kicked " + event.getSender().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
+                } else {
+                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
+                }
+
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);
@@ -73,7 +79,6 @@ public class AntiSpamListener extends Listener {
             Channel channel = event.getChannel();
             User sender = event.getSender();
             String message = event.getAction();
-            String hostname = event.getSender().getIP();
             if (sender.hasOP(channel.getName()) || sender.hasVoice(channel.getName()) || sender.getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
                 return;
             }
@@ -83,7 +88,12 @@ public class AntiSpamListener extends Listener {
                 posts = new Posts();
             }
             if (posts.addPost(message)) {
-                BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + hostname + ")");
+                if (RalexBot.getDebugMode()) {
+                    BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"),
+                            "Would have kicked " + event.getSender().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
+                } else {
+                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
+                }
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);
@@ -98,7 +108,6 @@ public class AntiSpamListener extends Listener {
         public boolean addPost(String lastPost) {
             posts.add(new Post(System.currentTimeMillis(), lastPost));
             if (posts.size() == MAX_MESSAGES) {
-                posts.remove(0);
                 boolean areSame = true;
                 for (int i = 1; i < posts.size() && areSame; i++) {
                     if (!posts.get(i - 1).message.equalsIgnoreCase(posts.get(i).message)) {
@@ -110,10 +119,10 @@ public class AntiSpamListener extends Listener {
                         return true;
                     }
                 }
-
                 if (posts.get(posts.size() - 1).getTime() - posts.get(0).getTime() < SPAM_RATE) {
                     return true;
                 }
+                posts.remove(0);
             }
             return false;
         }

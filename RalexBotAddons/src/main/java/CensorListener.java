@@ -34,12 +34,13 @@ public class CensorListener extends Listener {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
+        if (event.getSender().getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
+            return;
+        }
         String message = event.getMessage().toLowerCase();
-        for (String word : censor) {
-            if (message.contains(word.toLowerCase())) {
-                BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
-                return;
-            }
+        if (scanMessage(message)) {
+            //BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
+            event.getChannel().sendMessage("Please keep it civil " + event.getSender().getNick());
         }
     }
 
@@ -49,12 +50,13 @@ public class CensorListener extends Listener {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
+        if (event.getSender().getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
+            return;
+        }
         String message = event.getAction().toLowerCase();
-        for (String word : censor) {
-            if (message.contains(word.toLowerCase())) {
-                BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
-                return;
-            }
+        if (scanMessage(message)) {
+            //BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
+            event.getChannel().sendMessage("Please keep it civil " + event.getSender().getNick());
         }
     }
 
@@ -62,12 +64,9 @@ public class CensorListener extends Listener {
     @EventType(event = EventField.NickChange)
     public void runEvent(NickChangeEvent event) {
         String message = event.getNewNick().toLowerCase();
-        for (String word : censor) {
-            if (message.contains(word.toLowerCase())) {
-                for (String chan : BotUser.getBotUser().getChannels()) {
-                    BotUser.getBotUser().kick(event.getNewNick(), chan, "Please keep it civil");
-                }
-                return;
+        if (scanMessage(message)) {
+            for (String chan : BotUser.getBotUser().getChannels()) {
+                //BotUser.getBotUser().kick(event.getNewNick(), chan, "Please keep it civil");
             }
         }
     }
@@ -79,11 +78,20 @@ public class CensorListener extends Listener {
             return;
         }
         String message = event.getSender().getNick().toLowerCase();
+        if (scanMessage(message)) {
+            //BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
+        }
+    }
+
+    private boolean scanMessage(String message) {
         for (String word : censor) {
-            if (message.contains(word.toLowerCase())) {
-                BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
-                return;
+            String[] parts = message.split(" ");
+            for (String p : parts) {
+                if (p.equalsIgnoreCase(word)) {
+                    return true;
+                }
             }
         }
+        return false;
     }
 }
