@@ -1,5 +1,6 @@
 package com.lordralex.ralexbot.api.events;
 
+import com.lordralex.ralexbot.EventHandler;
 import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
 import com.lordralex.ralexbot.api.users.User;
@@ -13,7 +14,15 @@ public final class CommandEvent extends Event {
 
     public CommandEvent(org.pircbotx.hooks.events.MessageEvent event) {
         String[] temp = event.getMessage().split(" ");
-        command = temp[0].substring(1).toLowerCase();
+        String commandTemp = temp[0].toLowerCase();
+        for (String cmd : EventHandler.getCommandPrefixes()) {
+            if (commandTemp.startsWith(cmd)) {
+                commandTemp = commandTemp.replaceFirst(cmd, "");
+                break;
+            }
+        }
+
+        command = commandTemp;
         sender = User.getUser(event.getUser().getNick());
         channel = Channel.getChannel(event.getChannel().getName());
         args = new String[temp.length - 1];

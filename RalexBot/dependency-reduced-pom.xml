@@ -4,7 +4,7 @@
   <groupId>com.lordralex</groupId>
   <artifactId>RalexBot</artifactId>
   <name>RalexBot</name>
-  <version>0.0.6</version>
+  <version>0.1.0</version>
   <url>http://maven.apache.org</url>
   <build>
     <plugins>

@@ -232,14 +232,6 @@ public final class EventHandler extends ListenerAdapter {
     }
 
     public void fireEvent(final Event event) {
-        //if (event instanceof CommandEvent) {
-        //  CommandEvent cmd = (CommandEvent) event;
-        //  if (cmd.getCommand().equalsIgnoreCase("reload")) {
-        //      queue.clear();
-        //      load();
-        //      return;
-        //  }
-        //}
         queue.add(event);
         runner.ping();
     }
@@ -248,6 +240,12 @@ public final class EventHandler extends ListenerAdapter {
         synchronized (runner) {
             runner.interrupt();
         }
+    }
+
+    public static List<String> getCommandPrefixes() {
+        List<String> clone = new ArrayList<>();
+        clone.addAll(commandChars);
+        return clone;
     }
 
     private class EventRunner extends Thread {

@@ -16,18 +16,27 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class RalexBot extends Thread {
 
     private static PircBotX driver;
-    public static String VERSION = "0.0.7";
+    public static String VERSION = "0.1.0";
     private static EventHandler eventHandler;
     private static final RalexBot instance;
     private static KeyboardListener kblistener;
     private static Settings globalSettings;
     private static int exitCode = 0;
+    private static boolean debugMode = false;
 
     static {
         instance = new RalexBot();
     }
 
     public static void main(String[] args) {
+        if (args.length != 0) {
+            for (String arg : args) {
+                if (arg.equalsIgnoreCase("-debugmode")) {
+                    System.out.println("Starting with DEBUG MODE ENABLED");
+                    debugMode = true;
+                }
+            }
+        }
         try {
             instance.createInstance();
         } catch (IOException | IrcException ex) {
@@ -131,7 +140,7 @@ public final class RalexBot extends Thread {
 
         System.out.println("Starting keyboard listener");
         kblistener.start();
-        
+
         System.out.println("All systems operational");
     }
 
@@ -141,6 +150,10 @@ public final class RalexBot extends Thread {
 
     public ConsoleReader getConsole() {
         return kblistener.getJLine();
+    }
+
+    public static boolean getDebugMode() {
+        return debugMode;
     }
 
     private RalexBot() {
