@@ -5,7 +5,9 @@ import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.settings.Settings;
 import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jline.console.ConsoleReader;
@@ -16,24 +18,34 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class RalexBot extends Thread {
 
     private static PircBotX driver;
-    public static String VERSION = "0.1.0";
+    public static String VERSION = "BOT-VERSION";
     private static EventHandler eventHandler;
     private static final RalexBot instance;
     private static KeyboardListener kblistener;
     private static Settings globalSettings;
-    private static int exitCode = 0;
     private static boolean debugMode = false;
+    private static final Map<String, String> args = new HashMap<>();
 
     static {
         instance = new RalexBot();
     }
 
-    public static void main(String[] args) {
-        if (args.length != 0) {
-            for (String arg : args) {
+    public static void main(String[] startargs) {
+        if (startargs.length != 0) {
+            for (String arg : startargs) {
                 if (arg.equalsIgnoreCase("-debugmode")) {
                     System.out.println("Starting with DEBUG MODE ENABLED");
                     debugMode = true;
+                } else {
+                    String[] argument = arg.split("=");
+                    String key, value;
+                    key = argument[0];
+                    if (argument.length == 1) {
+                        value = "true";
+                    } else {
+                        value = argument[1];
+                    }
+                    args.put(key, value);
                 }
             }
         }
@@ -45,26 +57,9 @@ public final class RalexBot extends Thread {
         synchronized (instance) {
             try {
                 instance.wait();
-                exitCode = 0;
             } catch (InterruptedException ex) {
                 Logger.getLogger(RalexBot.class.getName()).log(Level.SEVERE, null, ex);
-                exitCode = 1;
             }
-        }
-
-        switch (exitCode) {
-            case 0:
-                System.out.println("Exiting bot");
-            case 1:
-                System.out.println("Bot returned exit code 1, restarting");
-        }
-        eventHandler.stopRunner();
-        kblistener.interrupt();
-
-        if (exitCode == 0) {
-            System.exit(0);
-        } else if (exitCode == 1) {
-            main(args);
         }
     }
 
@@ -154,6 +149,10 @@ public final class RalexBot extends Thread {
 
     public static boolean getDebugMode() {
         return debugMode;
+    }
+
+    public static Map<String, String> getStartupArgs() {
+        return args;
     }
 
     private RalexBot() {
