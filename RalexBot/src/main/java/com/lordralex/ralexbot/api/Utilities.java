@@ -41,7 +41,7 @@ public class Utilities {
     }
 
     public static String resolve(String html) throws MalformedURLException, IOException, URISyntaxException {
-        String url = html.replace(" ", "%20");
+        String url = new URL(html).toURI().toString();
         URL path = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) path.openConnection();
         connection.getInputStream();

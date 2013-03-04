@@ -21,7 +21,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.pircbotx.hooks.ListenerAdapter;
@@ -65,7 +64,7 @@ public final class EventHandler extends ListenerAdapter {
                 temp.toURI().toURL()
             };
         } catch (MalformedURLException ex) {
-            Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);
+            RalexBot.getLogger().log(Level.SEVERE, null, ex);
         }
         ClassLoader cl = new URLClassLoader(urls);
         for (File file : extensionFolder.listFiles()) {
@@ -125,8 +124,8 @@ public final class EventHandler extends ListenerAdapter {
                 list.declareValues(list.getClass());
                 listeners.add(list);
             }
-        } catch (Exception ex) {
-            Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Throwable ex) {
+            RalexBot.getLogger().log(Level.SEVERE, "Could not add " + className, ex);
         }
     }
 
@@ -140,7 +139,7 @@ public final class EventHandler extends ListenerAdapter {
             in.close();
             out.close();
         } catch (IOException ex) {
-            ex.printStackTrace(System.out);
+            RalexBot.getLogger().log(Level.SEVERE, null, ex);
         }
     }
 
@@ -313,14 +312,14 @@ public final class EventHandler extends ListenerAdapter {
                                             break;
                                     }
                                 } catch (Exception e) {
-                                    Logger.getLogger(EventHandler.class.getName(), null).log(Level.SEVERE, "Unhandled exception on event execution", e);
+                                    RalexBot.getLogger().log(Level.SEVERE, "Unhandled exception on event execution", e);
                                 }
                             }
                         }
                     }
                 }
             }
-            System.out.println("Ending event listener");
+            RalexBot.getLogger().info("Ending event listener");
         }
 
         public void ping() {
@@ -330,7 +329,7 @@ public final class EventHandler extends ListenerAdapter {
                         this.notify();
                     }
                 } catch (IllegalMonitorStateException e) {
-                    Logger.getLogger(EventHandler.class.getName(), null).log(Level.SEVERE, e.toString(), e);
+                    RalexBot.getLogger().log(Level.SEVERE, e.toString(), e);
                 }
             }
         }

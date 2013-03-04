@@ -1,8 +1,8 @@
 package com.lordralex.ralexbot.api.users;
 
 import com.lordralex.ralexbot.api.Utilities;
+import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.sender.Sender;
-import org.pircbotx.Channel;
 
 /**
  *
@@ -71,5 +71,21 @@ public class User extends Utilities implements Sender {
 
     public String getNick() {
         return pircbotxUser.getNick();
+    }
+
+    public void quiet(String channel) {
+        bot.sendMessage("chanserv", "quiet " + channel + " *!*" + pircbotxUser.getLogin() + "@" + pircbotxUser.getHostmask());
+    }
+
+    public void quiet(Channel channel) {
+        quiet(channel.getName());
+    }
+
+    public void unquiet(String channel) {
+        bot.sendMessage("chanserv", "unquiet " + channel + " *!*" + pircbotxUser.getLogin() + "@" + pircbotxUser.getHostmask());
+    }
+
+    public String getQuietLine() {
+        return "*!*" + pircbotxUser.getLogin() + "@" + pircbotxUser.getHostmask();
     }
 }

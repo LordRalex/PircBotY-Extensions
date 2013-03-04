@@ -1,5 +1,6 @@
 package com.lordralex.ralexbot.api;
 
+import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.events.*;
 import java.lang.reflect.Method;
 import java.util.EnumMap;
@@ -26,7 +27,7 @@ public abstract class Listener {
                 priorities.put(event.event(), event);
             }
         } catch (SecurityException ex) {
-            Logger.getLogger(Listener.class.getName()).log(Level.SEVERE, null, ex);
+            RalexBot.getLogger().log(Level.SEVERE, "Security issue", ex);
         }
     }
 
@@ -53,7 +54,7 @@ public abstract class Listener {
 
     public void runEvent(NickChangeEvent event) {
     }
-    
+
     public void runEvent(ActionEvent event) {
     }
 

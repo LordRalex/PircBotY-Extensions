@@ -1,10 +1,12 @@
 package com.lordralex.ralexbot.settings;
 
+import com.lordralex.ralexbot.RalexBot;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -38,7 +40,7 @@ public final class Settings {
         try {
             it = yml.loadAll(new FileInputStream(name));
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Settings.class.getName()).log(Level.SEVERE, null, ex);
+            RalexBot.getLogger().log(Level.SEVERE, null, ex);
         }
         if (it != null) {
             for (Object in : it) {
@@ -68,7 +70,7 @@ public final class Settings {
         }
         String value = null;
         Object val = settings.get(name).get(key);
-        if (val instanceof String) {
+        if (val instanceof String && val != null) {
             value = (String) val;
         }
         return value;
@@ -80,7 +82,7 @@ public final class Settings {
         }
         Integer value = 0;
         Object val = settings.get(name).get(key);
-        if (val instanceof Integer) {
+        if (val instanceof Integer && val != null) {
             value = (Integer) val;
         }
         return value;
@@ -96,6 +98,9 @@ public final class Settings {
             value = (List<String>) val;
         } else if (val instanceof String[]) {
             value = Arrays.asList((String[]) val);
+        }
+        if (value == null) {
+            value = new ArrayList<>();
         }
         return value;
     }

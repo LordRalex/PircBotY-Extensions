@@ -93,7 +93,7 @@ public final class KeyboardListener extends Thread {
             instance.notify();
         }
         kb.shutdown();
-        System.out.println("Ending keyboard listener");
+        RalexBot.getLogger().info("Ending keyboard listener");
     }
 
     public ConsoleReader getJLine() {

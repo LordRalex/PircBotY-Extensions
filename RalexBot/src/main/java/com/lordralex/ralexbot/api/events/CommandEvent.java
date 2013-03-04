@@ -17,7 +17,7 @@ public final class CommandEvent extends Event {
         String commandTemp = temp[0].toLowerCase();
         for (String cmd : EventHandler.getCommandPrefixes()) {
             if (commandTemp.startsWith(cmd)) {
-                commandTemp = commandTemp.replaceFirst(cmd, "");
+                commandTemp = commandTemp.substring(cmd.length());
                 break;
             }
         }
