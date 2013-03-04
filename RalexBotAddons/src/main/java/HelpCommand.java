@@ -5,7 +5,6 @@ import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.sender.Sender;
 import com.lordralex.ralexbot.settings.Settings;
-import java.io.File;
 import java.util.List;
 
 public class HelpCommand extends Listener {
@@ -15,7 +14,7 @@ public class HelpCommand extends Listener {
 
     @Override
     public void setup() {
-        settings = new Settings(new File("settings", "config.yml"));
+        settings = Settings.getGlobalSettings();
         List<String> helpLines = settings.getStringList("help-list");
         help = helpLines.toArray(new String[0]);
     }
@@ -33,20 +32,23 @@ public class HelpCommand extends Listener {
         if (target == null) {
             return;
         }
-        String helpLine = "My commands you can know about: ";
+        String helpLine = "my commands you can know about: ";
         for (String name : help) {
             helpLine += name + ", ";
         }
         helpLine = helpLine.trim();
+        if (helpLine.endsWith(",")) {
+            helpLine = helpLine.substring(0, helpLine.length() - 2);
+        }
 
-        target.sendMessage(helpLine);
+        target.sendMessage(event.getSender().getNick() + ", " + helpLine);
     }
 
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "help",
-                    "commands"
-                };
+            "help",
+            "commands"
+        };
     }
 }

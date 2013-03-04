@@ -35,7 +35,7 @@ public class UCommand extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "u"
-                };
+            "u"
+        };
     }
 }

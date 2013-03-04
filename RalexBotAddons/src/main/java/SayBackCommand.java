@@ -8,10 +8,6 @@ import com.lordralex.ralexbot.api.events.JoinEvent;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  *
  * @author Joshua
@@ -53,7 +49,7 @@ public class SayBackCommand extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "message"
-                };
+            "message"
+        };
     }
 }

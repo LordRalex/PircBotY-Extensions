@@ -84,10 +84,9 @@ public class RecordedMessage extends Listener {
                     try {
                         wait(message_delay * 1000);
                     } catch (InterruptedException ex) {
-                        ex.printStackTrace(System.out);
                     }
                 }
-                if (!isInterrupted() && !messages.isEmpty()) {
+                if (!stop && !isInterrupted() && !messages.isEmpty()) {
                     synchronized (messages) {
                         String nextLine = messages.remove(0);
                         chan.sendMessage(nextLine);

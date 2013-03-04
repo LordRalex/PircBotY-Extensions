@@ -1,4 +1,5 @@
 
+import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
@@ -18,7 +19,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class RemCommand extends Listener {
 
@@ -36,7 +36,7 @@ public class RemCommand extends Listener {
                 String line = reader.nextLine().trim();
                 remMap.put(name, line);
             } catch (FileNotFoundException ex) {
-                Logger.getLogger(RemCommand.class.getName()).log(Level.SEVERE, null, ex);
+                RalexBot.getLogger().log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -180,23 +180,23 @@ public class RemCommand extends Listener {
     public void saveRem(String name, String line) {
         FileWriter writer = null;
         try {
-            writer = new FileWriter(new File("data" + File.separator + "rem" + File.separator + name + ".txt"));
+            writer = new FileWriter(new File(new File("data", "rem"), name + ".txt"));
             writer.write(line);
             writer.flush();
         } catch (IOException ex) {
-            Logger.getLogger(RemCommand.class.getName()).log(Level.SEVERE, null, ex);
+            RalexBot.getLogger().log(Level.SEVERE, null, ex);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(RemCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    RalexBot.getLogger().log(Level.SEVERE, null, ex);
                 }
             }
         }
     }
 
     public void deleteRem(String name) {
-        new File("data" + File.separator + "rem" + File.separator + name + ".txt").delete();
+        new File(new File("data", "rem"), name + ".txt").delete();
     }
 }

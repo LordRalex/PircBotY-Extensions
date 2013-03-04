@@ -1,4 +1,5 @@
 
+import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
@@ -137,6 +138,7 @@ public class TellCommand extends Listener {
             try {
                 messages = getTells(sender.getNick());
             } catch (FileNotFoundException ex) {
+                messages = new String[0];
             }
             if (messages == null || messages.length == 0) {
                 sender.sendMessage("I have no messages for you");
@@ -150,11 +152,11 @@ public class TellCommand extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "tell",
-                    "t",
-                    "showtells",
-                    "st"
-                };
+            "tell",
+            "t",
+            "showtells",
+            "st"
+        };
     }
 
     public void saveTells(String name, String[] lines) {
@@ -162,11 +164,11 @@ public class TellCommand extends Listener {
             return;
         }
         name = name.toLowerCase();
-        new File("data" + File.separator + "tells").mkdirs();
-        new File("data" + File.separator + "tells" + File.separator + name + ".txt").delete();
+        new File("data", "tells").mkdirs();
+        new File(new File("data", "tells"), name + ".txt").delete();
         FileWriter writer = null;
         try {
-            writer = new FileWriter(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
+            writer = new FileWriter(new File(new File("data", "tells"), name + ".txt"));
             for (String line : lines) {
                 writer.write(line + "\n");
             }
@@ -176,7 +178,7 @@ public class TellCommand extends Listener {
                 try {
                     writer.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(TellCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    RalexBot.getLogger().log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -192,7 +194,7 @@ public class TellCommand extends Listener {
         }
         name = name.toLowerCase();
         List<String> lines = new ArrayList<>();
-        Scanner reader = new Scanner(new File("data" + File.separator + "tells" + File.separator + name + ".txt"));
+        Scanner reader = new Scanner(new File(new File("data", "tells"), name + ".txt"));
         while (reader.hasNext()) {
             lines.add(reader.nextLine().trim());
         }

@@ -21,14 +21,13 @@ public class PingCommand extends Listener {
             return;
         }
 
-        target.sendMessage(
-                "Yes, i can hear you");
+        target.sendMessage("Yes, i can hear you");
     }
 
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "ping"
-                };
+            "ping"
+        };
     }
 }

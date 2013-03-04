@@ -1,9 +1,11 @@
 
+import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.channels.Channel;
+import com.lordralex.ralexbot.api.events.ActionEvent;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.api.events.PartEvent;
@@ -12,13 +14,15 @@ import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.api.users.User;
 import com.lordralex.ralexbot.settings.Settings;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ServerIPListener extends Listener {
 
     protected List<String> triggered;
     protected List<String> ignorePeople;
-    private final List<String> channels = new ArrayList<>();
+    private final Set<String> channels = new HashSet<>();
 
     @Override
     public void setup() {
@@ -60,7 +64,53 @@ public class ServerIPListener extends Listener {
                     triggered.add(sender.getNick().toLowerCase());
                     triggered.add(event.getHostname().toLowerCase());
                 } else if (triggered.contains(sender.getNick().toLowerCase())) {
-                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
+                    //BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
+                    if (RalexBot.getDebugMode()) {
+                        BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getSender().getNick() + " triggered the ip censor with his line: " + event.getMessage());
+                    }
+                    event.setCancelled(true);
+                }
+                break;
+            }
+        }
+    }
+
+    @Override
+    @EventType(event = EventField.Action, priority = Priority.HIGH)
+    public void runEvent(ActionEvent event) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+            return;
+        }
+        String message = event.getAction();
+        User sender = event.getSender();
+        Channel channel = event.getChannel();
+
+
+        boolean silence = false;
+
+        if (ignorePeople.contains(sender.getNick().toLowerCase()) || ignorePeople.contains(channel.getName().toLowerCase())) {
+            return;
+        }
+
+        if (triggered.contains(sender.getNick().toLowerCase())) {
+            silence = true;
+        } else if (triggered.contains(event.getSender().getIP().toLowerCase())) {
+            silence = true;
+        }
+        String[] messageParts = message.split(" ");
+        for (String part : messageParts) {
+            if (isServer(part)) {
+                if (!silence) {
+                    channel.sendMessage("Please do not advertise servers here");
+                    triggered.remove(event.getSender().getIP().toLowerCase());
+                    triggered.remove(event.getSender().getIP().toLowerCase());
+                    triggered.add(sender.getNick().toLowerCase());
+                    triggered.add(event.getSender().getIP().toLowerCase());
+                } else if (triggered.contains(sender.getNick().toLowerCase())) {
+                    //BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
+                    if (RalexBot.getDebugMode()) {
+                        BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getSender().getNick() + " triggered the ip censor with his line: " + event.getAction());
+                    }
                     event.setCancelled(true);
                 }
                 break;
@@ -112,10 +162,10 @@ public class ServerIPListener extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "reset",
-                    "unignoread",
-                    "ignoread"
-                };
+            "reset",
+            "unignoread",
+            "ignoread"
+        };
     }
 
     private boolean isServer(String testString) {

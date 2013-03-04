@@ -1,4 +1,5 @@
 
+import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class GoogleCommand extends Listener {
 
@@ -62,14 +62,15 @@ public class GoogleCommand extends Listener {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(GoogleCommand.class.getName()).log(Level.SEVERE, null, ex);
+            RalexBot.getLogger().log(Level.SEVERE, null, ex);
+            target.sendMessage("An error occureed");
         } finally {
             try {
                 if (reader != null) {
                     reader.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(GoogleCommand.class.getName()).log(Level.SEVERE, null, ex);
+                RalexBot.getLogger().log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -77,8 +78,8 @@ public class GoogleCommand extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "g",
-                    "google"
-                };
+            "g",
+            "google"
+        };
     }
 }
