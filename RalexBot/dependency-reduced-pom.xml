@@ -4,7 +4,7 @@
   <groupId>com.lordralex</groupId>
   <artifactId>RalexBot</artifactId>
   <name>RalexBot</name>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <url>http://maven.apache.org</url>
   <build>
     <plugins>
@@ -31,6 +31,12 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>BOT-VERSION</pattern>
+                  <shadedPattern>${project.version}</shadedPattern>
+                </relocation>
+              </relocations>
               <finalName>RalexBot-${project.version}</finalName>
               <transformers>
                 <transformer>
