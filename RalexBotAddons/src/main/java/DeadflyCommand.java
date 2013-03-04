@@ -1,4 +1,5 @@
 
+import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
@@ -6,6 +7,7 @@ import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.sender.Sender;
 import com.lordralex.ralexbot.api.users.User;
+import com.lordralex.ralexbot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,6 +20,16 @@ import java.util.logging.Logger;
 
 public class DeadflyCommand extends Listener {
 
+    private String adflyLine;
+
+    @Override
+    public void setup() {
+        adflyLine = Settings.getGlobalSettings().getString("adfly");
+        if (adflyLine == null || adflyLine.isEmpty()) {
+            adflyLine = "var zzz";
+        }
+    }
+
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
@@ -29,7 +41,7 @@ public class DeadflyCommand extends Listener {
         final String[] args = event.getArgs();
         final Channel channel = event.getChannel();
         BufferedReader reader = null, redirectReader = null;
-        URL redirectURL = null, path = null;
+        URL path = null;
         Sender target = channel;
         if (target == null) {
             target = sender;
@@ -59,39 +71,21 @@ public class DeadflyCommand extends Listener {
             String forward = null;
             for (String string : b) {
                 string = string.trim();
-                if (string.startsWith("var url")) {
-                    string = string.replace("var url =", "");
+                if (string.startsWith("var zzz")) {
+                    string = string.replace("var zzz =", "");
                     string = string.replace("\'", "");
                     string = string.replace(";", "");
                     string = string.trim();
                     if (!string.startsWith("https://adf.ly/")) {
                         forward = "https://adf.ly" + string;
+                    } else {
+                        forward = string;
                     }
                 }
             }
-            if (forward == null) {
-                throw new IOException("Parse failed on the link: " + args[0]);
-            }
-            redirectURL = new URL(url);
-            redirectReader = new BufferedReader(new InputStreamReader(redirectURL.openStream()));
-            List<String> parts2 = new ArrayList<>();
-            String e;
-            while ((e = redirectReader.readLine()) != null) {
-                parts2.add(e);
-            }
-            List<String> d = new ArrayList<>();
-            for (String part : parts2) {
-                String[] c = part.split(",");
-                d.addAll(Arrays.asList(c));
-            }
-            for (String string : d) {
-                string = string.trim();
-                if (string.startsWith("var url")) {
-                    reply = "";
-                }
-            }
+            reply = forward;
         } catch (IOException ex) {
-            Logger.getLogger(DeadflyCommand.class.getName()).log(Level.SEVERE, null, ex);
+            RalexBot.getLogger().log(Level.SEVERE, null, ex);
             reply = "There was a problem handling the link";
         } finally {
             try {
@@ -99,14 +93,14 @@ public class DeadflyCommand extends Listener {
                     reader.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
+                RalexBot.getLogger().log(Level.SEVERE, null, ex);
             }
             try {
                 if (redirectReader != null) {
                     redirectReader.close();
                 }
             } catch (IOException ex) {
-                Logger.getLogger(MCFCommand.class.getName()).log(Level.SEVERE, null, ex);
+                RalexBot.getLogger().log(Level.SEVERE, null, ex);
             }
         }
         target.sendMessage(reply);
@@ -115,8 +109,8 @@ public class DeadflyCommand extends Listener {
     @Override
     public String[] getAliases() {
         return new String[]{
-                    "deadfly",
-                    "df"
-                };
+            "deadfly",
+            "df"
+        };
     }
 }
