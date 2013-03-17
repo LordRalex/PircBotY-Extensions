@@ -32,6 +32,7 @@ public final class RalexBot extends Thread {
     private static boolean debugMode = false;
     private static final Map<String, String> args = new HashMap<>();
     private static final Logger logger = Logger.getLogger(RalexBot.class.getName());
+    private static boolean login = true;
 
     static {
         instance = new RalexBot();
@@ -47,6 +48,8 @@ public final class RalexBot extends Thread {
                 if (arg.equalsIgnoreCase("-debugmode")) {
                     logger.info("Starting with DEBUG MODE ENABLED");
                     debugMode = true;
+                } else if (arg.equalsIgnoreCase("--nologin")) {
+                    login = false;
                 } else {
                     String[] argument = arg.split("=");
                     String key, value;
@@ -128,7 +131,7 @@ public final class RalexBot extends Thread {
         BotUser bot = new BotUser();
 
         String id = globalSettings.getString("nick-pw");
-        if (id != null && !id.isEmpty()) {
+        if (id != null && !id.isEmpty() && login) {
             bot.sendMessage("nickserv", "identify " + id);
             logger.info("Logging in to nickserv");
         }
