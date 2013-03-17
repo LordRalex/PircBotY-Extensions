@@ -2,24 +2,18 @@ package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.console.ConsoleLogFormatter;
 import com.lordralex.ralexbot.settings.Settings;
-import com.lordralex.ralexbot.stream.LoggerOutputStream;
 import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.security.Permission;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jline.console.ConsoleReader;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
-import sun.net.ftp.FtpDirEntry;
 
 public final class RalexBot extends Thread {
 
@@ -48,7 +42,7 @@ public final class RalexBot extends Thread {
                 if (arg.equalsIgnoreCase("-debugmode")) {
                     logger.info("Starting with DEBUG MODE ENABLED");
                     debugMode = true;
-                } else if (arg.equalsIgnoreCase("--nologin")) {
+                } else if (arg.equalsIgnoreCase("-nologin")) {
                     login = false;
                 } else {
                     String[] argument = arg.split("=");
@@ -64,7 +58,7 @@ public final class RalexBot extends Thread {
             }
         }
         try {
-            instance.createInstance();
+            instance.createInstance(args.get("user"), args.get("pass"));
         } catch (IOException | IrcException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -79,14 +73,17 @@ public final class RalexBot extends Thread {
         System.exit(0);
     }
 
-    private void createInstance() throws IOException, IrcException {
+    private void createInstance(String user, String pass) throws IOException, IrcException {
         kblistener = new KeyboardListener(instance);
         globalSettings = Settings.loadGlobalSettings();
 
         driver = new PircBotX();
         driver.setVersion(VERSION);
         driver.setVerbose(false);
-        String nick = globalSettings.getString("nick");
+        String nick = user;
+        if (nick == null || nick.isEmpty()) {
+            nick = globalSettings.getString("nick");
+        }
         if (nick == null || nick.isEmpty()) {
             nick = "DebugBot";
         }
@@ -115,24 +112,25 @@ public final class RalexBot extends Thread {
         if (port == 0 || port < 0) {
             port = 6667;
         }
+        if (pass == null || pass.isEmpty()) {
+            pass = globalSettings.getString("nick-pw");
+        }
         try {
             driver.connect(network, port);
         } catch (NickAlreadyInUseException ex) {
             logger.log(Level.SEVERE, null, ex);
-            driver.changeNick(globalSettings.getString("nick") + "_");
+            driver.changeNick(nick + "_");
             driver.connect(network, port);
-            driver.sendMessage("chanserv", "ghost " + globalSettings.getString("nick") + " " + globalSettings.getString("nick-pw"));
-            driver.changeNick(globalSettings.getString("nick"));
+            driver.sendMessage("chanserv", "ghost " + nick + " " + pass);
+            driver.changeNick(nick);
             if (!globalSettings.getString("nick").equalsIgnoreCase(driver.getNick())) {
-                logger.severe("Could not claim the nick " + globalSettings.getString("nick"));
+                logger.severe("Could not claim the nick " + nick);
             }
         }
 
         BotUser bot = new BotUser();
-
-        String id = globalSettings.getString("nick-pw");
-        if (id != null && !id.isEmpty() && login) {
-            bot.sendMessage("nickserv", "identify " + id);
+        if (pass != null && !pass.isEmpty() && login) {
+            bot.sendMessage("nickserv", "identify " + pass);
             logger.info("Logging in to nickserv");
         }
 
