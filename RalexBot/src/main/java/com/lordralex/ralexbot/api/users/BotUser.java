@@ -53,4 +53,8 @@ public class BotUser extends User {
     public void sendNotice(String target, String message) {
         bot.sendNotice(target, message);
     }
+
+    public void sendAction(String target, String message) {
+        bot.sendAction(target, target);
+    }
 }
