@@ -2,11 +2,18 @@ package com.lordralex.ralexbot.threads;
 
 public abstract class DelayedTask extends Thread {
 
-    String message;
-    int time;
+    private final int time;
+
+    public DelayedTask(int milli, boolean isMilli) {
+        if (isMilli) {
+            time = milli;
+        } else {
+            time = milli * 1000;
+        }
+    }
 
     public DelayedTask(int sec) {
-        time = sec;
+        this(sec, false);
     }
 
     @Override
