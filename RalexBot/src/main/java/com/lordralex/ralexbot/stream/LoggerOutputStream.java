@@ -10,9 +10,11 @@ public class LoggerOutputStream extends ByteArrayOutputStream {
 
     private static final String separator = System.getProperty("line.separator");
     private final Level level;
+    private final Logger log;
 
-    public LoggerOutputStream(Level level) {
+    public LoggerOutputStream(Logger logger, Level level) {
         super();
+        log = logger;
         this.level = level;
     }
 
@@ -22,7 +24,7 @@ public class LoggerOutputStream extends ByteArrayOutputStream {
             String record = this.toString();
             super.reset();
             if ((record.length() > 0) && (!record.equals(separator))) {
-                RalexBot.getLogger().logp(level, "", "", record);
+                log.log(level, record);
             }
         }
     }

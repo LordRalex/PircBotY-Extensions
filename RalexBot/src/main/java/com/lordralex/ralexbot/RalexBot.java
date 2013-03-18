@@ -2,14 +2,23 @@ package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.console.ConsoleHandler;
+import com.lordralex.ralexbot.console.ConsoleLogFormatter;
 import com.lordralex.ralexbot.settings.Settings;
+import com.lordralex.ralexbot.stream.LoggerOutputStream;
 import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import jline.console.ConsoleReader;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
@@ -36,7 +45,16 @@ public final class RalexBot extends Thread {
         return logger;
     }
 
-    public static void main(String[] startargs) {
+    public static void main(String[] startargs) throws IOException {
+        ConsoleLogFormatter clf = new ConsoleLogFormatter();
+        ConsoleReader cr = new ConsoleReader(System.in, System.out);
+        ConsoleHandler ch = new ConsoleHandler(cr);
+        ch.setFormatter(clf);
+        Logger temp = Logger.getLogger("");
+        for (Handler handle : temp.getHandlers()) {
+            temp.removeHandler(handle);
+        }
+        logger.addHandler(ch);
         if (startargs.length != 0) {
             for (String arg : startargs) {
                 if (arg.equalsIgnoreCase("-debugmode")) {
