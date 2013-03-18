@@ -41,7 +41,7 @@ public final class EventHandler extends ListenerAdapter {
     public EventHandler() {
         super();
         runner = new EventRunner();
-        runner.setName("Event_Handler_Thread");
+        runner.setName("Event_Runner_Thread");
     }
 
     public void load() {
