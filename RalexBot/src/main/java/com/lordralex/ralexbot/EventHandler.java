@@ -120,7 +120,7 @@ public final class EventHandler extends ListenerAdapter {
             if (obj instanceof Listener) {
                 Listener list = (Listener) obj;
                 list.setup();
-                System.out.println("  Added: " + list.getClass().getName());
+                RalexBot.getLogger().info("  Added: " + list.getClass().getName());
                 list.declareValues(list.getClass());
                 listeners.add(list);
             }
