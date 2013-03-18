@@ -15,14 +15,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 public final class Settings {
 
     private static final Map<File, SettingsMap<String, Object>> settings = new ConcurrentHashMap<>();
-    private File name;
+    private final File name;
     private static final Settings global;
 
     static {

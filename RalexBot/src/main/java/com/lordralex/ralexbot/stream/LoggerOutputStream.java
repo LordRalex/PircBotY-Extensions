@@ -1,8 +1,6 @@
 package com.lordralex.ralexbot.stream;
 
-import com.lordralex.ralexbot.RalexBot;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

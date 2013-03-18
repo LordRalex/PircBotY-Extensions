@@ -10,7 +10,7 @@ import org.pircbotx.User;
  */
 public class Channel extends Utilities implements Sender {
 
-    private org.pircbotx.Channel pircbotxChannel;
+    private final org.pircbotx.Channel pircbotxChannel;
 
     private Channel(String name) {
         pircbotxChannel = bot.getChannel(name);

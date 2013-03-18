@@ -1,24 +1,19 @@
 package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.Utilities;
+import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.console.ConsoleHandler;
 import com.lordralex.ralexbot.console.ConsoleLogFormatter;
 import com.lordralex.ralexbot.settings.Settings;
-import com.lordralex.ralexbot.stream.LoggerOutputStream;
 import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import jline.console.ConsoleReader;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
@@ -26,19 +21,30 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 
 public final class RalexBot extends Thread {
 
-    private static PircBotX driver;
-    public static String VERSION = "BOT-VERSION";
-    private static EventHandler eventHandler;
+    private static final PircBotX driver;
+    public static final String VERSION = "BOT-VERSION";
+    private static final EventHandler eventHandler;
     private static final RalexBot instance;
-    private static KeyboardListener kblistener;
-    private static Settings globalSettings;
+    private static final KeyboardListener kblistener;
+    private static final Settings globalSettings;
     private static boolean debugMode = false;
     private static final Map<String, String> args = new HashMap<>();
-    private static final Logger logger = Logger.getLogger(RalexBot.class.getName());
+    private static final Logger logger = Logger.getLogger("RalexBot");
     private static boolean login = true;
 
     static {
         instance = new RalexBot();
+        KeyboardListener temp;
+        try {
+            temp = new KeyboardListener(instance);
+        } catch (IOException | NickNotOnlineException ex) {
+            temp = null;
+            logger.log(Level.SEVERE, "An error occured", ex);
+        }
+        kblistener = temp;
+        globalSettings = Settings.loadGlobalSettings();
+        eventHandler = new EventHandler();
+        driver = new PircBotX();
     }
 
     public static Logger getLogger() {
@@ -92,10 +98,6 @@ public final class RalexBot extends Thread {
     }
 
     private void createInstance(String user, String pass) throws IOException, IrcException {
-        kblistener = new KeyboardListener(instance);
-        globalSettings = Settings.loadGlobalSettings();
-
-        driver = new PircBotX();
         driver.setVersion(VERSION);
         driver.setVerbose(false);
         String nick = user;
@@ -112,7 +114,6 @@ public final class RalexBot extends Thread {
 
         Utilities.setUtils(driver);
 
-        eventHandler = new EventHandler();
         eventHandler.load();
         boolean success = driver.getListenerManager().addListener(eventHandler);
         if (success) {

@@ -16,7 +16,7 @@ import jline.console.ConsoleReader;
  */
 public final class KeyboardListener extends Thread {
 
-    ConsoleReader kb;
+    final ConsoleReader kb;
     final RalexBot instance;
     BotUser bot;
 

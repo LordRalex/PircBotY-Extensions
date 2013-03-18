@@ -13,8 +13,7 @@ public enum EventField {
     PrivateMessage(PrivateMessageEvent.class),
     Quit(QuitEvent.class),
     Action(ActionEvent.class);
-    
-    private Class eventClass;
+    private final Class eventClass;
 
     private EventField(Class cl) {
         eventClass = cl;

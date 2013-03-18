@@ -10,7 +10,7 @@ import com.lordralex.ralexbot.api.sender.Sender;
  */
 public class User extends Utilities implements Sender {
 
-    protected org.pircbotx.User pircbotxUser;
+    protected final org.pircbotx.User pircbotxUser;
 
     protected User(String nick) {
         pircbotxUser = bot.getUser(nick);

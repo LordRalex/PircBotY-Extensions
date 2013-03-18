@@ -6,8 +6,8 @@ package com.lordralex.ralexbot.threads;
  */
 public class ThreadPingThread extends Thread {
 
-    Thread parentThread;
-    int timeToPing;
+    private final Thread parentThread;
+    private final int timeToPing;
 
     public ThreadPingThread(Thread parent, int value) {
         parentThread = parent;
