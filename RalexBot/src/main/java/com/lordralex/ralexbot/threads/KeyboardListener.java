@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import jline.console.ConsoleReader;
 
 /**
@@ -80,6 +81,8 @@ public final class KeyboardListener extends Thread {
                                 } else {
                                     bot.sendMessage("chanserv", "kick " + chan + " " + target + " " + reason);
                                 }
+                            } else if (cmd.equalsIgnoreCase("error")) {
+                                throw new IOException("test");
                             }
                         } else {
                             if (currentChan == null || currentChan.isEmpty()) {
@@ -89,7 +92,7 @@ public final class KeyboardListener extends Thread {
                         }
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace(System.out);
+                    RalexBot.getLogger().log(Level.SEVERE, "An error occurred", ex);
                 }
             }
         } catch (Exception e) {
