@@ -90,13 +90,13 @@ public final class EventHandler extends ListenerAdapter {
                     }
 
                 } catch (IOException ex) {
-                    ex.printStackTrace(System.out);
+                    RalexBot.getLogger().log(Level.SEVERE, "An error occured", ex);
                 } finally {
                     if (zipFile != null) {
                         try {
                             zipFile.close();
                         } catch (IOException ex) {
-                            ex.printStackTrace(System.out);
+                            RalexBot.getLogger().log(Level.SEVERE, "An error occured", ex);
                         }
                     }
                 }
