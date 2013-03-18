@@ -27,8 +27,8 @@ import org.pircbotx.hooks.ListenerAdapter;
 
 public final class EventHandler extends ListenerAdapter {
 
-    private List<Listener> listeners = new ArrayList<>();
-    private ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
+    private final List<Listener> listeners = new ArrayList<>();
+    private final ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
     private final EventRunner runner;
     private static final List<String> commandChars = new ArrayList<>();
 
