@@ -50,7 +50,7 @@ public final class KeyboardListener extends Thread {
                             } else if (cmd.equalsIgnoreCase("leave")) {
                                 bot.leaveChannel(line.split(" ")[1]);
                             } else if (cmd.equalsIgnoreCase("me")) {
-                                String action = line.substring(2);
+                                String action = line.substring(3);
                                 if (currentChan != null && !currentChan.isEmpty()) {
                                     bot.sendAction(currentChan, action);
                                 }
