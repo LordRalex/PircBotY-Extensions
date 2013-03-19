@@ -90,6 +90,7 @@ public class FileCommand extends Listener {
                         }
                     }
                     writer.close();
+                    target.sendMessage("File written to " + urlBase + "/" + event.getArgs()[1] + ".txt");
                     return;
                 } else if (url.startsWith("http://pastie.org")) {
                     if (!url.endsWith("text")) {
