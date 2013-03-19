@@ -10,7 +10,6 @@ import com.lordralex.ralexbot.api.events.MessageEvent;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.api.users.User;
 import com.lordralex.ralexbot.settings.Settings;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +22,11 @@ public class AntiSpamListener extends Listener {
     private int MAX_MESSAGES;
     private int SPAM_RATE;
     private int DUPE_RATE;
-    private Settings settings;
+    private final Settings settings = Settings.getGlobalSettings();
     private final List<String> channels = new ArrayList<>();
 
     @Override
     public void setup() {
-        settings = new Settings(new File("settings", "config.yml"));
         MAX_MESSAGES = settings.getInt("spam-message");
         SPAM_RATE = settings.getInt("spam-time");
         DUPE_RATE = settings.getInt("spam-dupe");
@@ -59,11 +57,10 @@ public class AntiSpamListener extends Listener {
                     BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"),
                             "Would have kicked " + event.getSender().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
                 } else {
-                    //BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
-                    sender.quiet(event.getChannel());
+                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
+                    //sender.quiet(event.getChannel());
                     //UnquietThread quiet = new UnquietThread(event.getChannel().getName(), sender.getQuietLine(), 10 * 1000);
                 }
-
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);
