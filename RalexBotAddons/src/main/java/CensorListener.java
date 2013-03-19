@@ -10,7 +10,9 @@ import com.lordralex.ralexbot.api.events.NickChangeEvent;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.settings.Settings;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -20,6 +22,7 @@ public class CensorListener extends Listener {
 
     private final List<String> censor = new ArrayList<>();
     private final List<String> channels = new ArrayList<>();
+    private final Set<String> warned = new HashSet<>();
 
     @Override
     public void setup() {
@@ -40,7 +43,15 @@ public class CensorListener extends Listener {
         }
         String message = event.getMessage().toLowerCase();
         if (scanMessage(message)) {
-            event.getChannel().sendMessage("Please keep it civil, " + event.getSender().getNick());
+            if (!RalexBot.getDebugMode()) {
+                if (warned.contains(event.getSender().getNick()) || warned.contains(event.getSender().getIP())) {
+                    BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
+                } else {
+                    warned.add(event.getSender().getNick());
+                    warned.add(event.getSender().getIP());
+                    event.getChannel().sendMessage("Please keep it civil, " + event.getSender().getNick());
+                }
+            }
             if (RalexBot.getDebugMode()) {
                 BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getSender().getNick() + " triggered the censor with his line: " + event.getMessage());
             }
@@ -58,7 +69,15 @@ public class CensorListener extends Listener {
         }
         String message = event.getAction().toLowerCase();
         if (scanMessage(message)) {
-            event.getChannel().sendMessage("Please keep it civil, " + event.getSender().getNick());
+            if (!RalexBot.getDebugMode()) {
+                if (warned.contains(event.getSender().getNick()) || warned.contains(event.getSender().getIP())) {
+                    BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
+                } else {
+                    warned.add(event.getSender().getNick());
+                    warned.add(event.getSender().getIP());
+                    event.getChannel().sendMessage("Please keep it civil, " + event.getSender().getNick());
+                }
+            }
             if (RalexBot.getDebugMode()) {
                 BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getSender().getNick() + " triggered the censor with his line: " + event.getAction());
             }
@@ -72,7 +91,7 @@ public class CensorListener extends Listener {
         if (scanMessage(message)) {
             for (String chan : BotUser.getBotUser().getChannels()) {
                 if (!RalexBot.getDebugMode()) {
-                    //BotUser.getBotUser().kick(event.getNewNick(), chan, "Please keep it civil");
+                    BotUser.getBotUser().kick(event.getNewNick(), chan, "Please keep it civil");
                 }
             }
         }
@@ -87,7 +106,7 @@ public class CensorListener extends Listener {
         String message = event.getSender().getNick().toLowerCase();
         if (scanMessage(message)) {
             if (!RalexBot.getDebugMode()) {
-                //BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
+                BotUser.getBotUser().kick(event.getSender().getNick(), event.getChannel().getName(), "Please keep it civil");
             }
         }
     }
