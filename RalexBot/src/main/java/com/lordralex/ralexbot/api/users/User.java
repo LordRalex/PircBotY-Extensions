@@ -19,6 +19,11 @@ package com.lordralex.ralexbot.api.users;
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.sender.Sender;
+import com.lordralex.ralexbot.permissions.PermissionGroup;
+import com.lordralex.ralexbot.settings.Settings;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -27,9 +32,20 @@ import com.lordralex.ralexbot.api.sender.Sender;
 public class User extends Utilities implements Sender {
 
     protected final org.pircbotx.User pircbotxUser;
+    protected final List<String> perms = new ArrayList<>();
 
     protected User(String nick) {
         pircbotxUser = bot.getUser(nick);
+        List<String> permsToGet = new ArrayList<>();
+        Settings userGroups = new Settings(new File("permissions", "users.yml"));
+        List<String> groups = userGroups.getStringList(nick.toLowerCase());
+        if (groups != null) {
+            for (String groupName : groups) {
+                PermissionGroup group = new PermissionGroup(groupName);
+                permsToGet.addAll(group.getPerms());
+            }
+        }
+        perms.addAll(permsToGet);
     }
 
     public static User getUser(String nick) {
@@ -103,5 +119,13 @@ public class User extends Utilities implements Sender {
 
     public String getQuietLine() {
         return "*!*" + pircbotxUser.getLogin() + "@" + pircbotxUser.getHostmask();
+    }
+
+    public boolean hasPermission(String permission) {
+        return perms.contains(permission);
+    }
+
+    public void addPerm(String perm) {
+        perms.add(perm);
     }
 }

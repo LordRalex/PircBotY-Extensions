@@ -44,9 +44,9 @@ public final class Settings {
         global = loadGlobalSettings();
     }
 
-    public Settings(File aFileToLoad) {
+    public Settings(File aFileToLoad, boolean forceLoad) {
         name = aFileToLoad;
-        if (settings.containsKey(name)) {
+        if (settings.containsKey(name) && !forceLoad) {
             return;
         }
         Map<String, Object> local = new HashMap<>();
@@ -69,6 +69,10 @@ public final class Settings {
             }
         }
         settings.put(name, new SettingsMap<>(local));
+    }
+
+    public Settings(File aFileToLoad) {
+        this(aFileToLoad, false);
     }
 
     public static Settings loadGlobalSettings() {
