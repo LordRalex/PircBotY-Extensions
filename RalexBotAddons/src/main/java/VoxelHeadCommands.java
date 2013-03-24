@@ -22,6 +22,7 @@ import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.sender.Sender;
 import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.api.users.User;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,6 +33,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -93,6 +95,14 @@ public class VoxelHeadCommands extends Listener {
                     return;
                 }
             }
+            boolean allowExec = true;
+            String[] chans = User.getUser("Voxelhead").getChannels();
+            if (Arrays.asList(chans).contains(event.getChannel().getName())) {
+                allowExec = false;
+            }
+            if (!allowExec) {
+                return;
+            }
             if (event.getArgs().length == 1) {
                 String[] lines = index.get(event.getArgs()[0].toLowerCase());
                 if (lines == null || lines.length == 0) {
@@ -132,7 +142,9 @@ public class VoxelHeadCommands extends Listener {
             "vh",
             ">",
             "<",
-            "<<"
+            "<<",
+            "",
+            "refresh"
         };
     }
 
