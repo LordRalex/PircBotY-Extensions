@@ -21,6 +21,7 @@ import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.sender.Sender;
+import com.lordralex.ralexbot.api.users.BotUser;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -95,15 +96,32 @@ public class VoxelHeadCommands extends Listener {
             if (event.getArgs().length == 1) {
                 String[] lines = index.get(event.getArgs()[0].toLowerCase());
                 if (lines == null || lines.length == 0) {
-                    target.sendMessage("No key called " + event.getArgs()[0].toLowerCase());
+                    event.getSender().sendMessage("No key called " + event.getArgs()[0].toLowerCase());
+                    return;
                 }
                 for (String line : lines) {
-                    target.sendMessage(Colors.BOLD + event.getArgs()[0].toLowerCase() + ": " + Colors.NORMAL + line);
+                    if (event.getCommand().equals(">")) {
+                        target.sendMessage(Colors.BOLD + event.getArgs()[0].toLowerCase() + ": " + Colors.NORMAL + line);
+                    } else {
+                        event.getSender().sendMessage(Colors.BOLD + event.getArgs()[0].toLowerCase() + ": " + Colors.NORMAL + line);
+                    }
                 }
-                return;
-            } else {
-                target.sendMessage("Command is: vh <value>");
-                return;
+            } else if (event.getArgs().length == 2 && (event.getCommand().equals(">") || event.getCommand().equals("<<"))) {
+                String[] lines = index.get(event.getArgs()[1].toLowerCase());
+                if (lines == null || lines.length == 0) {
+                    return;
+                }
+                String sendTo = event.getArgs()[0];
+                for (String line : lines) {
+                    if (event.getCommand().equals(">")) {
+                        target.sendMessage(Colors.BOLD + sendTo + ": " + Colors.NORMAL + "(" + event.getArgs()[1].toLowerCase() + ") " + Colors.NORMAL + line);
+                    } else {
+                        BotUser.getBotUser().sendMessage(sendTo, Colors.BOLD + event.getArgs()[1].toLowerCase() + ": " + Colors.NORMAL + line);
+                    }
+                }
+                if (event.getCommand().equalsIgnoreCase("<<")) {
+                    event.getSender().sendMessage("I have told " + event.getArgs()[0] + " about " + event.getArgs()[1]);
+                }
             }
         }
     }
@@ -112,8 +130,9 @@ public class VoxelHeadCommands extends Listener {
     public String[] getAliases() {
         return new String[]{
             "vh",
-            "voxelhead",
-            "refresh"
+            ">",
+            "<",
+            "<<"
         };
     }
 
