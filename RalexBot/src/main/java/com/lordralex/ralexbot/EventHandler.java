@@ -52,6 +52,7 @@ public final class EventHandler extends ListenerAdapter {
         commandChars.clear();
         commandChars.add("**");
         commandChars.add("*");
+        commandChars.add("??");
     }
 
     public EventHandler() {
