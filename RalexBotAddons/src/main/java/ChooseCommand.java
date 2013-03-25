@@ -37,8 +37,6 @@ public class ChooseCommand extends Listener {
             return;
         }
 
-        BotUser botUser = BotUser.getBotUser();
-
         String[] args = event.getArgs();
         if (args.length == 0) {
             target.sendMessage("Command use: *choose [choices] (you can use spaces or , to separate them)");
@@ -61,7 +59,7 @@ public class ChooseCommand extends Listener {
         String answer = choices[new Random().nextInt(choices.length)];
         answer = answer.trim();
         if (event.getSender() != null) {
-            target.sendMessage(event.getSender() + ": " + answer);
+            target.sendMessage(event.getSender().getNick() + ": " + answer);
         } else {
             target.sendMessage(answer);
         }
