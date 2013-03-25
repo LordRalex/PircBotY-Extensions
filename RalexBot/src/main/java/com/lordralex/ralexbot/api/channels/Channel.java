@@ -18,6 +18,9 @@ package com.lordralex.ralexbot.api.channels;
 
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.sender.Sender;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import org.pircbotx.User;
 
 /**
@@ -88,6 +91,15 @@ public class Channel extends Utilities implements Sender {
 
     public String getName() {
         return pircbotxChannel.getName();
+    }
+
+    public List<String> getUsers() {
+        Set<User> users = pircbotxChannel.getUsers();
+        List<String> names = new ArrayList<>();
+        for (User user : users) {
+            names.add(user.getNick());
+        }
+        return names;
     }
 
     public static Channel getChannel(String channel) {
