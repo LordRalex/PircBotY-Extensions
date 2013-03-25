@@ -20,9 +20,10 @@ import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.events.JoinEvent;
+import com.lordralex.ralexbot.api.events.PartEvent;
 import com.lordralex.ralexbot.api.sender.Sender;
 import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.api.users.User;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,8 +34,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.pircbotx.Colors;
@@ -96,8 +97,8 @@ public class VoxelHeadCommands extends Listener {
                 }
             }
             boolean allowExec = true;
-            String[] chans = User.getUser("Voxelhead").getChannels();
-            if (Arrays.asList(chans).contains(event.getChannel().getName())) {
+            List<String> users = event.getChannel().getUsers();
+            if (users.contains("VoxelHead")) {
                 allowExec = false;
             }
             if (!allowExec) {
@@ -106,14 +107,14 @@ public class VoxelHeadCommands extends Listener {
             if (event.getArgs().length == 1) {
                 String[] lines = index.get(event.getArgs()[0].toLowerCase());
                 if (lines == null || lines.length == 0) {
-                    event.getSender().sendMessage("No key called " + event.getArgs()[0].toLowerCase());
+                    event.getSender().sendNotice("No key called " + event.getArgs()[0].toLowerCase());
                     return;
                 }
                 for (String line : lines) {
-                    if (event.getCommand().equals(">")) {
+                    if (event.getCommand().equals(">") || event.getCommand().isEmpty()) {
                         target.sendMessage(Colors.BOLD + event.getArgs()[0].toLowerCase() + ": " + Colors.NORMAL + line);
                     } else {
-                        event.getSender().sendMessage(Colors.BOLD + event.getArgs()[0].toLowerCase() + ": " + Colors.NORMAL + line);
+                        event.getSender().sendNotice(Colors.BOLD + event.getArgs()[0].toLowerCase() + ": " + Colors.NORMAL + line);
                     }
                 }
             } else if (event.getArgs().length == 2 && (event.getCommand().equals(">") || event.getCommand().equals("<<"))) {
@@ -126,11 +127,11 @@ public class VoxelHeadCommands extends Listener {
                     if (event.getCommand().equals(">")) {
                         target.sendMessage(Colors.BOLD + sendTo + ": " + Colors.NORMAL + "(" + event.getArgs()[1].toLowerCase() + ") " + Colors.NORMAL + line);
                     } else {
-                        BotUser.getBotUser().sendMessage(sendTo, Colors.BOLD + event.getArgs()[1].toLowerCase() + ": " + Colors.NORMAL + line);
+                        BotUser.getBotUser().sendNotice(sendTo, Colors.BOLD + event.getArgs()[1].toLowerCase() + ": " + Colors.NORMAL + line);
                     }
                 }
                 if (event.getCommand().equalsIgnoreCase("<<")) {
-                    event.getSender().sendMessage("I have told " + event.getArgs()[0] + " about " + event.getArgs()[1]);
+                    event.getSender().sendNotice("I have told " + event.getArgs()[0] + " about " + event.getArgs()[1]);
                 }
             }
         }
@@ -146,6 +147,22 @@ public class VoxelHeadCommands extends Listener {
             "",
             "refresh"
         };
+    }
+
+    @Override
+    @EventType(event = EventField.Join)
+    public void runEvent(JoinEvent event) {
+        if (event.getSender().getNick().equalsIgnoreCase("voxelhead")) {
+            event.getChannel().sendMessage("Voxelhead has returned. Returning to my cave.");
+        }
+    }
+
+    @Override
+    @EventType(event = EventField.Part)
+    public void runEvent(PartEvent event) {
+        if (event.getSender().getNick().equalsIgnoreCase("voxelhead")) {
+            event.getChannel().sendMessage("Voxelhead has left the building. Taking over.");
+        }
     }
 
     private void copyInputStream(InputStream in, FileOutputStream out) throws IOException {
