@@ -27,7 +27,7 @@ public class NickChangeEvent extends Event {
         oldNick = event.getOldNick();
         newNick = event.getNewNick();
         hostname = event.getUser().getHostmask();
-        sender = User.getUser(newNick);
+        sender = new User(newNick);
     }
 
     public String getOldNick() {

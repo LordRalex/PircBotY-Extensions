@@ -4,8 +4,15 @@
   <groupId>com.lordralex</groupId>
   <artifactId>RalexBot</artifactId>
   <name>RalexBot</name>
-  <version>0.1.1</version>
+  <version>0.1.3</version>
   <url>http://maven.apache.org</url>
+  <licenses>
+    <license>
+      <name>General Public License, Version 3.0</name>
+      <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <build>
     <plugins>
       <plugin>

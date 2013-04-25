@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public abstract class Listener {
 

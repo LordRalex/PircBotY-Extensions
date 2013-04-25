@@ -21,6 +21,7 @@ import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
+import com.lordralex.ralexbot.settings.Settings;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,17 +49,16 @@ public final class EventHandler extends ListenerAdapter {
     private final EventRunner runner;
     private static final List<String> commandChars = new ArrayList<>();
 
-    static {
-        commandChars.clear();
-        commandChars.add("**");
-        commandChars.add("*");
-        commandChars.add("??");
-    }
-
     public EventHandler() {
         super();
         runner = new EventRunner();
         runner.setName("Event_Runner_Thread");
+        List<String> settings = Settings.getGlobalSettings().getStringList("command-prefix");
+        commandChars.clear();
+        if (settings.isEmpty()) {
+            settings.add("**");
+        }
+        commandChars.addAll(settings);
     }
 
     public void load() {
@@ -139,6 +139,10 @@ public final class EventHandler extends ListenerAdapter {
                 list.setup();
                 RalexBot.getLogger().info("  Added: " + list.getClass().getName());
                 list.declareValues(list.getClass());
+                /*Map<String, PermissionDefault> perms = list.getRegisteredPerms();
+                 for (String key : perms.keySet()) {
+                 new Permission(key, perms.get(key));
+                 }*/
                 listeners.add(list);
             }
         } catch (Throwable ex) {
@@ -284,52 +288,56 @@ public final class EventHandler extends ListenerAdapter {
                     if (type == null) {
                         break;
                     }
-                    for (Priority prio : Priority.values()) {
-                        for (Listener listener : listeners) {
-                            EventType info = listener.priorities.get(type);
-                            if (info == null) {
-                                continue;
-                            }
-                            if (next.isCancelled() && !info.ignoreCancel()) {
-                                continue;
-                            }
-                            Priority temp = info.priority();
-                            if (temp != null && temp == prio) {
-                                try {
-                                    switch (type) {
-                                        case Message:
-                                            listener.runEvent((MessageEvent) next);
-                                            break;
-                                        case Command:
+                    if (type == EventField.Permission) {
+                        //RalexBot.getPermManager().runEvent((PermissionEvent) next);
+                    } else {
+                        for (Priority prio : Priority.values()) {
+                            for (Listener listener : listeners) {
+                                EventType info = listener.priorities.get(type);
+                                if (info == null) {
+                                    continue;
+                                }
+                                if (next.isCancelled() && !info.ignoreCancel()) {
+                                    continue;
+                                }
+                                Priority temp = info.priority();
+                                if (temp != null && temp == prio) {
+                                    try {
+                                        switch (type) {
+                                            case Message:
+                                                listener.runEvent((MessageEvent) next);
+                                                break;
+                                            case Command:
 
-                                            List<String> aliases = Arrays.asList(listener.getAliases());
-                                            String cmd = ((CommandEvent) next).getCommand().toLowerCase();
-                                            if (listener.getAliases().length == 0
-                                                    || aliases.contains(cmd)) {
-                                                listener.runEvent((CommandEvent) next);
-                                            }
-                                            break;
-                                        case Join:
-                                            listener.runEvent((JoinEvent) next);
-                                            break;
-                                        case NickChange:
-                                            listener.runEvent((NickChangeEvent) next);
-                                            break;
-                                        case Notice:
-                                            listener.runEvent((NoticeEvent) next);
-                                            break;
-                                        case Part:
-                                            listener.runEvent((PartEvent) next);
-                                            break;
-                                        case PrivateMessage:
-                                            listener.runEvent((PrivateMessageEvent) next);
-                                            break;
-                                        case Quit:
-                                            listener.runEvent((QuitEvent) next);
-                                            break;
+                                                List<String> aliases = Arrays.asList(listener.getAliases());
+                                                String cmd = ((CommandEvent) next).getCommand().toLowerCase();
+                                                if (listener.getAliases().length == 0
+                                                        || aliases.contains(cmd)) {
+                                                    listener.runEvent((CommandEvent) next);
+                                                }
+                                                break;
+                                            case Join:
+                                                listener.runEvent((JoinEvent) next);
+                                                break;
+                                            case NickChange:
+                                                listener.runEvent((NickChangeEvent) next);
+                                                break;
+                                            case Notice:
+                                                listener.runEvent((NoticeEvent) next);
+                                                break;
+                                            case Part:
+                                                listener.runEvent((PartEvent) next);
+                                                break;
+                                            case PrivateMessage:
+                                                listener.runEvent((PrivateMessageEvent) next);
+                                                break;
+                                            case Quit:
+                                                listener.runEvent((QuitEvent) next);
+                                                break;
+                                        }
+                                    } catch (Exception e) {
+                                        RalexBot.getLogger().log(Level.SEVERE, "Unhandled exception on event execution", e);
                                     }
-                                } catch (Exception e) {
-                                    RalexBot.getLogger().log(Level.SEVERE, "Unhandled exception on event execution", e);
                                 }
                             }
                         }

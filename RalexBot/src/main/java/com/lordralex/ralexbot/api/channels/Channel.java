@@ -18,8 +18,11 @@ package com.lordralex.ralexbot.api.channels;
 
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.sender.Sender;
+import com.lordralex.ralexbot.permissions.Permissible;
+import com.lordralex.ralexbot.permissions.Permission;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.pircbotx.User;
 
@@ -27,12 +30,16 @@ import org.pircbotx.User;
  *
  * @author Joshua
  */
-public class Channel extends Utilities implements Sender {
+public class Channel extends Utilities implements Sender, Permissible {
 
     private final org.pircbotx.Channel pircbotxChannel;
 
-    private Channel(String name) {
+    public Channel(String name) {
         pircbotxChannel = bot.getChannel(name);
+    }
+
+    public static Channel getChannel(String channel) {
+        return new Channel(channel);
     }
 
     @Override
@@ -102,7 +109,28 @@ public class Channel extends Utilities implements Sender {
         return names;
     }
 
-    public static Channel getChannel(String channel) {
-        return new Channel(channel);
+    @Override
+    public boolean hasPermission(Permission perm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void addPermission(Permission perm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void addPermission(Permission perm, boolean val) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void removePermission(Permission perm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Map<Permission, Boolean> getPermissions() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

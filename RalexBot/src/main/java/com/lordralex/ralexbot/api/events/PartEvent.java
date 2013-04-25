@@ -25,8 +25,8 @@ public class PartEvent extends Event {
     private final Channel channel;
 
     public PartEvent(org.pircbotx.hooks.events.PartEvent event) {
-        sender = User.getUser(event.getUser().getNick());
-        channel = Channel.getChannel(event.getChannel().getName());
+        sender = new User(event.getUser().getNick());
+        channel = new Channel(event.getChannel().getName());
     }
 
     public Channel getChannel() {

@@ -24,7 +24,7 @@ public class NoticeEvent extends Event {
     private final User sender;
 
     public NoticeEvent(org.pircbotx.hooks.events.NoticeEvent event) {
-        sender = User.getUser(event.getUser().getNick());
+        sender = new User(event.getUser().getNick());
         message = event.getMessage();
     }
 

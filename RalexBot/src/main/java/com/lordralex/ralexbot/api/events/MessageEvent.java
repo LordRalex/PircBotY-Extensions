@@ -26,8 +26,8 @@ public final class MessageEvent extends Event {
     private final Channel channel;
 
     public MessageEvent(org.pircbotx.hooks.events.MessageEvent event) {
-        sender = User.getUser(event.getUser().getNick());
-        channel = Channel.getChannel(event.getChannel().getName());
+        sender = new User(event.getUser().getNick());
+        channel = new Channel(event.getChannel().getName());
         message = event.getMessage();
     }
 

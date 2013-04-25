@@ -19,42 +19,36 @@ package com.lordralex.ralexbot.api.users;
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.sender.Sender;
-import com.lordralex.ralexbot.permissions.PermissionGroup;
-import com.lordralex.ralexbot.settings.Settings;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import com.lordralex.ralexbot.permissions.Permissible;
+import com.lordralex.ralexbot.permissions.Permission;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
  * @author Joshua
  */
-public class User extends Utilities implements Sender {
+public class User extends Utilities implements Sender, Permissible {
 
+    protected static final Map<String, User> userList = new ConcurrentHashMap<>();
     protected final org.pircbotx.User pircbotxUser;
-    protected final List<String> perms = new ArrayList<>();
 
-    protected User(String nick) {
+    public User(String nick) {
         pircbotxUser = bot.getUser(nick);
-        List<String> permsToGet = new ArrayList<>();
-        Settings userGroups = new Settings(new File("permissions", "users.yml"));
-        List<String> groups = userGroups.getStringList(nick.toLowerCase());
-        if (groups != null) {
-            for (String groupName : groups) {
-                PermissionGroup group = new PermissionGroup(groupName);
-                permsToGet.addAll(group.getPerms());
-            }
-        }
-        perms.addAll(permsToGet);
     }
 
-    public static User getUser(String nick) {
-        return new User(nick);
+    public static User getUser(String username) {
+        User user = userList.get(username);
+        if (user == null) {
+            user = new User(username);
+            userList.put(username, user);
+        }
+        return user;
     }
 
     @Override
     public void sendMessage(String message) {
-        bot.sendMessage(pircbotxUser, message);
+        pircbotxUser.sendMessage(message);
     }
 
     @Override
@@ -77,15 +71,15 @@ public class User extends Utilities implements Sender {
     }
 
     public boolean hasVoice(String channel) {
-        return bot.getChannel(channel).hasVoice(pircbotxUser);
+        return pircbotxUser.getChannelsVoiceIn().contains(bot.getChannel(channel));
     }
 
     public boolean hasOP(String channel) {
-        return bot.getChannel(channel).isOp(pircbotxUser);
+        return pircbotxUser.getChannelsOpIn().contains(bot.getChannel(channel));
     }
 
     public boolean isVerified() {
-        return pircbotxUser.isIdentified();
+        return pircbotxUser.isVerified();
     }
 
     public String[] getChannels() {
@@ -105,27 +99,28 @@ public class User extends Utilities implements Sender {
         return pircbotxUser.getNick();
     }
 
-    public void quiet(String channel) {
-        bot.sendMessage("chanserv", "quiet " + channel + " *!*" + pircbotxUser.getLogin() + "@" + pircbotxUser.getHostmask());
+    @Override
+    public boolean hasPermission(Permission perm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public void quiet(Channel channel) {
-        quiet(channel.getName());
+    @Override
+    public void addPermission(Permission perm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public void unquiet(String channel) {
-        bot.sendMessage("chanserv", "unquiet " + channel + " *!*" + pircbotxUser.getLogin() + "@" + pircbotxUser.getHostmask());
+    @Override
+    public void addPermission(Permission perm, boolean val) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public String getQuietLine() {
-        return "*!*" + pircbotxUser.getLogin() + "@" + pircbotxUser.getHostmask();
+    @Override
+    public void removePermission(Permission perm) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public boolean hasPermission(String permission) {
-        return perms.contains(permission);
-    }
-
-    public void addPerm(String perm) {
-        perms.add(perm);
+    @Override
+    public Map<Permission, Boolean> getPermissions() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

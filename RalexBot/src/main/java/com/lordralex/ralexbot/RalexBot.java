@@ -47,6 +47,7 @@ public final class RalexBot extends Thread {
     private static final Map<String, String> args = new HashMap<>();
     private static final Logger logger = Logger.getLogger("RalexBot");
     private static boolean login = true;
+    //private static final PermissionManager permManager;
 
     static {
         instance = new RalexBot();
@@ -60,6 +61,7 @@ public final class RalexBot extends Thread {
         kblistener = temp;
         globalSettings = Settings.loadGlobalSettings();
         eventHandler = new EventHandler();
+        //permManager = new PermissionManager(eventHandler);
         driver = new PircBotX();
     }
 
@@ -116,6 +118,8 @@ public final class RalexBot extends Thread {
     private void createInstance(String user, String pass) throws IOException, IrcException {
         driver.setVersion(VERSION);
         driver.setVerbose(false);
+        driver.setAutoReconnect(true);
+        driver.setAutoReconnectChannels(true);
         String nick = user;
         if (nick == null || nick.isEmpty()) {
             nick = globalSettings.getString("nick");
@@ -131,12 +135,18 @@ public final class RalexBot extends Thread {
         Utilities.setUtils(driver);
 
         eventHandler.load();
-        boolean success = driver.getListenerManager().addListener(eventHandler);
-        if (success) {
+        boolean eventSuccess = driver.getListenerManager().addListener(eventHandler);
+        if (eventSuccess) {
             logger.info("Listener hook attached to bot");
         } else {
             logger.info("Listener hook was unable to attach to the bot");
         }
+        /*boolean success = driver.getListenerManager().addListener(permManager);
+         if (success) {
+         logger.info("Permission hook attached to bot");
+         } else {
+         logger.info("Permission hook was unable to attach to the bot");
+         }*/
 
         String network = globalSettings.getString("network");
         int port = globalSettings.getInt("port");
@@ -204,6 +214,9 @@ public final class RalexBot extends Thread {
         return args;
     }
 
+    //public static PermissionManager getPermManager() {
+    //    return permManager;
+    //}
     private RalexBot() {
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lord_Ralex
+ * Copyright (C) 2013 Laptop
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,35 +16,25 @@
  */
 package com.lordralex.ralexbot.permissions;
 
-import com.lordralex.ralexbot.settings.Settings;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * @author Lord_Ralex
  * @version 1.0
+ * @author Laptop
  */
-public class PermissionGroup {
+public class Permission {
 
-    protected final List<String> perms = new ArrayList<>();
     protected final String name;
+    protected final PermissionValue defaultValue;
 
-    public PermissionGroup(String name) {
-        this.name = name;
-        load();
+    protected Permission(String aName, PermissionValue def) {
+        name = aName;
+        defaultValue = def;
     }
 
-    public final void load() {
-        perms.clear();
-        Settings permFile = new Settings(new File("permissions", "groups.yml"));
-        List<String> temp = permFile.getStringList(name);
-        if (temp != null) {
-            perms.addAll(temp);
-        }
+    public String getName() {
+        return name;
     }
 
-    public List<String> getPerms() {
-        return new ArrayList<>(perms);
+    public PermissionValue getDefault() {
+        return defaultValue;
     }
 }

@@ -25,8 +25,8 @@ public class JoinEvent extends Event {
     private final User sender;
 
     public JoinEvent(org.pircbotx.hooks.events.JoinEvent event) {
-        channel = Channel.getChannel(event.getChannel().getName());
-        sender = User.getUser(event.getUser().getNick());
+        channel = new Channel(event.getChannel().getName());
+        sender = new User(event.getUser().getNick());
     }
 
     public User getSender() {
