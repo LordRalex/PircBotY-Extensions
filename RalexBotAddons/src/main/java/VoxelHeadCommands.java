@@ -22,8 +22,9 @@ import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.events.JoinEvent;
 import com.lordralex.ralexbot.api.events.PartEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
+import com.lordralex.ralexbot.api.events.QuitEvent;
 import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,9 +35,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.pircbotx.Colors;
 
@@ -46,38 +47,73 @@ import org.pircbotx.Colors;
  */
 public class VoxelHeadCommands extends Listener {
 
-    private final File db = new File("voxelhead", "vh.db");
-    private static final URL dbLink;
-    private final Map<String, String[]> index = new HashMap<>();
+    private final File dbMinecraft = new File("voxelhead", "minecraft.db");
+    private final File dbScrolls = new File("voxelhead", "scrolls.db");
+    private static final URL dbMinecraftLink;
+    private static final URL dbScrollsLink;
+    private final Map<String, String[]> minecraftIndex = new ConcurrentHashMap<>();
+    private final Map<String, String[]> scrollsIndex = new ConcurrentHashMap<>();
+    private int delay = 1000;
 
     static {
-        URL temp = null;
+        URL temp;
         try {
             temp = new URL("http://home.ghoti.me:8080/~faqbot/faqdatabase");
         } catch (MalformedURLException ex) {
             RalexBot.getLogger().log(Level.SEVERE, "An error happened", ex);
+            temp = null;
         }
-        dbLink = temp;
+        dbMinecraftLink = temp;
+        try {
+            temp = new URL("http://mcfaq.hfbgaming.com/scrollsfaqdatabase");
+        } catch (MalformedURLException ex) {
+            RalexBot.getLogger().log(Level.SEVERE, "An error happened", ex);
+            temp = null;
+        }
+        dbScrollsLink = temp;
     }
 
     @Override
     public void setup() {
-        index.clear();
-        db.getParentFile().mkdirs();
-        db.delete();
+        minecraftIndex.clear();
+        scrollsIndex.clear();
+        dbMinecraft.getParentFile().mkdirs();
+        dbMinecraft.delete();
         try {
-            InputStream reader = dbLink.openStream();
-            FileOutputStream writer = new FileOutputStream(db);
+            InputStream reader = dbMinecraftLink.openStream();
+            FileOutputStream writer = new FileOutputStream(dbMinecraft);
             copyInputStream(reader, writer);
-            BufferedReader filereader = new BufferedReader(new FileReader(db));
+            BufferedReader filereader = new BufferedReader(new FileReader(dbMinecraft));
             String line;
             while ((line = filereader.readLine()) != null) {
-                String key = line.split("\\|")[0];
-                String value = line.split("\\|", 2)[1];
-                index.put(key.toLowerCase(), value.split(";;"));
+                if (line.contains("|")) {
+                    String key = line.split("\\|")[0];
+                    String value = line.split("\\|", 2)[1];
+                    minecraftIndex.put(key.toLowerCase(), value.split(";;"));
+                }
             }
         } catch (IOException ex) {
             RalexBot.getLogger().log(Level.SEVERE, "There was an error", ex);
+        }
+        try {
+            InputStream reader = dbScrollsLink.openStream();
+            FileOutputStream writer = new FileOutputStream(dbScrolls);
+            copyInputStream(reader, writer);
+            BufferedReader filereader = new BufferedReader(new FileReader(dbScrolls));
+            String line;
+            while ((line = filereader.readLine()) != null) {
+                if (line.contains("|")) {
+                    String key = line.split("\\|")[0];
+                    String value = line.split("\\|", 2)[1];
+                    scrollsIndex.put(key.toLowerCase(), value.split(";;"));
+                }
+            }
+        } catch (IOException ex) {
+            RalexBot.getLogger().log(Level.SEVERE, "There was an error", ex);
+        }
+        //delay = Settings.getGlobalSettings().getInt("voxelhead-delay");
+        if (delay == 0) {
+            delay = 1000;
         }
     }
 
@@ -89,50 +125,82 @@ public class VoxelHeadCommands extends Listener {
             event.getSender().sendMessage("Updated local storage");
             return;
         } else {
-            Sender target = event.getChannel();
-            if (target == null) {
-                target = event.getSender();
-                if (target == null) {
-                    return;
-                }
-            }
             boolean allowExec = true;
-            List<String> users = event.getChannel().getUsers();
-            if (users.contains("VoxelHead")) {
-                allowExec = false;
-            }
-            if (!allowExec) {
-                return;
-            }
-            if (event.getArgs().length == 1) {
-                String[] lines = index.get(event.getArgs()[0].toLowerCase());
-                if (lines == null || lines.length == 0) {
-                    event.getSender().sendNotice("No key called " + event.getArgs()[0].toLowerCase());
+            if (!event.getCommand().equalsIgnoreCase(";")) {
+                List<String> users = event.getChannel().getUsers();
+                if (users.contains("VoxelHead")) {
+                    allowExec = false;
+                }
+                if (!allowExec) {
                     return;
                 }
-                for (String line : lines) {
-                    if (event.getCommand().equals(">") || event.getCommand().isEmpty()) {
-                        target.sendMessage(Colors.BOLD + event.getArgs()[0].toLowerCase() + ": " + Colors.NORMAL + line);
-                    } else {
-                        event.getSender().sendNotice(Colors.BOLD + event.getArgs()[0].toLowerCase() + ": " + Colors.NORMAL + line);
+            }
+            String cmdMethod = event.getCommand().toLowerCase();
+            switch (cmdMethod) {
+                case ">": {
+                    String target = event.getArgs()[0];
+                    String channel = event.getChannel().getName();
+                    String[] lines = minecraftIndex.get(event.getArgs()[1].toLowerCase());
+                    if (lines == null || lines.length == 0) {
+                        event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[1] + " in his database");
+                        return;
                     }
+                    RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, false);
+                    thread.start();
                 }
-            } else if (event.getArgs().length == 2 && (event.getCommand().equals(">") || event.getCommand().equals("<<"))) {
-                String[] lines = index.get(event.getArgs()[1].toLowerCase());
-                if (lines == null || lines.length == 0) {
-                    return;
-                }
-                String sendTo = event.getArgs()[0];
-                for (String line : lines) {
-                    if (event.getCommand().equals(">")) {
-                        target.sendMessage(Colors.BOLD + sendTo + ": " + Colors.NORMAL + "(" + event.getArgs()[1].toLowerCase() + ") " + Colors.NORMAL + line);
-                    } else {
-                        BotUser.getBotUser().sendNotice(sendTo, Colors.BOLD + event.getArgs()[1].toLowerCase() + ": " + Colors.NORMAL + line);
+                break;
+                case ">>": {
+                    String target = event.getArgs()[0];
+                    String channel = event.getChannel().getName();
+                    String[] lines = minecraftIndex.get(event.getArgs()[1].toLowerCase());
+                    if (lines == null || lines.length == 0) {
+                        event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[1] + " in his database");
+                        return;
                     }
+                    RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, true);
+                    thread.start();
                 }
-                if (event.getCommand().equalsIgnoreCase("<<")) {
-                    event.getSender().sendNotice("I have told " + event.getArgs()[0] + " about " + event.getArgs()[1]);
+                break;
+                case "<<": {
+                    String target = event.getArgs()[0];
+                    String channel = event.getChannel().getName();
+                    String[] lines = minecraftIndex.get(event.getArgs()[1].toLowerCase());
+                    if (lines == null || lines.length == 0) {
+                        event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[1] + " in his database");
+                        return;
+                    }
+                    RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, true);
+                    thread.start();
                 }
+                break;
+                case "<": {
+                    String target = event.getSender().getNick();
+                    String channel = event.getChannel().getName();
+                    String[] lines = minecraftIndex.get(event.getArgs()[0].toLowerCase());
+                    if (lines == null || lines.length == 0) {
+                        event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[0] + " in his database");
+                        return;
+                    }
+                    RunLaterThread thread = new RunLaterThread(event.getArgs()[0].toLowerCase(), target, channel, lines, true);
+                    thread.start();
+                }
+                break;
+                case ";": {
+                }
+                break;
+                default: {
+                    String target = null;
+                    String channel = event.getChannel().getName();
+                    String[] lines = minecraftIndex.get(event.getArgs()[0].toLowerCase());
+                    if (lines == null || lines.length == 0) {
+                        event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[0] + " in his database");
+                        return;
+                    }
+                    RunLaterThread thread = new RunLaterThread(event.getArgs()[0].toLowerCase(), target, channel, lines, false);
+                    thread.start();
+
+                }
+                break;
             }
         }
     }
@@ -145,7 +213,8 @@ public class VoxelHeadCommands extends Listener {
             "<",
             "<<",
             "",
-            "refresh"
+            "refresh",
+            ";"
         };
     }
 
@@ -165,8 +234,58 @@ public class VoxelHeadCommands extends Listener {
         }
     }
 
+    @Override
+    @EventType(event = EventField.Quit)
+    public void runEvent(QuitEvent event) {
+        if (event.getSender().getName().equalsIgnoreCase("voxelhead")) {
+            BotUser.getBotUser().sendMessage("#minecrafthelp", "Voxelhead has left the building. Taking over.");
+        }
+    }
+
     private void copyInputStream(InputStream in, FileOutputStream out) throws IOException {
         ReadableByteChannel rbc = Channels.newChannel(in);
         out.getChannel().transferFrom(rbc, 0, 1 << 24);
+    }
+
+    private class RunLaterThread extends Thread {
+
+        private String[] lines;
+        private String channel;
+        private String user;
+        private boolean notice = false;
+        private String name;
+
+        public RunLaterThread(String na, String u, String c, String[] l, boolean n) {
+            lines = l;
+            channel = c;
+            user = u;
+            notice = n;
+            name = na;
+        }
+
+        @Override
+        public void run() {
+            BotUser bot = BotUser.getBotUser();
+            for (String string : lines) {
+                String message;
+                if (user == null) {
+                    message = Colors.BOLD + name.toLowerCase() + ": " + Colors.NORMAL + string;
+                } else {
+                    message = Colors.BOLD + user.toLowerCase() + ": " + Colors.NORMAL + "(" + name.toLowerCase() + ") " + string;
+                }
+                if (notice) {
+                    bot.sendNotice(user, message);
+                } else {
+                    bot.sendMessage(channel, message);
+                }
+                synchronized (this) {
+                    try {
+                        this.wait(delay);
+                    } catch (InterruptedException ex) {
+                        RalexBot.getLogger().log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
     }
 }

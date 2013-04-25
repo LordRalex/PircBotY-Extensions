@@ -36,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RecordedMessage extends Listener {
 
     final Map<String, Thread> threads = new ConcurrentHashMap<>();
-    ;
     int counter = 0;
 
     @Override
@@ -57,7 +56,7 @@ public class RecordedMessage extends Listener {
             threads.put(thread.getName(), thread);
             thread.start();
         } else if (event.getMessage().startsWith(BotUser.getBotUser().getNick() + ", please stop")) {
-            String load = event.getMessage().replace(BotUser.getBotUser().getNick() + ", please teach", "").trim();
+            String load = event.getMessage().replace(BotUser.getBotUser().getNick() + ", please stop", "").trim();
             load = load.split(" ")[0];
             if (load.equalsIgnoreCase("all")) {
                 sender.sendMessage("Stopping all then");
