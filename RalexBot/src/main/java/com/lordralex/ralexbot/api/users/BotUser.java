@@ -73,4 +73,8 @@ public class BotUser extends User {
     public void sendAction(String target, String message) {
         bot.sendAction(target, target);
     }
+
+    public void ban(String channel, String mask) {
+        bot.ban(bot.getChannel(channel), mask);
+    }
 }

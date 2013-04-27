@@ -231,7 +231,7 @@ public final class EventHandler extends ListenerAdapter {
 
     @Override
     public void onKick(org.pircbotx.hooks.events.KickEvent event) throws Exception {
-        KickEvent nextEvt = new KickEvent();
+        KickEvent nextEvt = new KickEvent(event);
         fireEvent(nextEvt);
     }
 

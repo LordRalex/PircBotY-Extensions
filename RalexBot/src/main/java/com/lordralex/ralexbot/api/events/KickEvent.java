@@ -25,7 +25,31 @@ import com.lordralex.ralexbot.api.users.User;
  */
 public class KickEvent extends Event {
 
-    User reciever;
-    User sender;
-    Channel channel;
+    private final User reciever;
+    private final User sender;
+    private final Channel channel;
+    private final String message;
+
+    public KickEvent(org.pircbotx.hooks.events.KickEvent event) {
+        reciever = new User(event.getRecipient().getNick());
+        sender = new User(event.getSource().getNick());
+        channel = new Channel(event.getChannel().getName());
+        message = event.getReason();
+    }
+
+    public User getSender() {
+        return sender;
+    }
+
+    public User getRecipient() {
+        return reciever;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }
