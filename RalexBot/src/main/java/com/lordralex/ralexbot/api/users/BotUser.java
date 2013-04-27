@@ -77,4 +77,8 @@ public class BotUser extends User {
     public void ban(String channel, String mask) {
         bot.ban(bot.getChannel(channel), mask);
     }
+
+    public void unban(String channel, String mask) {
+        bot.unBan(bot.getChannel(channel), mask);
+    }
 }
