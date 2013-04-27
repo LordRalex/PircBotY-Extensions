@@ -35,20 +35,17 @@ public class ConsoleLogFormatter extends Formatter {
     public String format(LogRecord record) {
         StringBuilder builder = new StringBuilder();
         Throwable ex = record.getThrown();
-
         builder.append(date.format(record.getMillis()));
         builder.append(" [");
         builder.append(record.getLevel().getLocalizedName().toUpperCase());
         builder.append("] ");
         builder.append(formatMessage(record));
         builder.append('\n');
-
         if (ex != null) {
             StringWriter writer = new StringWriter();
             ex.printStackTrace(new PrintWriter(writer));
             builder.append(writer);
         }
-
         return builder.toString();
     }
 }

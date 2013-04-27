@@ -47,7 +47,6 @@ public final class RalexBot extends Thread {
     private static final Map<String, String> args = new HashMap<>();
     private static final Logger logger = Logger.getLogger("RalexBot");
     private static boolean login = true;
-    //private static final PermissionManager permManager;
 
     static {
         instance = new RalexBot();
@@ -61,7 +60,6 @@ public final class RalexBot extends Thread {
         kblistener = temp;
         globalSettings = Settings.loadGlobalSettings();
         eventHandler = new EventHandler();
-        //permManager = new PermissionManager(eventHandler);
         driver = new PircBotX();
     }
 
@@ -141,16 +139,8 @@ public final class RalexBot extends Thread {
         } else {
             logger.info("Listener hook was unable to attach to the bot");
         }
-        /*boolean success = driver.getListenerManager().addListener(permManager);
-         if (success) {
-         logger.info("Permission hook attached to bot");
-         } else {
-         logger.info("Permission hook was unable to attach to the bot");
-         }*/
-
         String network = globalSettings.getString("network");
         int port = globalSettings.getInt("port");
-
         if (network == null || network.isEmpty()) {
             network = "irc.esper.net";
         }
@@ -172,13 +162,11 @@ public final class RalexBot extends Thread {
                 logger.severe("Could not claim the nick " + nick);
             }
         }
-
         BotUser bot = new BotUser();
         if (pass != null && !pass.isEmpty() && login) {
             bot.sendMessage("nickserv", "identify " + pass);
             logger.info("Logging in to nickserv");
         }
-
         List<String> channels = globalSettings.getStringList("channels");
         if (channels != null && !channels.isEmpty()) {
             for (String chan : channels) {
@@ -187,14 +175,10 @@ public final class RalexBot extends Thread {
         } else {
             bot.joinChannel("#ae97");
         }
-
         logger.info("Initial loading complete, engaging listeners");
         eventHandler.startQueue();
-
-
         logger.info("Starting keyboard listener");
         kblistener.start();
-
         logger.info("All systems operational");
     }
 
@@ -214,9 +198,6 @@ public final class RalexBot extends Thread {
         return args;
     }
 
-    //public static PermissionManager getPermManager() {
-    //    return permManager;
-    //}
     private RalexBot() {
     }
 }

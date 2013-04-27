@@ -64,7 +64,7 @@ public final class EventHandler extends ListenerAdapter {
     public void load() {
         File extensionFolder = new File("extensions");
         File temp = new File("tempDir");
-        if (temp != null && temp.listFiles() != null) {
+        if (temp.listFiles() != null) {
             for (File file : temp.listFiles()) {
                 if (file != null) {
                     file.delete();
@@ -119,7 +119,7 @@ public final class EventHandler extends ListenerAdapter {
                 }
             }
         }
-        if (!(temp == null || temp.listFiles() == null)) {
+        if (temp.listFiles() != null) {
             for (File file : temp.listFiles()) {
                 if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
                     String className = file.getName();
@@ -139,10 +139,6 @@ public final class EventHandler extends ListenerAdapter {
                 list.setup();
                 RalexBot.getLogger().info("  Added: " + list.getClass().getName());
                 list.declareValues(list.getClass());
-                /*Map<String, PermissionDefault> perms = list.getRegisteredPerms();
-                 for (String key : perms.keySet()) {
-                 new Permission(key, perms.get(key));
-                 }*/
                 listeners.add(list);
             }
         } catch (Throwable ex) {
@@ -178,10 +174,7 @@ public final class EventHandler extends ListenerAdapter {
         } else {
             nextEvt = new MessageEvent(event);
         }
-
-        if (nextEvt != null) {
-            fireEvent(nextEvt);
-        }
+        fireEvent(nextEvt);
     }
 
     @Override
@@ -192,10 +185,7 @@ public final class EventHandler extends ListenerAdapter {
         } else {
             nextEvt = new PrivateMessageEvent(event);
         }
-
-        if (nextEvt != null) {
-            fireEvent(nextEvt);
-        }
+        fireEvent(nextEvt);
     }
 
     @Override
@@ -206,10 +196,7 @@ public final class EventHandler extends ListenerAdapter {
         } else {
             nextEvt = new NoticeEvent(event);
         }
-
-        if (nextEvt != null) {
-            fireEvent(nextEvt);
-        }
+        fireEvent(nextEvt);
     }
 
     @Override
@@ -239,6 +226,12 @@ public final class EventHandler extends ListenerAdapter {
     @Override
     public void onAction(org.pircbotx.hooks.events.ActionEvent event) throws Exception {
         ActionEvent nextEvt = new ActionEvent(event);
+        fireEvent(nextEvt);
+    }
+
+    @Override
+    public void onKick(org.pircbotx.hooks.events.KickEvent event) throws Exception {
+        KickEvent nextEvt = new KickEvent();
         fireEvent(nextEvt);
     }
 
@@ -283,7 +276,7 @@ public final class EventHandler extends ListenerAdapter {
                             run = false;
                         }
                     }
-                } else if (next != null) {
+                } else {
                     EventField type = EventField.getEvent(next);
                     if (type == null) {
                         break;
@@ -308,12 +301,12 @@ public final class EventHandler extends ListenerAdapter {
                                                 listener.runEvent((MessageEvent) next);
                                                 break;
                                             case Command:
-
                                                 List<String> aliases = Arrays.asList(listener.getAliases());
                                                 String cmd = ((CommandEvent) next).getCommand().toLowerCase();
                                                 if (listener.getAliases().length == 0
                                                         || aliases.contains(cmd)) {
                                                     listener.runEvent((CommandEvent) next);
+                                                    next.setCancelled(true);
                                                 }
                                                 break;
                                             case Join:
@@ -333,6 +326,9 @@ public final class EventHandler extends ListenerAdapter {
                                                 break;
                                             case Quit:
                                                 listener.runEvent((QuitEvent) next);
+                                                break;
+                                            case Kick:
+                                                listener.runEvent((KickEvent) next);
                                                 break;
                                         }
                                     } catch (Exception e) {

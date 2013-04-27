@@ -16,7 +16,6 @@
  */
 package com.lordralex.ralexbot.api.events;
 
-import com.lordralex.ralexbot.api.users.User;
 import com.lordralex.ralexbot.api.users.UserSnapshot;
 
 public class QuitEvent extends Event {

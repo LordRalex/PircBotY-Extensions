@@ -37,7 +37,6 @@ public final class CommandEvent extends Event {
                 break;
             }
         }
-
         command = commandTemp;
         sender = new User(event.getUser().getNick());
         channel = new Channel(event.getChannel().getName());

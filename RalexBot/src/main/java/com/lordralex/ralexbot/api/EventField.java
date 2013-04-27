@@ -29,6 +29,7 @@ public enum EventField {
     PrivateMessage(PrivateMessageEvent.class),
     Quit(QuitEvent.class),
     Action(ActionEvent.class),
+    Kick(KickEvent.class),
     Permission(PermissionEvent.class);
     private final Class eventClass;
 

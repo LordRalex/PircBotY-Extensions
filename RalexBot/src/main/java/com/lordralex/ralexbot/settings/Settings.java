@@ -89,7 +89,7 @@ public final class Settings {
         }
         String value = null;
         Object val = settings.get(name).get(key);
-        if (val instanceof String && val != null) {
+        if (val != null && val instanceof String) {
             value = (String) val;
         }
         return value;
@@ -101,7 +101,7 @@ public final class Settings {
         }
         Integer value = 0;
         Object val = settings.get(name).get(key);
-        if (val instanceof Integer && val != null) {
+        if (val != null && val instanceof Integer) {
             value = (Integer) val;
         }
         return value;
@@ -113,12 +113,11 @@ public final class Settings {
         }
         List<String> value = null;
         Object val = settings.get(name).get(key);
-        if (val instanceof List) {
+        if (val != null && val instanceof List) {
             value = (List<String>) val;
-        } else if (val instanceof String[]) {
+        } else if (val != null && val instanceof String[]) {
             value = Arrays.asList((String[]) val);
-        }
-        if (value == null) {
+        } else if (value == null) {
             value = new ArrayList<>();
         }
         return value;

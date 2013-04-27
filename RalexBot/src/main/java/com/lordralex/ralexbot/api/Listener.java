@@ -38,7 +38,7 @@ public abstract class Listener {
                 if (event == null) {
                     continue;
                 }
-                System.out.println("    *Event " + event.event().name() + " was added with priority " + event.priority().name());
+                RalexBot.getLogger().info("    *Event " + event.event().name() + " was added with priority " + event.priority().name());
                 priorities.put(event.event(), event);
             }
         } catch (SecurityException ex) {
@@ -71,6 +71,9 @@ public abstract class Listener {
     }
 
     public void runEvent(ActionEvent event) {
+    }
+
+    public void runEvent(KickEvent event) {
     }
 
     public String[] getAliases() {

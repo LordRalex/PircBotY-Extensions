@@ -42,7 +42,7 @@ public class ConsoleHandler extends java.util.logging.ConsoleHandler {
                 reader.getCursorBuffer().clear();
             }
         } catch (IOException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, null, ex);
+            RalexBot.getLogger().log(Level.SEVERE, "An error occured", ex);
         }
     }
 }

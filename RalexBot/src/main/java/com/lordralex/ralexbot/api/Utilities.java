@@ -45,7 +45,6 @@ public class Utilities {
 
     public static String toString(String[] args) {
         String result = "";
-
         for (String part : args) {
             result += part + " ";
         }
