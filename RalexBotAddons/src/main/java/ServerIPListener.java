@@ -80,7 +80,7 @@ public class ServerIPListener extends Listener {
                     triggered.add(sender.getNick().toLowerCase());
                     triggered.add(event.getHostname().toLowerCase());
                 } else if (triggered.contains(sender.getNick().toLowerCase())) {
-                    //BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
+                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
                     if (RalexBot.getDebugMode()) {
                         BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getSender().getNick() + " triggered the ip censor with his line: " + event.getMessage());
                     }
