@@ -143,7 +143,7 @@ public class ServerIPListener extends Listener {
     @Override
     @EventType(event = EventField.Quit)
     public void runEvent(QuitEvent event) {
-        triggered.remove(event.getSender().getName().toLowerCase());
+        triggered.remove(event.getSender().getNick().toLowerCase());
     }
 
     @Override

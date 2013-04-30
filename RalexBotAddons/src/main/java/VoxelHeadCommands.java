@@ -237,7 +237,7 @@ public class VoxelHeadCommands extends Listener {
     @Override
     @EventType(event = EventField.Quit)
     public void runEvent(QuitEvent event) {
-        if (event.getSender().getName().equalsIgnoreCase("voxelhead")) {
+        if (event.getSender().getNick().equalsIgnoreCase("voxelhead")) {
             BotUser.getBotUser().sendMessage("#minecrafthelp", "Voxelhead has left the building. Taking over.");
         }
     }
