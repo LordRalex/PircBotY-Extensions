@@ -38,8 +38,8 @@ public final class CommandEvent extends Event {
             }
         }
         command = commandTemp;
-        sender = new User(event.getUser().getNick());
-        channel = new Channel(event.getChannel().getName());
+        sender = new User(event.getUser());
+        channel = new Channel(event.getChannel());
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
             System.arraycopy(temp, 1, args, 0, args.length);

@@ -20,14 +20,13 @@ import com.lordralex.ralexbot.api.users.User;
 
 public class NickChangeEvent extends Event {
 
-    private final String oldNick, newNick, hostname;
+    private final String oldNick, newNick;
     private final User sender;
 
     public NickChangeEvent(org.pircbotx.hooks.events.NickChangeEvent event) {
         oldNick = event.getOldNick();
         newNick = event.getNewNick();
-        hostname = event.getUser().getHostmask();
-        sender = new User(newNick);
+        sender = new User(event.getUser());
     }
 
     public String getOldNick() {
@@ -36,10 +35,6 @@ public class NickChangeEvent extends Event {
 
     public String getNewNick() {
         return newNick;
-    }
-
-    public String getHostname() {
-        return hostname;
     }
 
     public User getUser() {

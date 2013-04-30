@@ -24,7 +24,7 @@ public class PrivateMessageEvent extends Event {
     private final User sender;
 
     public PrivateMessageEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
-        sender = new User(event.getUser().getNick());
+        sender = new User(event.getUser());
         message = event.getMessage();
     }
 

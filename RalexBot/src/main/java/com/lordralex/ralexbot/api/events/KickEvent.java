@@ -31,9 +31,9 @@ public class KickEvent extends Event {
     private final String message;
 
     public KickEvent(org.pircbotx.hooks.events.KickEvent event) {
-        reciever = new User(event.getRecipient().getNick());
-        sender = new User(event.getSource().getNick());
-        channel = new Channel(event.getChannel().getName());
+        reciever = new User(event.getRecipient());
+        sender = new User(event.getSource());
+        channel = new Channel(event.getChannel());
         message = event.getReason();
     }
 

@@ -30,8 +30,8 @@ public class ActionEvent extends Event {
     private final String action;
 
     public ActionEvent(org.pircbotx.hooks.events.ActionEvent event) {
-        channel = new Channel(event.getChannel().getName());
-        sender = new User(event.getUser().getNick());
+        channel = new Channel(event.getChannel());
+        sender = new User(event.getUser());
         action = event.getMessage();
     }
 
