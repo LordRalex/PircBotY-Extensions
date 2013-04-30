@@ -37,6 +37,14 @@ public class User extends Utilities implements Sender, Permissible {
         pircbotxUser = bot.getUser(nick);
     }
 
+    public User(org.pircbotx.User u) {
+        pircbotxUser = u;
+    }
+
+    public User(org.pircbotx.UserSnapshot snap) {
+        pircbotxUser = snap;
+    }
+
     public static User getUser(String username) {
         User user = userList.get(username);
         if (user == null) {

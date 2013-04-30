@@ -36,10 +36,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.pircbotx.Channel;
+import org.pircbotx.PircBotX;
+import org.pircbotx.UserSnapshot;
 import org.pircbotx.hooks.ListenerAdapter;
 
 public final class EventHandler extends ListenerAdapter {
@@ -48,9 +52,11 @@ public final class EventHandler extends ListenerAdapter {
     private final ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
     private final EventRunner runner;
     private static final List<String> commandChars = new ArrayList<>();
+    private final PircBotX masterBot;
 
-    public EventHandler() {
+    public EventHandler(PircBotX bot) {
         super();
+        masterBot = bot;
         runner = new EventRunner();
         runner.setName("Event_Runner_Thread");
         List<String> settings = Settings.getGlobalSettings().getStringList("command-prefix");
@@ -213,6 +219,14 @@ public final class EventHandler extends ListenerAdapter {
 
     @Override
     public void onQuit(org.pircbotx.hooks.events.QuitEvent event) throws Exception {
+        UserSnapshot user = event.getUser();
+        Set<Channel> channels = user.getChannels();
+        for (Channel chan : channels) {
+            if (chan.getUsers().contains(masterBot.getUserBot())) {
+                PartEvent partEvent = new PartEvent(user, chan);
+                fireEvent(partEvent);
+            }
+        }
         QuitEvent nextEvt = new QuitEvent(event);
         fireEvent(nextEvt);
     }

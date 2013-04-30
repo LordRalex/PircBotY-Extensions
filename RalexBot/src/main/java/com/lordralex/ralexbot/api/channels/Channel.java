@@ -38,6 +38,10 @@ public class Channel extends Utilities implements Sender, Permissible {
         pircbotxChannel = bot.getChannel(name);
     }
 
+    public Channel(org.pircbotx.Channel chan) {
+        pircbotxChannel = chan;
+    }
+
     public static Channel getChannel(String channel) {
         return new Channel(channel);
     }

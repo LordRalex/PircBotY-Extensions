@@ -16,17 +16,17 @@
  */
 package com.lordralex.ralexbot.api.events;
 
-import com.lordralex.ralexbot.api.users.UserSnapshot;
+import com.lordralex.ralexbot.api.users.User;
 
 public class QuitEvent extends Event {
 
-    private final UserSnapshot sender;
+    private final User sender;
 
     public QuitEvent(org.pircbotx.hooks.events.QuitEvent event) {
-        sender = new UserSnapshot(event.getUser());
+        sender = new User(event.getUser());
     }
 
-    public UserSnapshot getSender() {
+    public User getSender() {
         return sender;
     }
 }

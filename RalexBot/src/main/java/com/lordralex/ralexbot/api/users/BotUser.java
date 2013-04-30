@@ -23,7 +23,7 @@ package com.lordralex.ralexbot.api.users;
 public class BotUser extends User {
 
     public BotUser() {
-        super(bot.getNick());
+        super(bot.getUserBot());
     }
 
     public static BotUser getBotUser() {

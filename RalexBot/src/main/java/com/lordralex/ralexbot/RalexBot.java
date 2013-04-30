@@ -59,8 +59,8 @@ public final class RalexBot extends Thread {
         }
         kblistener = temp;
         globalSettings = Settings.loadGlobalSettings();
-        eventHandler = new EventHandler();
         driver = new PircBotX();
+        eventHandler = new EventHandler(driver);
     }
 
     public static Logger getLogger() {
