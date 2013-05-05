@@ -53,7 +53,9 @@ public class RecordedMessage extends Listener {
             load = load.split(" ")[0];
             AutomatedMessageThread thread = new AutomatedMessageThread(load, event.getChannel(), counter);
             counter++;
-            threads.put(thread.getName(), thread);
+            synchronized (threads) {
+                threads.put(thread.getName(), thread);
+            }
             thread.start();
         } else if (event.getMessage().startsWith(BotUser.getBotUser().getNick() + ", please stop")) {
             String load = event.getMessage().replace(BotUser.getBotUser().getNick() + ", please stop", "").trim();
@@ -108,6 +110,9 @@ public class RecordedMessage extends Listener {
                     }
                 }
             }
+            synchronized (threads) {
+                threads.remove(this.getName());
+            }
         }
 
         @Override
@@ -118,9 +123,7 @@ public class RecordedMessage extends Listener {
 
         @Override
         public boolean isInterrupted() {
-            if (super.isInterrupted()) {
-                return true;
-            } else if (stop) {
+            if (super.isInterrupted() || stop) {
                 return true;
             } else {
                 return false;

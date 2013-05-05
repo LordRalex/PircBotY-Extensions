@@ -34,7 +34,6 @@ import java.util.Map;
 public class AntiSpamListener extends Listener {
 
     private final Map<String, Posts> logs = new HashMap<>();
-    //private final Map<String, String> joinLeaveMap = new HashMap<>();
     private int MAX_MESSAGES;
     private int SPAM_RATE;
     private int DUPE_RATE;
@@ -74,8 +73,6 @@ public class AntiSpamListener extends Listener {
                             "Would have kicked " + event.getSender().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
                 } else {
                     BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
-                    //sender.quiet(event.getChannel());
-                    //UnquietThread quiet = new UnquietThread(event.getChannel().getName(), sender.getQuietLine(), 10 * 1000);
                 }
                 event.setCancelled(true);
             } else {
@@ -107,7 +104,7 @@ public class AntiSpamListener extends Listener {
                     BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"),
                             "Would have kicked " + event.getSender().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
                 } else {
-                    //BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
+                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
                 }
                 event.setCancelled(true);
             } else {

@@ -1,18 +1,5 @@
-
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.events.KickEvent;
-import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.settings.Settings;
-import com.lordralex.ralexbot.threads.DelayedTask;
-import java.util.HashMap;
-import java.util.Map;
-
 /*
- * Copyright (C) 2013 Laptop
+ * Copyright (C) 2013 Lord_Ralex
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +14,22 @@ import java.util.Map;
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+import com.lordralex.ralexbot.api.EventField;
+import com.lordralex.ralexbot.api.EventType;
+import com.lordralex.ralexbot.api.Listener;
+import com.lordralex.ralexbot.api.Priority;
+import com.lordralex.ralexbot.api.events.JoinEvent;
+import com.lordralex.ralexbot.api.events.KickEvent;
+import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.settings.Settings;
+import com.lordralex.ralexbot.threads.DelayedTask;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @version 1.0
- * @author Laptop
+ * @author Lord_Ralex
  */
 public class AutoJoinListener extends Listener {
 

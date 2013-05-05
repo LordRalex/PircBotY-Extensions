@@ -111,10 +111,7 @@ public class VoxelHeadCommands extends Listener {
         } catch (IOException ex) {
             RalexBot.getLogger().log(Level.SEVERE, "There was an error", ex);
         }
-        //delay = Settings.getGlobalSettings().getInt("voxelhead-delay");
-        if (delay == 0) {
-            delay = 1000;
-        }
+        delay = Settings.getGlobalSettings().getInt("voxelhead-delay");
     }
 
     @Override
@@ -136,6 +133,9 @@ public class VoxelHeadCommands extends Listener {
                 }
             }
             String cmdMethod = event.getCommand().toLowerCase();
+            if (cmdMethod.equals(";")) {
+                cmdMethod = "";
+            }
             switch (cmdMethod) {
                 case ">": {
                     String target = event.getArgs()[0];
@@ -185,9 +185,6 @@ public class VoxelHeadCommands extends Listener {
                     thread.start();
                 }
                 break;
-                case ";": {
-                }
-                break;
                 default: {
                     String target = null;
                     String channel = event.getChannel().getName();
@@ -198,7 +195,6 @@ public class VoxelHeadCommands extends Listener {
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[0].toLowerCase(), target, channel, lines, false);
                     thread.start();
-
                 }
                 break;
             }
