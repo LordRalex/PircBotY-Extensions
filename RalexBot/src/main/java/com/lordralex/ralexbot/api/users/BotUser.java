@@ -35,7 +35,7 @@ public class BotUser extends User {
     }
 
     public void kick(String nick, String channel) {
-        if (bot.getUserBot().isIrcop()) {
+        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
             bot.kick(bot.getChannel(channel), bot.getUser(nick));
         } else {
             bot.sendMessage("chanserv", "kick " + channel + " " + nick);

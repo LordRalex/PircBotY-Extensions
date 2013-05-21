@@ -23,7 +23,13 @@ import com.lordralex.ralexbot.console.ConsoleHandler;
 import com.lordralex.ralexbot.console.ConsoleLogFormatter;
 import com.lordralex.ralexbot.settings.Settings;
 import com.lordralex.ralexbot.threads.KeyboardListener;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +64,15 @@ public final class RalexBot extends Thread {
             logger.log(Level.SEVERE, "An error occured", ex);
         }
         kblistener = temp;
+        if (!(new File("settings", "config.yml").exists())) {
+            new File("settings").mkdirs();
+            InputStream input = RalexBot.class.getResourceAsStream("/config.yml");
+            try {
+                BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("settings", "config.yml")));
+            } catch (FileNotFoundException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
         globalSettings = Settings.loadGlobalSettings();
         driver = new PircBotX();
         eventHandler = new EventHandler(driver);
@@ -196,6 +211,20 @@ public final class RalexBot extends Thread {
 
     public static Map<String, String> getStartupArgs() {
         return args;
+    }
+
+    public static void copyInputStream(InputStream in, OutputStream out) {
+        try {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = in.read(buffer)) >= 0) {
+                out.write(buffer, 0, len);
+            }
+            in.close();
+            out.close();
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
     }
 
     private RalexBot() {

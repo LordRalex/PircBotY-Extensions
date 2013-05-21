@@ -53,6 +53,7 @@ public final class EventHandler extends ListenerAdapter {
     private final EventRunner runner;
     private static final List<String> commandChars = new ArrayList<>();
     private final PircBotX masterBot;
+    private ClassLoader classLoader;
 
     public EventHandler(PircBotX bot) {
         super();
@@ -89,11 +90,11 @@ public final class EventHandler extends ListenerAdapter {
         } catch (MalformedURLException ex) {
             RalexBot.getLogger().log(Level.SEVERE, null, ex);
         }
-        ClassLoader cl = new URLClassLoader(urls);
+        classLoader = new URLClassLoader(urls);
         for (File file : extensionFolder.listFiles()) {
             if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
                 String className = file.getName();
-                loadClass(className, cl);
+                loadClass(className);
             } else if (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")) {
                 ZipFile zipFile = null;
                 try {
@@ -108,7 +109,7 @@ public final class EventHandler extends ListenerAdapter {
                             new File(temp, entry.getName()).mkdirs();
                             continue;
                         }
-                        copyInputStream(zipFile.getInputStream(entry),
+                        RalexBot.copyInputStream(zipFile.getInputStream(entry),
                                 new BufferedOutputStream(new FileOutputStream(temp + File.separator + entry.getName())));
                     }
 
@@ -129,16 +130,16 @@ public final class EventHandler extends ListenerAdapter {
             for (File file : temp.listFiles()) {
                 if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
                     String className = file.getName();
-                    loadClass(className, cl);
+                    loadClass(className);
                 }
             }
         }
     }
 
-    private void loadClass(String className, ClassLoader cl) {
+    private void loadClass(String className) {
         try {
             className = className.replace("tempDir" + File.separator, "").replace("extension" + File.separator, "").replace(".class", "");
-            Class cls = cl.loadClass(className);
+            Class cls = classLoader.loadClass(className);
             Object obj = cls.newInstance();
             if (obj instanceof Listener) {
                 Listener list = (Listener) obj;
@@ -149,20 +150,6 @@ public final class EventHandler extends ListenerAdapter {
             }
         } catch (Throwable ex) {
             RalexBot.getLogger().log(Level.SEVERE, "Could not add " + className, ex);
-        }
-    }
-
-    private void copyInputStream(InputStream in, OutputStream out) {
-        try {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = in.read(buffer)) >= 0) {
-                out.write(buffer, 0, len);
-            }
-            in.close();
-            out.close();
-        } catch (IOException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, null, ex);
         }
     }
 
