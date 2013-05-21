@@ -80,6 +80,9 @@ public class SpecialNameListener extends Listener {
     }
 
     private void handleNick(String chan, User user) {
+        if (user.isVerified()) {
+            return;
+        }
         String ban = user.getNick() + "!" + "*" + "@" + user.getIP();
         BotUser.getBotUser().ban(chan, ban);
         BotUser.getBotUser().kick(user.getNick(), chan, "Nickname not allowed");
