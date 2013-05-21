@@ -60,14 +60,14 @@ public class VoxelHeadCommands extends Listener {
         try {
             temp = new URL("http://home.ghoti.me:8080/~faqbot/faqdatabase");
         } catch (MalformedURLException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, "An error happened", ex);
+            RalexBot.getLogger().log(Level.SEVERE, "An error happened while loading the MinecraftHelp FAQ DB", ex);
             temp = null;
         }
         dbMinecraftLink = temp;
         try {
             temp = new URL("http://mcfaq.hfbgaming.com/scrollsfaqdatabase");
         } catch (MalformedURLException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, "An error happened", ex);
+            RalexBot.getLogger().log(Level.SEVERE, "An error happened while loading the ScrollsHelp FAQ DB", ex);
             temp = null;
         }
         dbScrollsLink = temp;
@@ -123,24 +123,36 @@ public class VoxelHeadCommands extends Listener {
             return;
         } else {
             boolean allowExec = true;
-            if (!event.getCommand().equalsIgnoreCase(";")) {
-                List<String> users = event.getChannel().getUsers();
-                if (users.contains("VoxelHead")) {
-                    allowExec = false;
-                }
-                if (!allowExec) {
-                    return;
-                }
+            List<String> users = event.getChannel().getUsers();
+            if (users.contains("VoxelHead")) {
+                allowExec = false;
+            }
+            if (!allowExec) {
+                return;
             }
             String cmdMethod = event.getCommand().toLowerCase();
-            if (cmdMethod.equals(";")) {
-                cmdMethod = "";
+            Map<String, String[]> index;
+            if (event.getCommand().startsWith("scrolls")) {
+                index = scrollsIndex;
+            } else if (event.getCommand().startsWith("minecraft")) {
+                index = minecraftIndex;
+            } else if (event.getChannel() != null) {
+                if (event.getChannel().getName().startsWith("minecraft")) {
+                    index = minecraftIndex;
+                } else if (event.getChannel().getName().startsWith("scrolls")) {
+                    index = scrollsIndex;
+                } else {
+                    index = minecraftIndex;
+                }
+            } else {
+                index = minecraftIndex;
             }
+            cmdMethod = cmdMethod.replace("minecraft", "").replace("scrolls", "");
             switch (cmdMethod) {
                 case ">": {
                     String target = event.getArgs()[0];
                     String channel = event.getChannel().getName();
-                    String[] lines = minecraftIndex.get(event.getArgs()[1].toLowerCase());
+                    String[] lines = index.get(event.getArgs()[1].toLowerCase());
                     if (lines == null || lines.length == 0) {
                         event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[1] + " in his database");
                         return;
@@ -152,7 +164,7 @@ public class VoxelHeadCommands extends Listener {
                 case ">>": {
                     String target = event.getArgs()[0];
                     String channel = event.getChannel().getName();
-                    String[] lines = minecraftIndex.get(event.getArgs()[1].toLowerCase());
+                    String[] lines = index.get(event.getArgs()[1].toLowerCase());
                     if (lines == null || lines.length == 0) {
                         event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[1] + " in his database");
                         return;
@@ -164,7 +176,7 @@ public class VoxelHeadCommands extends Listener {
                 case "<<": {
                     String target = event.getArgs()[0];
                     String channel = event.getChannel().getName();
-                    String[] lines = minecraftIndex.get(event.getArgs()[1].toLowerCase());
+                    String[] lines = index.get(event.getArgs()[1].toLowerCase());
                     if (lines == null || lines.length == 0) {
                         event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[1] + " in his database");
                         return;
@@ -176,7 +188,7 @@ public class VoxelHeadCommands extends Listener {
                 case "<": {
                     String target = event.getSender().getNick();
                     String channel = event.getChannel().getName();
-                    String[] lines = minecraftIndex.get(event.getArgs()[0].toLowerCase());
+                    String[] lines = index.get(event.getArgs()[0].toLowerCase());
                     if (lines == null || lines.length == 0) {
                         event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[0] + " in his database");
                         return;
@@ -188,7 +200,7 @@ public class VoxelHeadCommands extends Listener {
                 default: {
                     String target = null;
                     String channel = event.getChannel().getName();
-                    String[] lines = minecraftIndex.get(event.getArgs()[0].toLowerCase());
+                    String[] lines = index.get(event.getArgs()[0].toLowerCase());
                     if (lines == null || lines.length == 0) {
                         event.getSender().sendNotice("Voxelhead does not the factoid " + event.getArgs()[0] + " in his database");
                         return;
@@ -208,10 +220,14 @@ public class VoxelHeadCommands extends Listener {
             ">",
             "<",
             "<<",
-            "",
-            "refresh",
-            ";"
-        };
+            "scrollsvh",
+            "scrolls>",
+            "scrolls<",
+            "scrolls<<",
+            "minecraftvh",
+            "minecraft>",
+            "minecraft<",
+            "minecraft<<",};
     }
 
     @Override
