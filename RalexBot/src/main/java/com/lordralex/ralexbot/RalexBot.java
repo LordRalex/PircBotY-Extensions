@@ -69,6 +69,7 @@ public final class RalexBot extends Thread {
             InputStream input = RalexBot.class.getResourceAsStream("/config.yml");
             try {
                 BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("settings", "config.yml")));
+                RalexBot.copyInputStream(input, output);
             } catch (FileNotFoundException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
