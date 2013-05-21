@@ -65,7 +65,7 @@ public class VoxelHeadCommands extends Listener {
         }
         dbMinecraftLink = temp;
         try {
-            temp = new URL("http://mcfaq.hfbgaming.com/scrollsfaqdatabase");
+            temp = new URL("http://home.ghoti.me:8080/~faqbot/scrollsfaqdatabase");
         } catch (MalformedURLException ex) {
             RalexBot.getLogger().log(Level.SEVERE, "An error happened while loading the ScrollsHelp FAQ DB", ex);
             temp = null;
@@ -227,7 +227,8 @@ public class VoxelHeadCommands extends Listener {
             "minecraftvh",
             "minecraft>",
             "minecraft<",
-            "minecraft<<",};
+            "minecraft<<"
+        };
     }
 
     @Override
@@ -283,16 +284,16 @@ public class VoxelHeadCommands extends Listener {
                 if (user == null) {
                     message = Colors.BOLD + name.toLowerCase() + ": " + Colors.NORMAL + string;
                 } else {
-                    message = Colors.BOLD + user.toLowerCase() + ": " + Colors.NORMAL + "(" + name.toLowerCase() + ") " + string;
+                    message = Colors.BOLD + user + ": " + Colors.NORMAL + "(" + name.toLowerCase() + ") " + string;
                 }
                 if (notice) {
                     bot.sendNotice(user, message);
                 } else {
                     bot.sendMessage(channel, message);
                 }
-                synchronized (this) {
+                synchronized (RunLaterThread.this) {
                     try {
-                        this.wait(delay);
+                        RunLaterThread.this.wait(delay);
                     } catch (InterruptedException ex) {
                         RalexBot.getLogger().log(Level.SEVERE, null, ex);
                     }
