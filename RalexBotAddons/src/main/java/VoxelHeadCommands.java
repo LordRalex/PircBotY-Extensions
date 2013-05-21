@@ -137,9 +137,9 @@ public class VoxelHeadCommands extends Listener {
             } else if (event.getCommand().startsWith("minecraft")) {
                 index = minecraftIndex;
             } else if (event.getChannel() != null) {
-                if (event.getChannel().getName().startsWith("minecraft")) {
+                if (event.getChannel().getName().startsWith("#minecraft")) {
                     index = minecraftIndex;
-                } else if (event.getChannel().getName().startsWith("scrolls")) {
+                } else if (event.getChannel().getName().startsWith("#scrolls")) {
                     index = scrollsIndex;
                 } else {
                     index = minecraftIndex;
