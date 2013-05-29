@@ -148,6 +148,13 @@ public final class RalexBot extends Thread {
 
         Utilities.setUtils(driver);
 
+        eventHandler.load();
+        boolean eventSuccess = driver.getListenerManager().addListener(eventHandler);
+        if (eventSuccess) {
+            logger.info("Listener hook attached to bot");
+        } else {
+            logger.info("Listener hook was unable to attach to the bot");
+        }
         String network = globalSettings.getString("network");
         int port = globalSettings.getInt("port");
         if (network == null || network.isEmpty()) {
@@ -185,13 +192,7 @@ public final class RalexBot extends Thread {
             bot.joinChannel("#ae97");
         }
         logger.info("Initial loading complete, engaging listeners");
-        eventHandler.load();
-        boolean eventSuccess = driver.getListenerManager().addListener(eventHandler);
-        if (eventSuccess) {
-            logger.info("Listener hook attached to bot");
-        } else {
-            logger.info("Listener hook was unable to attach to the bot");
-        }
+        eventHandler.startQueue();
         logger.info("Starting keyboard listener");
         kblistener.start();
         logger.info("All systems operational");
