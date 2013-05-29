@@ -23,6 +23,10 @@ import com.lordralex.ralexbot.permissions.Permissible;
 import com.lordralex.ralexbot.permissions.Permission;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.pircbotx.hooks.WaitForQueue;
+import org.pircbotx.hooks.events.WhoisEvent;
 
 /**
  *
@@ -86,8 +90,27 @@ public class User extends Utilities implements Sender, Permissible {
         return pircbotxUser.getChannelsOpIn().contains(bot.getChannel(channel));
     }
 
-    public boolean isVerified() {
-        return pircbotxUser.isVerified();
+    public String isVerified() {
+        String name = null;
+        try (WaitForQueue queue = new WaitForQueue(pircbotxUser.getBot())) {
+            WhoisEvent evt;
+            try {
+                pircbotxUser.getBot().sendRawLineNow("whois " + pircbotxUser.getNick());
+                while (true) {
+                    evt = queue.waitFor(WhoisEvent.class);
+                    if (evt.getNick().equals(this.pircbotxUser.getNick())) {
+                        name = evt.getRegisteredAs();
+                    }
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+                name = null;
+            }
+            if (name != null && name.isEmpty()) {
+                name = null;
+            }
+        }
+        return name;
     }
 
     public String[] getChannels() {
