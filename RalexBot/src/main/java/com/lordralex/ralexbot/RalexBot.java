@@ -33,10 +33,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jline.console.ConsoleReader;
+import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
@@ -125,7 +127,16 @@ public final class RalexBot extends Thread {
                 logger.log(Level.SEVERE, null, ex);
             }
         }
-        driver.shutdown();
+        try {
+            Set<Channel> chans = driver.getChannels();
+            for (Channel chan : chans.toArray(new Channel[0])) {
+                driver.partChannel(chan, "Exiting channel");
+            }
+            driver.disconnect();
+            driver.shutdown(true);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "An error occured on shutting down", ex);
+        }
         System.exit(0);
     }
 

@@ -100,6 +100,7 @@ public class User extends Utilities implements Sender, Permissible {
                     evt = queue.waitFor(WhoisEvent.class);
                     if (evt.getNick().equals(this.pircbotxUser.getNick())) {
                         name = evt.getRegisteredAs();
+                        break;
                     }
                 }
             } catch (InterruptedException ex) {

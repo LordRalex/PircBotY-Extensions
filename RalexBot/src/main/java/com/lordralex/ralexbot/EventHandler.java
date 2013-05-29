@@ -37,7 +37,10 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -54,6 +57,7 @@ public final class EventHandler extends ListenerAdapter {
     private static final List<String> commandChars = new ArrayList<>();
     private final PircBotX masterBot;
     private ClassLoader classLoader;
+    private final ExecutorService execServ;
 
     public EventHandler(PircBotX bot) {
         super();
@@ -66,6 +70,7 @@ public final class EventHandler extends ListenerAdapter {
             settings.add("**");
         }
         commandChars.addAll(settings);
+        execServ = Executors.newFixedThreadPool(5);
     }
 
     public void load() {
@@ -306,7 +311,8 @@ public final class EventHandler extends ListenerAdapter {
                                                 String cmd = ((CommandEvent) next).getCommand().toLowerCase();
                                                 if (listener.getAliases().length == 0
                                                         || aliases.contains(cmd)) {
-                                                    listener.runEvent((CommandEvent) next);
+                                                    CommandCallable call = new CommandCallable(listener, next);
+                                                    execServ.submit(call);
                                                     next.setCancelled(true);
                                                 }
                                                 break;
@@ -354,6 +360,23 @@ public final class EventHandler extends ListenerAdapter {
                     RalexBot.getLogger().log(Level.SEVERE, e.toString(), e);
                 }
             }
+        }
+    }
+
+    private class CommandCallable implements Callable {
+
+        private final Listener listener;
+        private final Event event;
+
+        public CommandCallable(Listener list, Event evt) {
+            listener = list;
+            event = evt;
+        }
+
+        @Override
+        public Object call() throws Exception {
+            listener.runEvent((CommandEvent) event);
+            return event;
         }
     }
 }
