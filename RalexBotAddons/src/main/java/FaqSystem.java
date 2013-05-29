@@ -40,6 +40,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,15 +52,11 @@ import org.pircbotx.Colors;
  * @author Lord_Ralex
  * @version 1.0
  */
-public class VoxelHeadCommands extends Listener {
+public class FaqSystem extends Listener {
 
     private final Map<String, Database> databases = new ConcurrentHashMap<>();
     private int delay = 1000;
 
-    /*
-     http://home.ghoti.me:8080/~faqbot/faqdatabase
-     http://home.ghoti.me:8080/~faqbot/scrollsfaqdatabase
-     */
     @Override
     public void setup() {
         loadDatabases();
@@ -267,6 +264,21 @@ public class VoxelHeadCommands extends Listener {
             "+",
             "-",
             "~"}));
+        Set<String> keys;
+        synchronized (databases) {
+            keys = databases.keySet();
+        }
+        Iterator<String> it = keys.iterator();
+        while (it.hasNext()) {
+            String key = it.next();
+            aliases.add(key + "");
+            aliases.add(key + ">");
+            aliases.add(key + "<<");
+            aliases.add(key + "<");
+            aliases.add(key + "+");
+            aliases.add(key + "-");
+            aliases.add(key + "~");
+        }
         aliases.addAll(databases.keySet());
         return aliases.toArray(new String[aliases.size()]);
     }
