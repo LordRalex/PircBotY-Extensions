@@ -4,7 +4,7 @@
 
     <groupId>com.lordralex</groupId>
     <artifactId>RalexBotAddons</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <name>RalexBotAddons</name>
@@ -43,7 +43,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>RalexBot</artifactId>
-            <version>0.1.4</version>
+            <version>0.1.5</version>
         </dependency>
     </dependencies>
 </project>
