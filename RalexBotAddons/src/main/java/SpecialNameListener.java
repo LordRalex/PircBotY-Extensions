@@ -1,5 +1,8 @@
 
+import com.lordralex.ralexbot.api.EventField;
+import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
+import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.JoinEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
 import com.lordralex.ralexbot.api.users.BotUser;
@@ -56,6 +59,7 @@ public class SpecialNameListener extends Listener {
     }
 
     @Override
+    @EventType(event = EventField.NickChange, priority = Priority.LOW)
     public void runEvent(NickChangeEvent event) {
         if (notAllowed.contains(event.getNewNick().toLowerCase())) {
             String[] chans = event.getUser().getChannels();
@@ -68,6 +72,7 @@ public class SpecialNameListener extends Listener {
     }
 
     @Override
+    @EventType(event = EventField.Join, priority = Priority.LOW)
     public void runEvent(JoinEvent event) {
         if (notAllowed.contains(event.getSender().getNick().toLowerCase())) {
             String[] chans = event.getSender().getChannels();
@@ -80,7 +85,8 @@ public class SpecialNameListener extends Listener {
     }
 
     private void handleNick(String chan, User user) {
-        if (user.isVerified() != null) {
+        String name = user.isVerified();
+        if (name != null && name.equals(user.getNick())) {
             return;
         }
         String ban = "*" + user.getNick() + "*!*@" + user.getIP();
