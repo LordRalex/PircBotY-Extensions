@@ -1,5 +1,7 @@
 
 import com.lordralex.ralexbot.RalexBot;
+import com.lordralex.ralexbot.api.EventField;
+import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.sender.Sender;
@@ -44,6 +46,7 @@ public class PaidCommand extends Listener {
     }
 
     @Override
+    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         if (event.getArgs().length == 0) {
             return;
@@ -61,6 +64,13 @@ public class PaidCommand extends Listener {
         }
     }
 
+    @Override
+    public String[] getAliases() {
+        return new String[]{
+            "paid"
+        };
+    }
+
     private class Lookup implements Runnable {
 
         private String name;
@@ -74,7 +84,7 @@ public class PaidCommand extends Listener {
         @Override
         public void run() {
             try {
-                URL url = new URL(HASPAID.replace("{0", name));
+                URL url = new URL(HASPAID.replace("{0}", name));
                 BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
                 String reply = reader.readLine();
                 if (reply.equalsIgnoreCase("true")) {
