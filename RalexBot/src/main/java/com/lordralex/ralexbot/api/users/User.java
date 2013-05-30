@@ -115,7 +115,7 @@ public class User extends Utilities implements Sender, Permissible {
     }
 
     public String[] getChannels() {
-        Channel[] chanArray = pircbotxUser.getChannels().toArray(new Channel[0]);
+        org.pircbotx.Channel[] chanArray = pircbotxUser.getChannels().toArray(new org.pircbotx.Channel[0]);
         String[] channelList = new String[chanArray.length];
         for (int i = 0; i < channelList.length; i++) {
             channelList[i] = chanArray[i].getName();
