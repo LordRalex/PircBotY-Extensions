@@ -1,17 +1,15 @@
 
-import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.JoinEvent;
 import com.lordralex.ralexbot.api.events.NickChangeEvent;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.api.users.User;
 import com.lordralex.ralexbot.settings.Settings;
-import com.lordralex.ralexbot.threads.DelayedTask;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /*
  * Copyright (C) 2013 Lord_Ralex
@@ -37,7 +35,8 @@ public class SpecialNameListener extends Listener {
 
     private int unbanDelay;
     private final List<String> notAllowed = new ArrayList<>();
-    private final List<String> channelsToAffect = new ArrayList<String>();
+    private final List<String> channelsToAffect = new ArrayList<>();
+    private final ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public void setup() {
@@ -53,6 +52,7 @@ public class SpecialNameListener extends Listener {
                 channelsToAffect.add(name.toLowerCase());
             }
         }
+        unbanDelay = Settings.getGlobalSettings().getInt("banned-nicks-delay");
     }
 
     @Override
@@ -83,26 +83,25 @@ public class SpecialNameListener extends Listener {
         if (user.isVerified() != null) {
             return;
         }
-        String ban = user.getNick() + "!" + "*" + "@" + user.getIP();
+        String ban = "*" + user.getNick() + "*!*@" + user.getIP();
         BotUser.getBotUser().ban(chan, ban);
-        BotUser.getBotUser().kick(user.getNick(), chan, "Nickname not allowed");
-        UnbanTimer timer = new UnbanTimer(chan, user.getNick(), "*", user.getIP());
-        timer.start();
+        BotUser.getBotUser().kick(user.getNick(), chan, "Nickname not allowed, use another one");
+        UnbanTimer timer = new UnbanTimer(chan, "*" + user.getNick() + "*", "*", user.getIP());
+        es.schedule(timer, unbanDelay, TimeUnit.MINUTES);
     }
 
-    private class UnbanTimer extends DelayedTask {
+    private class UnbanTimer implements Runnable {
 
         private final String unbanLine;
         private final String channel;
 
         public UnbanTimer(String chan, String nick, String name, String ip) {
-            super(unbanDelay);
             channel = chan;
             unbanLine = nick + "!" + name + "@" + ip;
         }
 
         @Override
-        public void runTask() {
+        public void run() {
             BotUser.getBotUser().unban(channel, unbanLine);
         }
     }

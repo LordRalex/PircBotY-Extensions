@@ -21,9 +21,6 @@ import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.events.PartEvent;
-import com.lordralex.ralexbot.api.events.QuitEvent;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.BufferedReader;
@@ -45,6 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.pircbotx.Colors;
 
@@ -55,7 +56,8 @@ import org.pircbotx.Colors;
 public class FaqSystem extends Listener {
 
     private final Map<String, Database> databases = new ConcurrentHashMap<>();
-    private int delay = 1000;
+    private int delay = 2;
+    private final ScheduledExecutorService es = Executors.newScheduledThreadPool(3);
 
     @Override
     public void setup() {
@@ -122,7 +124,7 @@ public class FaqSystem extends Listener {
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, false);
-                    thread.start();
+                    thread.setFuture(es.scheduleWithFixedDelay(thread, 1, delay, TimeUnit.SECONDS));
                 }
                 break;
                 case ">>": {
@@ -134,7 +136,7 @@ public class FaqSystem extends Listener {
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, true);
-                    thread.start();
+                    thread.setFuture(es.scheduleWithFixedDelay(thread, 1, delay, TimeUnit.SECONDS));
                 }
                 break;
                 case "<<": {
@@ -146,7 +148,7 @@ public class FaqSystem extends Listener {
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, true);
-                    thread.start();
+                    thread.setFuture(es.scheduleWithFixedDelay(thread, 1, delay, TimeUnit.SECONDS));
                 }
                 break;
                 case "<": {
@@ -158,7 +160,7 @@ public class FaqSystem extends Listener {
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[0].toLowerCase(), target, channel, lines, true);
-                    thread.start();
+                    thread.setFuture(es.scheduleWithFixedDelay(thread, 1, delay, TimeUnit.SECONDS));
                 }
                 break;
                 case "+": {
@@ -239,7 +241,7 @@ public class FaqSystem extends Listener {
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[0].toLowerCase(), target, channel, lines, false);
-                    thread.start();
+                    thread.setFuture(es.scheduleWithFixedDelay(thread, 1, delay, TimeUnit.SECONDS));
                 }
                 break;
             }
@@ -344,16 +346,17 @@ public class FaqSystem extends Listener {
         db.save();
     }
 
-    private class RunLaterThread extends Thread {
+    private class RunLaterThread implements Runnable {
 
-        private String[] lines;
+        private List<String> lines;
         private String channel;
         private String user;
         private boolean notice = false;
         private String name;
+        private ScheduledFuture future = null;
 
         public RunLaterThread(String na, String u, String c, String[] l, boolean n) {
-            lines = l;
+            lines = new ArrayList<>(Arrays.asList(l));
             channel = c;
             user = u;
             notice = n;
@@ -362,27 +365,33 @@ public class FaqSystem extends Listener {
 
         @Override
         public void run() {
+            if (lines.isEmpty()) {
+                if (future != null) {
+                    future.cancel(true);
+                }
+                return;
+            }
             BotUser bot = BotUser.getBotUser();
-            for (String string : lines) {
-                String message;
-                if (user == null) {
-                    message = Colors.BOLD + name.toLowerCase() + ": " + Colors.NORMAL + string;
-                } else {
-                    message = Colors.BOLD + user + ": " + Colors.NORMAL + "(" + name.toLowerCase() + ") " + string;
-                }
-                if (notice) {
-                    bot.sendNotice(user, message);
-                } else {
-                    bot.sendMessage(channel, message);
-                }
-                synchronized (RunLaterThread.this) {
-                    try {
-                        RunLaterThread.this.wait(delay);
-                    } catch (InterruptedException ex) {
-                        RalexBot.getLogger().log(Level.SEVERE, null, ex);
-                    }
+            String message = lines.get(0);
+            if (user == null) {
+                message = Colors.BOLD + name.toLowerCase() + ": " + Colors.NORMAL + message;
+            } else {
+                message = Colors.BOLD + user + ": " + Colors.NORMAL + "(" + name.toLowerCase() + ") " + message;
+            }
+            if (notice) {
+                bot.sendNotice(user, message);
+            } else {
+                bot.sendMessage(channel, message);
+            }
+            if (lines.isEmpty()) {
+                if (future != null) {
+                    future.cancel(true);
                 }
             }
+        }
+
+        public void setFuture(ScheduledFuture sf) {
+            future = sf;
         }
     }
 

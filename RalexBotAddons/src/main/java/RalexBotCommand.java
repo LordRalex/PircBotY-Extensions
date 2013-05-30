@@ -32,9 +32,6 @@ public class RalexBotCommand extends Listener {
         Sender target = event.getChannel();
         if (target == null) {
             target = event.getSender();
-            if (target == null) {
-                return;
-            }
         }
         target.sendMessage("Hello. I am " + BotUser.getBotUser().getNick() + " " + RalexBot.VERSION + " using PircBotX " + PircBotX.VERSION);
     }

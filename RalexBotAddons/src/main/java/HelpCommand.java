@@ -48,7 +48,7 @@ public class HelpCommand extends Listener {
         if (target == null) {
             return;
         }
-        String helpLine = "my commands you can know about: ";
+        String helpLine = "My commands you can know about: ";
         for (String name : help) {
             helpLine += name + ", ";
         }
@@ -56,7 +56,6 @@ public class HelpCommand extends Listener {
         if (helpLine.endsWith(",")) {
             helpLine = helpLine.substring(0, helpLine.length() - 2);
         }
-
         target.sendMessage(event.getSender().getNick() + ", " + helpLine);
     }
 

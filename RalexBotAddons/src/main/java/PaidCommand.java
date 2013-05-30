@@ -40,7 +40,7 @@ public class PaidCommand extends Listener {
     @Override
     public void setup() {
         MAX_NAMES = Settings.getGlobalSettings().getInt("paid-name-limit");
-        es = Executors.newFixedThreadPool(MAX_NAMES);
+        es = Executors.newSingleThreadExecutor();
     }
 
     @Override

@@ -35,10 +35,8 @@ public class EightBallCommand extends Listener {
                 return;
             }
         }
-
         int random = new Random().nextInt(10);
         String reply;
-
         switch (random) {
             case 0:
                 reply = Colors.RED + "Not at all";
@@ -74,7 +72,6 @@ public class EightBallCommand extends Listener {
                 reply = Colors.RED + "No";
                 break;
         }
-
         dest.sendMessage(event.getSender().getNick() + ": " + reply);
     }
 

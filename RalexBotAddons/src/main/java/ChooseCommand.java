@@ -44,7 +44,6 @@ public class ChooseCommand extends Listener {
         }
 
         String total = Utilities.toString(args);
-
         String[] choices;
         if (total.contains(",")) {
             choices = total.split(",");

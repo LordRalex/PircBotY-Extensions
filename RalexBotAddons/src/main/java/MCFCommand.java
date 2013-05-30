@@ -53,7 +53,6 @@ public class MCFCommand extends Listener {
             target.sendMessage("http://www.minecraftforum.net");
             return;
         }
-
         try {
             String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=site:http://www.minecraftforum.net%20" + total.replace(" ", "%20");
             URL path = new URL(url);

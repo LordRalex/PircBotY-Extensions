@@ -33,10 +33,6 @@ public class PingCommand extends Listener {
         if (target == null) {
             target = event.getSender();
         }
-        if (target == null) {
-            return;
-        }
-
         target.sendMessage("Yes, i can hear you");
     }
 

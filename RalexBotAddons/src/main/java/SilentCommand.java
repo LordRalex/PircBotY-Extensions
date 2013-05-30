@@ -50,7 +50,6 @@ public class SilentCommand extends Listener {
             }
         }
 
-
         if (event.getCommand().equalsIgnoreCase("unsilent")) {
             if (event.getArgs().length == 0 && event.getChannel() != null) {
                 String channel = event.getChannel().getName().toLowerCase();
@@ -66,7 +65,6 @@ public class SilentCommand extends Listener {
                 event.getSender().sendMessage("I am now going into loud mode for channel: " + channel);
             }
         }
-
 
         if (event.getChannel() != null && silenced.contains(event.getChannel().getName().toLowerCase())) {
             boolean canUse = false;

@@ -53,7 +53,6 @@ public class GoogleImagesCommand extends Listener {
             target.sendMessage("http://images.google.com");
             return;
         }
-
         try {
             String url = "http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + total.replace(" ", "%20");
             URL path = new URL(url);
