@@ -372,7 +372,7 @@ public class FaqSystem extends Listener {
                 return;
             }
             BotUser bot = BotUser.getBotUser();
-            String message = lines.get(0);
+            String message = lines.remove(0);
             if (user == null) {
                 message = Colors.BOLD + name.toLowerCase() + ": " + Colors.NORMAL + message;
             } else {
