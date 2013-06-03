@@ -36,13 +36,11 @@ public class SayBackCommand extends Listener {
     @Override
     @EventType(event = EventField.Join)
     public void runEvent(JoinEvent event) {
-        if (say) {
-            String message = mappings.get(event.getChannel().getName().toLowerCase());
-            if (message == null || message.isEmpty()) {
-                return;
-            }
-            event.getChannel().sendMessage(event.getSender().getNick() + ", " + message);
+        String message = mappings.get(event.getChannel().getName().toLowerCase());
+        if (message == null || message.isEmpty()) {
+            return;
         }
+        event.getChannel().sendMessage(event.getSender().getNick() + ", " + message);
     }
 
     @Override
@@ -51,13 +49,11 @@ public class SayBackCommand extends Listener {
         if (event.getSender().hasVoice(event.getChannel().getName())
                 || event.getSender().hasOP(event.getChannel().getName())) {
             if (event.getArgs().length == 0) {
-                say = false;
                 mappings.remove(event.getChannel().getName().toLowerCase());
                 event.getChannel().sendMessage("I will stop telling people when they join");
             } else {
                 mappings.put(event.getChannel().getName().toLowerCase(), Utilities.toString(event.getArgs()));
                 event.getChannel().sendMessage("I will start telling people when they join");
-                say = true;
             }
         }
     }
