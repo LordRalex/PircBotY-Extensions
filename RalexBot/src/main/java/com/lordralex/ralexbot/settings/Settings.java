@@ -17,6 +17,8 @@
 package com.lordralex.ralexbot.settings;
 
 import com.lordralex.ralexbot.RalexBot;
+import com.lordralex.ralexbot.data.DataStorage;
+import com.lordralex.ralexbot.data.DataType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,7 +36,7 @@ import java.util.logging.Level;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-public final class Settings {
+public final class Settings implements DataStorage<String> {
 
     private static final Map<File, SettingsMap<String, Object>> settings = new ConcurrentHashMap<>();
     private final File name;
@@ -46,9 +48,11 @@ public final class Settings {
 
     public Settings(File aFileToLoad, boolean forceLoad) {
         name = aFileToLoad;
-        if (settings.containsKey(name) && !forceLoad) {
-            return;
-        }
+        load();
+    }
+
+    @Override
+    public void load() {
         Map<String, Object> local = new HashMap<>();
         Yaml yml = new Yaml(new SafeConstructor());
         Iterable<Object> it = null;
@@ -83,6 +87,7 @@ public final class Settings {
         return (global == null ? loadGlobalSettings() : global);
     }
 
+    @Override
     public String getString(String key) {
         if (key == null || key.isEmpty()) {
             throw new NullPointerException("KEY CANNOT BE NULL");
@@ -95,6 +100,7 @@ public final class Settings {
         return value;
     }
 
+    @Override
     public int getInt(String key) {
         if (key == null || key.isEmpty()) {
             throw new NullPointerException("KEY CANNOT BE NULL");
@@ -107,6 +113,7 @@ public final class Settings {
         return value;
     }
 
+    @Override
     public List<String> getStringList(String key) {
         if (key == null || key.isEmpty()) {
             throw new NullPointerException("KEY CANNOT BE NULL");
@@ -137,5 +144,23 @@ public final class Settings {
         settings.get(name).put(key, newValue);
         FileWriter out = new FileWriter(name);
         yml.dump(settings.get(name), out);
+    }
+
+    @Override
+    public boolean getBoolean(String key) {
+        if (key == null || key.isEmpty()) {
+            throw new NullPointerException("KEY CANNOT BE NULL");
+        }
+        Boolean value = Boolean.FALSE;
+        Object val = settings.get(name).get(key);
+        if (val != null && val instanceof Boolean) {
+            value = (Boolean) val;
+        }
+        return value;
+    }
+
+    @Override
+    public DataType getType() {
+        return DataType.FLAT;
     }
 }
