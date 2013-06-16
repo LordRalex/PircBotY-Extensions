@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,12 +90,14 @@ public final class RalexBot extends Thread {
         ConsoleLogFormatter clf = new ConsoleLogFormatter();
         ConsoleReader cr = new ConsoleReader(System.in, System.out);
         ConsoleHandler ch = new ConsoleHandler(cr);
+        FileHandler fileHandler = new FileHandler("logs.log", true);
         ch.setFormatter(clf);
         Logger temp = Logger.getLogger("");
         for (Handler handle : temp.getHandlers()) {
             temp.removeHandler(handle);
         }
         logger.addHandler(ch);
+        logger.addHandler(fileHandler);
         if (startargs.length != 0) {
             for (String arg : startargs) {
                 if (arg.equalsIgnoreCase("-debugmode")) {
@@ -142,7 +145,7 @@ public final class RalexBot extends Thread {
 
     private void createInstance(String user, String pass) throws IOException, IrcException {
         driver.setVersion(VERSION);
-        driver.setVerbose(false);
+        driver.setVerbose(true);
         driver.setAutoReconnect(true);
         driver.setAutoReconnectChannels(true);
         String nick = user;
@@ -155,7 +158,7 @@ public final class RalexBot extends Thread {
         driver.setName(nick);
         driver.setLogin(nick);
 
-        logger.info("Nick of bot: " + driver.getNick());
+        logger.info("Nick of bot: " + nick);
 
         Utilities.setUtils(driver);
 
@@ -177,6 +180,7 @@ public final class RalexBot extends Thread {
         if (pass == null || pass.isEmpty()) {
             pass = globalSettings.getString("nick-pw");
         }
+        logger.info("Connecting to: " + network + ":" + port);
         try {
             driver.connect(network, port);
         } catch (NickAlreadyInUseException ex) {
