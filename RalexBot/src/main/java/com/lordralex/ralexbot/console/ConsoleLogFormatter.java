@@ -39,12 +39,14 @@ public class ConsoleLogFormatter extends Formatter {
         builder.append(" [");
         builder.append(record.getLevel().getLocalizedName().toUpperCase());
         builder.append("] ");
-        builder.append(formatMessage(record));
+        builder.append(record.getMessage());
         builder.append('\n');
-        if (ex != null) {
-            StringWriter writer = new StringWriter();
-            ex.printStackTrace(new PrintWriter(writer));
-            builder.append(writer);
+        if (record.getThrown() != null) {
+            Throwable thrown = record.getThrown();
+            for (int i = 0; i < thrown.getStackTrace().length; i++) {
+                builder.append(thrown.getStackTrace()[i].toString());
+                builder.append("\n");
+            }
         }
         return builder.toString();
     }

@@ -16,12 +16,14 @@
  */
 package com.lordralex.ralexbot;
 
+import com.lordralex.ralexbot.handlers.FileLogHandler;
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.console.ConsoleHandler;
 import com.lordralex.ralexbot.console.ConsoleLogFormatter;
 import com.lordralex.ralexbot.settings.Settings;
+import com.lordralex.ralexbot.stream.LoggerStream;
 import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -30,11 +32,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,14 +92,17 @@ public final class RalexBot extends Thread {
         ConsoleLogFormatter clf = new ConsoleLogFormatter();
         ConsoleReader cr = new ConsoleReader(System.in, System.out);
         ConsoleHandler ch = new ConsoleHandler(cr);
-        FileHandler fileHandler = new FileHandler("logs.log", true);
+        FileLogHandler fileHandler = new FileLogHandler("logs.log");
         ch.setFormatter(clf);
-        Logger temp = Logger.getLogger("");
-        for (Handler handle : temp.getHandlers()) {
-            temp.removeHandler(handle);
+        for (Handler handle : logger.getHandlers()) {
+            logger.removeHandler(handle);
         }
         logger.addHandler(ch);
         logger.addHandler(fileHandler);
+        LoggerStream streamOut = new LoggerStream(System.out, logger, Level.INFO);
+        LoggerStream streamErr = new LoggerStream(System.err, logger, Level.SEVERE);
+        System.setOut(streamOut);
+        System.setErr(streamErr);
         if (startargs.length != 0) {
             for (String arg : startargs) {
                 if (arg.equalsIgnoreCase("-debugmode")) {
@@ -144,6 +149,11 @@ public final class RalexBot extends Thread {
     }
 
     private void createInstance(String user, String pass) throws IOException, IrcException {
+        String bind = Settings.getGlobalSettings().getString("bind-ip");
+        if (bind != null && !bind.isEmpty()) {
+            InetAddress addr = InetAddress.getByName(bind);
+            driver.setInetAddress(addr);
+        }
         driver.setVersion(VERSION);
         driver.setVerbose(true);
         driver.setAutoReconnect(true);
