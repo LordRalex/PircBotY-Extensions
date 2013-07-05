@@ -26,12 +26,10 @@ import java.util.List;
 public class HelpCommand extends Listener {
 
     private String[] help;
-    private Settings settings;
 
     @Override
-    public void setup() {
-        settings = Settings.getGlobalSettings();
-        List<String> helpLines = settings.getStringList("help-list");
+    public void onLoad() {
+        List<String> helpLines = Settings.getGlobalSettings().getStringList("help-list");
         help = helpLines.toArray(new String[0]);
     }
 

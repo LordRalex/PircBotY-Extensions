@@ -36,16 +36,21 @@ import java.util.Set;
 
 public class ServerIPListener extends Listener {
 
-    protected List<String> triggered;
-    protected List<String> ignorePeople;
+    protected final List<String> triggered = new ArrayList();
+    protected final List<String> ignorePeople = new ArrayList();
     private final Set<String> channels = new HashSet<>();
 
     @Override
-    public void setup() {
-        triggered = new ArrayList<>();
-        ignorePeople = new ArrayList<>();
+    public void onLoad() {
         channels.clear();
         channels.addAll(Settings.getGlobalSettings().getStringList("ip-channels"));
+    }
+
+    @Override
+    public void onUnload() {
+        triggered.clear();
+        ignorePeople.clear();
+        channels.clear();
     }
 
     @Override

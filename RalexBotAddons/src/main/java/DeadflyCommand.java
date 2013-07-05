@@ -19,6 +19,7 @@ import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.EventField;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
+import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.channels.Channel;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.sender.Sender;
@@ -39,7 +40,7 @@ public class DeadflyCommand extends Listener {
     private String adflyLine;
 
     @Override
-    public void setup() {
+    public void onLoad() {
         adflyLine = Settings.getGlobalSettings().getString("adfly");
         if (adflyLine == null || adflyLine.isEmpty()) {
             adflyLine = "var zzz";
@@ -47,17 +48,11 @@ public class DeadflyCommand extends Listener {
     }
 
     @Override
-    @EventType(event = EventField.Command)
+    @EventType(event = EventField.Command, priority = Priority.NORMAL)
     public void runEvent(CommandEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
         final User sender = event.getSender();
         final String[] args = event.getArgs();
         final Channel channel = event.getChannel();
-        BufferedReader reader = null, redirectReader = null;
-        URL path = null;
         Sender target = channel;
         if (target == null) {
             target = sender;
@@ -70,9 +65,10 @@ public class DeadflyCommand extends Listener {
             return;
         }
         String reply = "";
+        BufferedReader reader = null, redirectReader = null;
         try {
             String url = args[0].replace(" ", "%20");
-            path = new URL(url);
+            URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
             List<String> parts = new ArrayList<>();
             String s;
@@ -92,16 +88,13 @@ public class DeadflyCommand extends Listener {
                     string = string.replace("\'", "");
                     string = string.replace(";", "");
                     string = string.trim();
-                    if (!string.startsWith("https://adf.ly/")) {
-                        forward = "https://adf.ly" + string;
-                    } else {
-                        forward = string;
-                    }
+                    forward = string;
+                    break;
                 }
             }
             reply = forward;
         } catch (IOException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, null, ex);
+            RalexBot.logSevere(null, ex);
             reply = "There was a problem handling the link";
         } finally {
             try {
@@ -109,14 +102,14 @@ public class DeadflyCommand extends Listener {
                     reader.close();
                 }
             } catch (IOException ex) {
-                RalexBot.getLogger().log(Level.SEVERE, null, ex);
+                RalexBot.logSevere(null, ex);
             }
             try {
                 if (redirectReader != null) {
                     redirectReader.close();
                 }
             } catch (IOException ex) {
-                RalexBot.getLogger().log(Level.SEVERE, null, ex);
+                RalexBot.logSevere(null, ex);
             }
         }
         target.sendMessage(reply);

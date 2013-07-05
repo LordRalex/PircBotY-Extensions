@@ -76,7 +76,7 @@ public class GoogleCommand extends Listener {
                 }
             }
         } catch (IOException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, null, ex);
+            RalexBot.logSevere(null, ex);
             target.sendMessage("An error occureed");
         } finally {
             try {
@@ -84,7 +84,7 @@ public class GoogleCommand extends Listener {
                     reader.close();
                 }
             } catch (IOException ex) {
-                RalexBot.getLogger().log(Level.SEVERE, null, ex);
+                RalexBot.logSevere(null, ex);
             }
         }
     }

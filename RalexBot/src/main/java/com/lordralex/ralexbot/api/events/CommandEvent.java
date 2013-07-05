@@ -68,6 +68,13 @@ public final class CommandEvent extends Event {
         }
     }
 
+    public CommandEvent(User send, Channel chan, String com, String[] strings) {
+        sender = send;
+        channel = chan;
+        command = com;
+        args = strings;
+    }
+
     public String getCommand() {
         return command;
     }

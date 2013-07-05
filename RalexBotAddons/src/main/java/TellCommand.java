@@ -42,11 +42,14 @@ import java.util.logging.Logger;
 public class TellCommand extends Listener {
 
     private Map<String, Long> lastTold = new ConcurrentHashMap<>();
-    private Settings settings;
+    private int refresh;
 
     @Override
-    public void setup() {
-        settings = new Settings(new File("settings", "config.yml"));
+    public void onLoad() {
+        refresh = Settings.getGlobalSettings().getInt("refresh-minutes");
+        if (refresh == 0) {
+            refresh = 5;
+        }
     }
 
     @Override
@@ -62,9 +65,9 @@ public class TellCommand extends Listener {
         }
         if (tells.length > 0) {
             Long timeAgo = lastTold.get(event.getSender().getNick());
-            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > refresh * 1000 * 60) {
                 lastTold.put(event.getSender().getNick(), System.currentTimeMillis());
-                sender.sendMessage("You have messages waiting for you, use *st will show you them");
+                sender.sendMessage("You have messages waiting for you, using ``st will show you them");
             }
         }
     }
@@ -84,9 +87,9 @@ public class TellCommand extends Listener {
             lastTold.put(event.getNewNick(), timeAgo);
         }
         if (tells.length > 0) {
-            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > refresh * 1000 * 60) {
                 lastTold.put(event.getNewNick(), System.currentTimeMillis());
-                User.getUser(sender).sendMessage("You have messages waiting for you, use *st will show you them");
+                User.getUser(sender).sendMessage("You have messages waiting for you, using ``st will show you them");
             }
         }
     }
@@ -106,9 +109,9 @@ public class TellCommand extends Listener {
         }
         if (tells.length > 0) {
             Long timeAgo = lastTold.get(event.getSender().getNick());
-            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > settings.getInt("refresh-minutes") * 1000 * 60) {
+            if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > refresh * 1000 * 60) {
                 lastTold.put(event.getSender().getNick(), System.currentTimeMillis());
-                sender.sendMessage("You have messages waiting for you, use *st will show you them");
+                sender.sendMessage("You have messages waiting for you, using ``st will show you them");
             }
         }
     }
@@ -194,7 +197,7 @@ public class TellCommand extends Listener {
                 try {
                     writer.close();
                 } catch (IOException ex) {
-                    RalexBot.getLogger().log(Level.SEVERE, null, ex);
+                    RalexBot.logSevere(null, ex);
                 }
             }
         }

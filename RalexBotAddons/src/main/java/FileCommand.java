@@ -47,7 +47,7 @@ public class FileCommand extends Listener {
     private File folder;
 
     @Override
-    public void setup() {
+    public void onLoad() {
         Settings settings = Settings.getGlobalSettings();
         urlBase = settings.getString("file-url");
         String folderPath = settings.getString("file-path");
@@ -126,7 +126,7 @@ public class FileCommand extends Listener {
                 target.sendMessage("Invalid url");
             } catch (IOException ex) {
                 target.sendMessage("Error occured");
-                RalexBot.getLogger().log(Level.SEVERE, "Error on making stuff", ex);
+                RalexBot.logSevere("Error on making stuff", ex);
             }
         }
         try {

@@ -22,6 +22,10 @@ import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.data.DataStorage;
+import com.lordralex.ralexbot.data.DataType;
+import static com.lordralex.ralexbot.data.DataType.SQL;
+import com.lordralex.ralexbot.mysql.MySQLConnection;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -34,6 +38,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -47,6 +54,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.pircbotx.Colors;
 
 /**
@@ -60,9 +68,14 @@ public class FaqSystem extends Listener {
     private final ScheduledExecutorService es = Executors.newScheduledThreadPool(3);
 
     @Override
-    public void setup() {
+    public void onLoad() {
         loadDatabases();
         delay = Settings.getGlobalSettings().getInt("faq-delay");
+    }
+
+    public void onUnload() {
+        databases.clear();
+        es.shutdown();
     }
 
     @Override
@@ -78,11 +91,11 @@ public class FaqSystem extends Listener {
             Database index = null;
             String[] dbNames = databases.keySet().toArray(new String[databases.size()]);
             for (String name : dbNames) {
-                if (event.getCommand().startsWith(name)) {
+                if (event.getCommand().contains(name)) {
                     index = databases.get(name);
                     break;
                 } else if (event.getChannel() != null) {
-                    if (event.getChannel().getName().startsWith("#" + name)) {
+                    if (event.getChannel().getName().contains(name)) {
                         index = databases.get(name);
                         break;
                     }
@@ -178,7 +191,7 @@ public class FaqSystem extends Listener {
                     }
                     String message = "";
                     for (int i = 1; i < event.getArgs().length; i++) {
-                        message += event.getArgs()[i];
+                        message += event.getArgs()[i] + " ";
                     }
                     message = message.trim();
                     String[] faq = message.split(";;");
@@ -223,7 +236,7 @@ public class FaqSystem extends Listener {
                     }
                     String message = "";
                     for (int i = 1; i < event.getArgs().length; i++) {
-                        message += event.getArgs()[i];
+                        message += event.getArgs()[i] + " ";
                     }
                     message = message.trim();
                     String[] faq = message.split(";;");
@@ -249,7 +262,7 @@ public class FaqSystem extends Listener {
                 try {
                     saveDatabase(index);
                 } catch (IOException ex) {
-                    RalexBot.getLogger().log(Level.SEVERE, "An error occured on saving the database " + index.getName(), ex);
+                    RalexBot.logSevere("An error occured on saving the database " + index.getName(), ex);
                 }
             }
         }
@@ -259,20 +272,18 @@ public class FaqSystem extends Listener {
     public String[] getAliases() {
         ArrayList<String> aliases = new ArrayList(Arrays.asList(new String[]{
             "faq",
+            "refresh",
             ">",
             "<",
             "<<",
-            "refresh",
             "+",
             "-",
             "~"}));
-        Set<String> keys;
+        String[] it;
         synchronized (databases) {
-            keys = databases.keySet();
+            it = databases.keySet().toArray(new String[0]);
         }
-        Iterator<String> it = keys.iterator();
-        while (it.hasNext()) {
-            String key = it.next();
+        for (String key : it) {
             aliases.add(key + "");
             aliases.add(key + ">");
             aliases.add(key + "<<");
@@ -281,7 +292,6 @@ public class FaqSystem extends Listener {
             aliases.add(key + "-");
             aliases.add(key + "~");
         }
-        aliases.addAll(databases.keySet());
         return aliases.toArray(new String[aliases.size()]);
     }
 
@@ -298,31 +308,18 @@ public class FaqSystem extends Listener {
                 String name = load.split(" ")[0].toLowerCase();
                 String loadPath = load.split(" ")[1];
                 String savePath = load.split(" ")[2];
-                Database newDatabase = new Database(name, savePath);
+                Database newDatabase = new Database(name, savePath, DataType.FLAT);
                 if (load.split(" ").length <= 4) {
                     newDatabase.setReadonly(Boolean.parseBoolean(load.split(" ")[3]));
                 }
                 if (load.split(" ").length <= 5) {
                     newDatabase.setMaster(load.split(" ")[4]);
                 }
-                try {
-                    if (!loadPath.equals(savePath)) {
-                        InputStream reader = new URL(loadPath).openStream();
-                        FileOutputStream writer = new FileOutputStream(new File(savePath));
-                        copyInputStream(reader, writer);
-                    }
-                    BufferedReader filereader = new BufferedReader(new FileReader(savePath));
-                    String line;
-                    while ((line = filereader.readLine()) != null) {
-                        if (line.contains("|")) {
-                            String key = line.split("\\|")[0];
-                            String value = line.split("\\|", 2)[1];
-                            newDatabase.setEntry(key.toLowerCase(), value.split(";;"));
-                        }
-                    }
-                } catch (IOException ex) {
-                    RalexBot.getLogger().log(Level.SEVERE, "There was an error", ex);
-                }
+                RalexBot.log("Creating database: " + newDatabase.getName());
+                RalexBot.log("  Path to get info: " + loadPath);
+                RalexBot.log("  Path to save info: " + newDatabase.getFile());
+                RalexBot.log("  Read-only: " + newDatabase.isReadonly());
+                RalexBot.log("  Database owner: " + newDatabase.getMaster());
                 List<String> addable = settings.getStringList("faq-database-add-" + newDatabase.getName());
                 for (String n : addable) {
                     newDatabase.addAddable(n);
@@ -335,9 +332,24 @@ public class FaqSystem extends Listener {
                 for (String n : removeable) {
                     newDatabase.addRemoveable(n);
                 }
-                databases.put(name.toLowerCase(), newDatabase);
+                if (!loadPath.equals(newDatabase.getFile())) {
+                    RalexBot.log("  Downloading database: " + loadPath);
+                    RalexBot.log("  Saving to " + newDatabase.getFile());
+                    File save = new File(newDatabase.getFile());
+                    save.delete();
+                    save.getParentFile().mkdirs();
+                    save.createNewFile();
+                    FileOutputStream out = new FileOutputStream(save);
+                    InputStream in = new URL(loadPath).openStream();
+                    copyInputStream(in, out);
+                    RalexBot.log("  Downloaded: " + (save.length() / 1024) + "kb");
+                    RalexBot.log("  Installed: " + newDatabase.getName());
+                }
+                RalexBot.log("  Loading database: " + newDatabase.getName());
+                newDatabase.load(newDatabase.getFile());
+                databases.put(newDatabase.getName().toLowerCase(), newDatabase);
             } catch (Exception ex) {
-                RalexBot.getLogger().log(Level.SEVERE, "There was an error with this setting: " + load, ex);
+                RalexBot.logSevere("There was an error with this setting: " + load, ex);
             }
         }
     }
@@ -397,7 +409,7 @@ public class FaqSystem extends Listener {
 
     private class Database {
 
-        private final File fileLocation;
+        private final String location;
         private final Map<String, String[]> factoids = new ConcurrentHashMap<>();
         private String master = null;
         private boolean readOnly = false;
@@ -405,15 +417,45 @@ public class FaqSystem extends Listener {
         private final Set<String> add = new HashSet<>();
         private final Set<String> remove = new HashSet<>();
         private final Set<String> edit = new HashSet<>();
+        private final DataType storage;
 
-        public Database(String n, String filePath) {
-            fileLocation = new File(filePath);
+        public Database(String n, String filePath, DataType store) {
+            location = filePath;
             name = n;
+            storage = store;
         }
 
-        public Database(String n, File filePath) {
-            fileLocation = filePath;
-            name = n;
+        public void load(String loadPath) {
+            switch (storage) {
+                case FLAT:
+                    try {
+                        if (!loadPath.equals(location)) {
+                            InputStream reader = new URL(loadPath).openStream();
+                            FileOutputStream writer = new FileOutputStream(new File(location));
+                            copyInputStream(reader, writer);
+                        }
+                        BufferedReader filereader = new BufferedReader(new FileReader(new File(location)));
+                        String line;
+                        while ((line = filereader.readLine()) != null) {
+                            if (line.contains("|")) {
+                                String key = line.split("\\|")[0];
+                                String value = line.split("\\|", 2)[1];
+                                setEntry(key.toLowerCase(), value.split(";;"));
+                            }
+                        }
+                    } catch (IOException ex) {
+                        RalexBot.logSevere("There was an error", ex);
+                    }
+                    break;
+                case SQL:
+                    try {
+                        //storage.load();
+                        throw new IOException("SQL is not set up yet");
+                    } catch (IOException e) {
+                        RalexBot.logSevere("There was an error", e);
+                    }
+                    break;
+            }
         }
 
         public String getName() {
@@ -441,6 +483,23 @@ public class FaqSystem extends Listener {
             synchronized (factoids) {
                 entry = factoids.get(key);
             }
+            /*if (entry == null) {
+             switch (storage.getType()) {
+             case SQL: {
+             try {
+             PreparedStatement statement = ((MySQLConnection) storage).getPreparedStatement("SELECT ? FROM ? WHERE ID=?", location, ((MySQLConnection) storage).getTable(), key);
+             ResultSet set = statement.executeQuery();
+             String result = set.getString(1);
+             entry = result.split(";;");
+             setEntry(key, entry);
+             } catch (SQLException ex) {
+             RalexBot.logSevere("An error occured", ex);
+             }
+             }
+             break;
+             }
+
+             }*/
             return entry;
         }
 
@@ -448,6 +507,17 @@ public class FaqSystem extends Listener {
             synchronized (factoids) {
                 factoids.put(key, newEntry);
             }
+            /*switch (storage.getType()) {
+             case SQL: {
+             try {
+             PreparedStatement statement = ((MySQLConnection) storage).getPreparedStatement("UPDATE ? FROM ? WHERE ID=?", location, ((MySQLConnection) storage).getTable(), key);
+             statement.execute();
+             } catch (SQLException ex) {
+             RalexBot.logSevere("An error occured", ex);
+             }
+             }
+             break;
+             }*/
             return true;
         }
 
@@ -459,28 +529,33 @@ public class FaqSystem extends Listener {
             return removed;
         }
 
-        public File getFile() {
-            return fileLocation;
+        public String getFile() {
+            return location;
         }
 
         public synchronized void save() throws IOException {
-            fileLocation.mkdirs();
-            fileLocation.delete();
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileLocation))) {
-                synchronized (factoids) {
-                    Set<String> keys = factoids.keySet();
-                    for (String key : keys) {
-                        String line = key + "|";
-                        String[] parts = factoids.get(key);
-                        for (int i = 0; i < parts.length; i++) {
-                            if (i != 0) {
-                                line += ";;";
+            switch (storage) {
+                case FLAT: {
+                    new File(location).mkdirs();
+                    new File(location).delete();
+                    try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(location)))) {
+                        synchronized (factoids) {
+                            Set<String> keys = factoids.keySet();
+                            for (String key : keys) {
+                                String line = key + "|";
+                                String[] parts = factoids.get(key);
+                                for (int i = 0; i < parts.length; i++) {
+                                    if (i != 0) {
+                                        line += ";;";
+                                    }
+                                    line += parts[i];
+                                    writer.write(line);
+                                    writer.newLine();
+                                }
                             }
-                            line += parts[i];
-                            writer.write(line);
-                            writer.newLine();
                         }
                     }
+                    break;
                 }
             }
         }

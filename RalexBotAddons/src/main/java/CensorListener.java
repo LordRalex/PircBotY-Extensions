@@ -41,11 +41,17 @@ public class CensorListener extends Listener {
     private final Set<String> warned = new HashSet<>();
 
     @Override
-    public void setup() {
+    public void onLoad() {
         censor.clear();
         censor.addAll(Settings.getGlobalSettings().getStringList("censor"));
         channels.clear();
         channels.addAll(Settings.getGlobalSettings().getStringList("censor-channels"));
+    }
+
+    @Override
+    public void onUnload() {
+        censor.clear();
+        channels.clear();
     }
 
     @Override

@@ -1,19 +1,3 @@
-
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.events.NickChangeEvent;
-import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.api.users.User;
-import com.lordralex.ralexbot.settings.Settings;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 /*
  * Copyright (C) 2013 Lord_Ralex
  *
@@ -30,6 +14,22 @@ import java.util.concurrent.TimeUnit;
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+import com.lordralex.ralexbot.api.EventField;
+import com.lordralex.ralexbot.api.EventType;
+import com.lordralex.ralexbot.api.Listener;
+import com.lordralex.ralexbot.api.Priority;
+import com.lordralex.ralexbot.api.events.JoinEvent;
+import com.lordralex.ralexbot.api.events.NickChangeEvent;
+import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.api.users.User;
+import com.lordralex.ralexbot.settings.Settings;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @version 1.0
  * @author Lord_Ralex
@@ -42,7 +42,7 @@ public class SpecialNameListener extends Listener {
     private final ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
 
     @Override
-    public void setup() {
+    public void onLoad() {
         List<String> temp = Settings.getGlobalSettings().getStringList("banned-nicks");
         if (temp != null) {
             for (String name : temp) {
@@ -56,6 +56,13 @@ public class SpecialNameListener extends Listener {
             }
         }
         unbanDelay = Settings.getGlobalSettings().getInt("banned-nicks-delay");
+    }
+
+    @Override
+    public void onUnload() {
+        channelsToAffect.clear();
+        notAllowed.clear();
+        es.shutdown();
     }
 
     @Override

@@ -59,7 +59,7 @@ public final class Settings implements DataStorage<String> {
         try {
             it = yml.loadAll(new FileInputStream(name));
         } catch (FileNotFoundException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, null, ex);
+            RalexBot.logSevere("Cannot find " + name, ex);
         }
         if (it != null) {
             for (Object in : it) {
@@ -73,6 +73,9 @@ public final class Settings implements DataStorage<String> {
             }
         }
         settings.put(name, new SettingsMap<>(local));
+    }
+
+    public void save() {
     }
 
     public Settings(File aFileToLoad) {

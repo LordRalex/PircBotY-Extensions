@@ -42,7 +42,7 @@ public class RemCommand extends Listener {
     List<String> dontReply = new ArrayList<>();
 
     @Override
-    public void setup() {
+    public void onLoad() {
         remMap.clear();
         new File("data" + File.separator + "rem").mkdirs();
         for (File file : new File("data" + File.separator + "rem").listFiles()) {
@@ -52,13 +52,18 @@ public class RemCommand extends Listener {
                 String line = reader.nextLine().trim();
                 remMap.put(name, line);
             } catch (FileNotFoundException ex) {
-                RalexBot.getLogger().log(Level.SEVERE, null, ex);
+                RalexBot.logSevere(null, ex);
             }
         }
     }
 
     @Override
-    @EventType(event = EventField.Command, priority = Priority.LOW)
+    public void onUnload() {
+        remMap.clear();
+    }
+
+    @Override
+    @EventType(event = EventField.Command, priority = Priority.HIGH)
     public void runEvent(CommandEvent event) {
         String command = event.getCommand().toLowerCase();
         String[] args = event.getArgs();
@@ -98,7 +103,8 @@ public class RemCommand extends Listener {
         }
 
         if (command.equalsIgnoreCase("remupdate")) {
-            setup();
+            onUnload();
+            onLoad();
             user.sendMessage("Rems updated");
             return;
         }
@@ -200,13 +206,13 @@ public class RemCommand extends Listener {
             writer.write(line);
             writer.flush();
         } catch (IOException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, null, ex);
+            RalexBot.logSevere(null, ex);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException ex) {
-                    RalexBot.getLogger().log(Level.SEVERE, null, ex);
+                    RalexBot.logSevere(null, ex);
                 }
             }
         }

@@ -37,16 +37,23 @@ public class AntiSpamListener extends Listener {
     private int MAX_MESSAGES;
     private int SPAM_RATE;
     private int DUPE_RATE;
-    private final Settings settings = Settings.getGlobalSettings();
     private final List<String> channels = new ArrayList<>();
 
     @Override
-    public void setup() {
+    public void onLoad() {
+        Settings settings = Settings.getGlobalSettings();
         MAX_MESSAGES = settings.getInt("spam-message");
         SPAM_RATE = settings.getInt("spam-time");
         DUPE_RATE = settings.getInt("spam-dupe");
         channels.clear();
         channels.addAll(settings.getStringList("spam-channels"));
+        logs.clear();
+    }
+
+    @Override
+    public void onUnload() {
+        channels.clear();
+        logs.clear();
     }
 
     @Override

@@ -17,6 +17,7 @@
 package com.lordralex.ralexbot.threads;
 
 import com.lordralex.ralexbot.RalexBot;
+import com.lordralex.ralexbot.api.events.CommandEvent;
 import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
 import com.lordralex.ralexbot.api.users.BotUser;
 import java.io.IOException;
@@ -31,17 +32,17 @@ import jline.console.ConsoleReader;
  * @author Joshua
  */
 public final class KeyboardListener extends Thread {
-
+    
     final ConsoleReader kb;
     final RalexBot instance;
     BotUser bot;
-
+    
     public KeyboardListener(RalexBot a) throws IOException, NickNotOnlineException {
         setName("Keyboard_Listener_Thread");
         kb = new ConsoleReader();
         instance = a;
     }
-
+    
     @Override
     public void run() {
         bot = new BotUser();
@@ -97,8 +98,8 @@ public final class KeyboardListener extends Thread {
                                 } else {
                                     bot.sendMessage("chanserv", "kick " + chan + " " + target + " " + reason);
                                 }
-                            } else if (cmd.equalsIgnoreCase("error")) {
-                                throw new IOException("test");
+                            } else if (cmd.equalsIgnoreCase("reload")) {
+                                instance.getEventHandler().fireEvent(new CommandEvent(null, null, "reload", new String[0]));
                             }
                         } else {
                             if (currentChan == null || currentChan.isEmpty()) {
@@ -108,7 +109,7 @@ public final class KeyboardListener extends Thread {
                         }
                     }
                 } catch (IOException ex) {
-                    RalexBot.getLogger().log(Level.SEVERE, "An error occurred", ex);
+                    RalexBot.logSevere("An error occurred", ex);
                 }
             }
         } catch (Exception e) {
@@ -117,9 +118,9 @@ public final class KeyboardListener extends Thread {
             instance.notify();
         }
         kb.shutdown();
-        RalexBot.getLogger().info("Ending keyboard listener");
+        RalexBot.log("Ending keyboard listener");
     }
-
+    
     public ConsoleReader getJLine() {
         return kb;
     }

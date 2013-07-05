@@ -21,27 +21,29 @@ import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
 import com.lordralex.ralexbot.api.events.*;
+import com.lordralex.ralexbot.api.users.User;
 import com.lordralex.ralexbot.settings.Settings;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.Thread.State;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.pircbotx.Channel;
@@ -58,6 +60,7 @@ public final class EventHandler extends ListenerAdapter {
     private final PircBotX masterBot;
     private ClassLoader classLoader;
     private final ExecutorService execServ;
+    private final Map<Listener, Map<EventField, EventType>> priorities = new ConcurrentHashMap<>();
 
     public EventHandler(PircBotX bot) {
         super();
@@ -93,7 +96,7 @@ public final class EventHandler extends ListenerAdapter {
                 temp.toURI().toURL()
             };
         } catch (MalformedURLException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, null, ex);
+            RalexBot.logSevere("The URL is broken", ex);
         }
         classLoader = new URLClassLoader(urls);
         for (File file : extensionFolder.listFiles()) {
@@ -119,13 +122,13 @@ public final class EventHandler extends ListenerAdapter {
                     }
 
                 } catch (IOException ex) {
-                    RalexBot.getLogger().log(Level.SEVERE, "An error occured", ex);
+                    RalexBot.logSevere("An error occured", ex);
                 } finally {
                     if (zipFile != null) {
                         try {
                             zipFile.close();
                         } catch (IOException ex) {
-                            RalexBot.getLogger().log(Level.SEVERE, "An error occured", ex);
+                            RalexBot.logSevere("An error occured", ex);
                         }
                     }
                 }
@@ -141,6 +144,14 @@ public final class EventHandler extends ListenerAdapter {
         }
     }
 
+    public void unload() {
+        for (Listener listener : listeners) {
+            listener.onUnload();
+        }
+        listeners.clear();
+        priorities.clear();
+    }
+
     private void loadClass(String className) {
         try {
             className = className.replace("tempDir" + File.separator, "").replace("extension" + File.separator, "").replace(".class", "");
@@ -148,13 +159,32 @@ public final class EventHandler extends ListenerAdapter {
             Object obj = cls.newInstance();
             if (obj instanceof Listener) {
                 Listener list = (Listener) obj;
-                list.setup();
-                RalexBot.getLogger().info("  Added: " + list.getClass().getName());
-                list.declareValues(list.getClass());
+                list.onLoad();
+                RalexBot.log("  Added: " + list.getClass().getName());
+                declarePriorities(list);
                 listeners.add(list);
             }
         } catch (Throwable ex) {
-            RalexBot.getLogger().log(Level.SEVERE, "Could not add " + className, ex);
+            RalexBot.logSevere("Could not add " + className, ex);
+        }
+    }
+
+    private void declarePriorities(Listener list) {
+        Class thisClass = list.getClass();
+        Map<EventField, EventType> priorityMap = new HashMap<>();
+        try {
+            Method[] methods = thisClass.getDeclaredMethods();
+            for (Method method : methods) {
+                EventType event = method.getAnnotation(EventType.class);
+                if (event == null) {
+                    continue;
+                }
+                RalexBot.log("    *Event " + event.event().name() + " was added with priority " + event.priority().name());
+                priorityMap.put(event.event(), event);
+            }
+            priorities.put(list, priorityMap);
+        } catch (SecurityException ex) {
+            RalexBot.logSevere("Security issue", ex);
         }
     }
 
@@ -290,9 +320,31 @@ public final class EventHandler extends ListenerAdapter {
                     if (type == EventField.Permission) {
                         //RalexBot.getPermManager().runEvent((PermissionEvent) next);
                     } else {
+                        if (type == EventField.Command) {
+                            CommandEvent evt = (CommandEvent) next;
+                            if (evt.getCommand().equalsIgnoreCase("reload")) {
+                                User sender = evt.getSender();
+                                if (sender != null) {
+                                    if (!Settings.getGlobalSettings().getStringList("reload-users").contains(sender.isVerified())) {
+                                        continue;
+                                    }
+                                }
+                                RalexBot.log("Performing a reload, please hold");
+                                if (sender != null) {
+                                    sender.sendNotice("Reloading");
+                                }
+                                unload();
+                                load();
+                                RalexBot.log("Reloaded");
+                                if (sender != null) {
+                                    sender.sendNotice("Reloaded");
+                                }
+                                continue;
+                            }
+                        }
                         for (Priority prio : Priority.values()) {
                             for (Listener listener : listeners) {
-                                EventType info = listener.priorities.get(type);
+                                EventType info = priorities.get(listener).get(type);
                                 if (info == null) {
                                     continue;
                                 }
@@ -339,7 +391,7 @@ public final class EventHandler extends ListenerAdapter {
                                                 break;
                                         }
                                     } catch (Exception e) {
-                                        RalexBot.getLogger().log(Level.SEVERE, "Unhandled exception on event execution", e);
+                                        RalexBot.logSevere("Unhandled exception on event execution", e);
                                     }
                                 }
                             }
@@ -347,7 +399,7 @@ public final class EventHandler extends ListenerAdapter {
                     }
                 }
             }
-            RalexBot.getLogger().info("Ending event listener");
+            RalexBot.log("Ending event listener");
         }
 
         public void ping() {
@@ -357,7 +409,7 @@ public final class EventHandler extends ListenerAdapter {
                         this.notify();
                     }
                 } catch (IllegalMonitorStateException e) {
-                    RalexBot.getLogger().log(Level.SEVERE, e.toString(), e);
+                    RalexBot.logSevere("Major issue on pinging event system", e);
                 }
             }
         }

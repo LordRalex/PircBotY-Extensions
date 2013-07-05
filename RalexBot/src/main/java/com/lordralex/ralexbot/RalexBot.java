@@ -16,14 +16,10 @@
  */
 package com.lordralex.ralexbot;
 
-import com.lordralex.ralexbot.handlers.FileLogHandler;
 import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
 import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.console.ConsoleHandler;
-import com.lordralex.ralexbot.console.ConsoleLogFormatter;
 import com.lordralex.ralexbot.settings.Settings;
-import com.lordralex.ralexbot.stream.LoggerStream;
 import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -32,14 +28,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jline.console.ConsoleReader;
 import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
@@ -56,7 +50,6 @@ public final class RalexBot extends Thread {
     private static final Settings globalSettings;
     private static boolean debugMode = false;
     private static final Map<String, String> args = new HashMap<>();
-    private static final Logger logger = Logger.getLogger("RalexBot");
     private static boolean login = true;
 
     static {
@@ -66,7 +59,7 @@ public final class RalexBot extends Thread {
             temp = new KeyboardListener(instance);
         } catch (IOException | NickNotOnlineException ex) {
             temp = null;
-            logger.log(Level.SEVERE, "An error occured", ex);
+            logSevere("An error occured", ex);
         }
         kblistener = temp;
         if (!(new File("settings", "config.yml").exists())) {
@@ -76,7 +69,7 @@ public final class RalexBot extends Thread {
                 BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("settings", "config.yml")));
                 RalexBot.copyInputStream(input, output);
             } catch (FileNotFoundException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logSevere("Cannot find the config file", ex);
             }
         }
         globalSettings = Settings.loadGlobalSettings();
@@ -84,29 +77,15 @@ public final class RalexBot extends Thread {
         eventHandler = new EventHandler(driver);
     }
 
-    public static Logger getLogger() {
-        return logger;
-    }
-
     public static void main(String[] startargs) throws IOException {
-        ConsoleLogFormatter clf = new ConsoleLogFormatter();
-        ConsoleReader cr = new ConsoleReader(System.in, System.out);
-        ConsoleHandler ch = new ConsoleHandler(cr);
-        FileLogHandler fileHandler = new FileLogHandler("logs.log");
-        ch.setFormatter(clf);
-        for (Handler handle : logger.getHandlers()) {
-            logger.removeHandler(handle);
-        }
-        logger.addHandler(ch);
-        logger.addHandler(fileHandler);
-        LoggerStream streamOut = new LoggerStream(System.out, logger, Level.INFO);
-        LoggerStream streamErr = new LoggerStream(System.err, logger, Level.SEVERE);
-        System.setOut(streamOut);
-        System.setErr(streamErr);
+        SplitStream out = new SplitStream(System.out);
+        SplitStream err = new SplitStream(System.err);
+        System.setOut(out);
+        System.setErr(err);
         if (startargs.length != 0) {
             for (String arg : startargs) {
                 if (arg.equalsIgnoreCase("-debugmode")) {
-                    logger.info("Starting with DEBUG MODE ENABLED");
+                    log("Starting with DEBUG MODE ENABLED");
                     debugMode = true;
                 } else if (arg.equalsIgnoreCase("-nologin")) {
                     login = false;
@@ -126,24 +105,25 @@ public final class RalexBot extends Thread {
         try {
             instance.createInstance(args.get("user"), args.get("pass"));
         } catch (IOException | IrcException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logSevere("An error occurred", ex);
         }
         synchronized (instance) {
             try {
                 instance.wait();
             } catch (InterruptedException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logSevere("The instance was interrupted", ex);
             }
         }
+        Set<Channel> chans = driver.getChannels();
+        for (Channel chan : chans.toArray(new Channel[0])) {
+            driver.partChannel(chan, "Exiting channel");
+        }
+        driver.quitServer();
+        driver.disconnect();
         try {
-            Set<Channel> chans = driver.getChannels();
-            for (Channel chan : chans.toArray(new Channel[0])) {
-                driver.partChannel(chan, "Exiting channel");
-            }
-            driver.disconnect();
-            driver.shutdown(true);
+            driver.shutdown(false);
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "An error occured on shutting down", ex);
+            logSevere("An error occured on shutting down", ex);
         }
         System.exit(0);
     }
@@ -154,9 +134,8 @@ public final class RalexBot extends Thread {
             InetAddress addr = InetAddress.getByName(bind);
             driver.setInetAddress(addr);
         }
-        driver.setVersion(VERSION);
         driver.setVerbose(true);
-        driver.setAutoReconnect(true);
+        driver.setAutoReconnect(false);
         driver.setAutoReconnectChannels(true);
         String nick = user;
         if (nick == null || nick.isEmpty()) {
@@ -168,16 +147,16 @@ public final class RalexBot extends Thread {
         driver.setName(nick);
         driver.setLogin(nick);
 
-        logger.info("Nick of bot: " + nick);
+        log("Nick of bot: " + nick);
 
         Utilities.setUtils(driver);
 
         eventHandler.load();
         boolean eventSuccess = driver.getListenerManager().addListener(eventHandler);
         if (eventSuccess) {
-            logger.info("Listener hook attached to bot");
+            log("Listener hook attached to bot");
         } else {
-            logger.info("Listener hook was unable to attach to the bot");
+            log("Listener hook was unable to attach to the bot");
         }
         String network = globalSettings.getString("network");
         int port = globalSettings.getInt("port");
@@ -190,23 +169,23 @@ public final class RalexBot extends Thread {
         if (pass == null || pass.isEmpty()) {
             pass = globalSettings.getString("nick-pw");
         }
-        logger.info("Connecting to: " + network + ":" + port);
+        log("Connecting to: " + network + ":" + port);
         try {
             driver.connect(network, port);
         } catch (NickAlreadyInUseException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logSevere("The nick is already taken");
             driver.changeNick(nick + "_");
             driver.connect(network, port);
             driver.sendMessage("chanserv", "ghost " + nick + " " + pass);
             driver.changeNick(nick);
             if (!globalSettings.getString("nick").equalsIgnoreCase(driver.getNick())) {
-                logger.severe("Could not claim the nick " + nick);
+                logSevere("Could not claim the nick " + nick);
             }
         }
         BotUser bot = new BotUser();
         if (pass != null && !pass.isEmpty() && login) {
             bot.sendMessage("nickserv", "identify " + pass);
-            logger.info("Logging in to nickserv");
+            log("Logging in to nickserv");
         }
         List<String> channels = globalSettings.getStringList("channels");
         if (channels != null && !channels.isEmpty()) {
@@ -216,11 +195,11 @@ public final class RalexBot extends Thread {
         } else {
             bot.joinChannel("#ae97");
         }
-        logger.info("Initial loading complete, engaging listeners");
+        log("Initial loading complete, engaging listeners");
         eventHandler.startQueue();
-        logger.info("Starting keyboard listener");
+        log("Starting keyboard listener");
         kblistener.start();
-        logger.info("All systems operational");
+        log("All systems operational");
     }
 
     public EventHandler getEventHandler() {
@@ -249,10 +228,69 @@ public final class RalexBot extends Thread {
             in.close();
             out.close();
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logSevere("An error occurred on copying the streams", ex);
         }
     }
 
+    public static void log(String message) {
+        System.out.println(message);
+    }
+
+    public static void log(String message, Throwable error) {
+        log(message);
+        error.printStackTrace(System.out);
+    }
+
+    public static void logSevere(String message) {
+        System.err.println("[SEVERE] " + message);
+    }
+
+    public static void logSevere(String message, Throwable error) {
+        logSevere(message);
+        error.printStackTrace(System.err);
+    }
+
     private RalexBot() {
+    }
+
+    private static class SplitStream extends PrintStream {
+
+        private final PrintStream first, second;
+
+        public SplitStream(PrintStream f) throws FileNotFoundException {
+            super(f);
+            first = f;
+            second = new PrintStream(new FileOutputStream("logs.log", true));
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            first.write(b);
+            second.write(b);
+        }
+
+        @Override
+        public void write(int b) {
+            first.write(b);
+            second.write(b);
+        }
+
+        @Override
+        public void write(byte[] buf, int off, int len) {
+            first.write(buf, off, len);
+            second.write(buf, off, len);
+        }
+
+        @Override
+        public void close() {
+            first.close();
+            second.close();
+        }
+
+        @Override
+        public void flush() {
+            first.flush();
+            second.flush();
+        }
     }
 }

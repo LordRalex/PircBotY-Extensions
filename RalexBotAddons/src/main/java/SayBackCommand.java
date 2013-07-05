@@ -30,7 +30,6 @@ import java.util.Map;
  */
 public class SayBackCommand extends Listener {
 
-    private boolean say = false;
     private Map<String, String> mappings = new HashMap<>();
 
     @Override

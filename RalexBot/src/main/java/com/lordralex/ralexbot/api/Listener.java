@@ -16,34 +16,14 @@
  */
 package com.lordralex.ralexbot.api;
 
-import com.lordralex.ralexbot.RalexBot;
 import com.lordralex.ralexbot.api.events.*;
-import java.lang.reflect.Method;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.logging.Level;
 
 public abstract class Listener {
 
-    public final Map<EventField, EventType> priorities = new EnumMap<>(EventField.class);
-
-    public void setup() {
+    public void onLoad() {
     }
 
-    public final void declareValues(Class thisClass) {
-        try {
-            Method[] methods = thisClass.getDeclaredMethods();
-            for (Method method : methods) {
-                EventType event = method.getAnnotation(EventType.class);
-                if (event == null) {
-                    continue;
-                }
-                RalexBot.getLogger().info("    *Event " + event.event().name() + " was added with priority " + event.priority().name());
-                priorities.put(event.event(), event);
-            }
-        } catch (SecurityException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, "Security issue", ex);
-        }
+    public void onUnload() {
     }
 
     public void runEvent(CommandEvent event) {

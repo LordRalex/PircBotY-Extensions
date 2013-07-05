@@ -1,20 +1,6 @@
 
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
-import com.lordralex.ralexbot.settings.Settings;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-
 /*
- * Copyright (C) 2013 Laptop
+ * Copyright (C) 2013 Lord_Ralex
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,20 +15,38 @@ import java.util.logging.Level;
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+import com.lordralex.ralexbot.RalexBot;
+import com.lordralex.ralexbot.api.EventField;
+import com.lordralex.ralexbot.api.EventType;
+import com.lordralex.ralexbot.api.Listener;
+import com.lordralex.ralexbot.api.events.CommandEvent;
+import com.lordralex.ralexbot.api.sender.Sender;
+import com.lordralex.ralexbot.settings.Settings;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+
 /**
  * @version 1.0
- * @author Laptop
+ * @author Lord_Ralex
  */
 public class PaidCommand extends Listener {
 
     private final String HASPAID = "https://minecraft.net/haspaid.jsp?user={0}";
     private int MAX_NAMES;
-    private ExecutorService es;
+    private final ExecutorService es = Executors.newSingleThreadExecutor();
 
     @Override
-    public void setup() {
+    public void onLoad() {
         MAX_NAMES = Settings.getGlobalSettings().getInt("paid-name-limit");
-        es = Executors.newSingleThreadExecutor();
+    }
+
+    @Override
+    public void onUnload() {
+        es.shutdown();
     }
 
     @Override
@@ -93,7 +97,7 @@ public class PaidCommand extends Listener {
                     target.sendMessage("The user '" + name + "' is NOT a premium account");
                 }
             } catch (Exception e) {
-                RalexBot.getLogger().log(Level.SEVERE, "An error occured on looking up " + name, e);
+                RalexBot.logSevere("An error occured on looking up " + name, e);
                 target.sendMessage("An error occured while looking to see if '" + name + "' has paid");
             }
         }

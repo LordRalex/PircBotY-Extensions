@@ -50,12 +50,7 @@ public class User extends Utilities implements Sender, Permissible {
     }
 
     public static User getUser(String username) {
-        User user = userList.get(username);
-        if (user == null) {
-            user = new User(username);
-            userList.put(username, user);
-        }
-        return user;
+        return new User(username);
     }
 
     @Override

@@ -76,7 +76,7 @@ public class MCFCommand extends Listener {
                 }
             }
         } catch (IOException ex) {
-            RalexBot.getLogger().log(Level.SEVERE, null, ex);
+            RalexBot.logSevere(null, ex);
             target.sendMessage("An error occured");
         } finally {
             try {
@@ -84,7 +84,7 @@ public class MCFCommand extends Listener {
                     reader.close();
                 }
             } catch (IOException ex) {
-                RalexBot.getLogger().log(Level.SEVERE, null, ex);
+                RalexBot.logSevere(null, ex);
             }
         }
     }
