@@ -15,3 +15,4 @@
 /RalexBot/run.bat
 RalexBot/RalexBot*.jar
 RalexBot/logs.txt
+RalexBot/dependency-reduced-pom.xml
