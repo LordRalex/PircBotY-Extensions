@@ -289,6 +289,17 @@ public final class EventHandler extends ListenerAdapter {
         synchronized (runner) {
             runner.interrupt();
         }
+        synchronized (listeners) {
+            for (Listener list : listeners) {
+                try {
+                    RalexBot.log("Unloading " + list.getClass().getSimpleName());
+                    list.onUnload();
+                } catch (Exception e) {
+                    RalexBot.logSevere("Error on unloading " + list.getClass().getSimpleName(), e);
+                }
+            }
+            listeners.clear();
+        }
     }
 
     public static List<String> getCommandPrefixes() {
