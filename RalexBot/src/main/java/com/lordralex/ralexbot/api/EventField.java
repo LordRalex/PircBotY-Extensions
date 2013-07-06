@@ -30,7 +30,8 @@ public enum EventField {
     Quit(QuitEvent.class),
     Action(ActionEvent.class),
     Kick(KickEvent.class),
-    Permission(PermissionEvent.class);
+    Permission(PermissionEvent.class),
+    Connection(ConnectionEvent.class);
     private final Class eventClass;
 
     private EventField(Class cl) {

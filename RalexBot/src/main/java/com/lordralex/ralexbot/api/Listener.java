@@ -56,6 +56,9 @@ public abstract class Listener {
     public void runEvent(KickEvent event) {
     }
 
+    public void runEvent(ConnectionEvent event) {
+    }
+
     public String[] getAliases() {
         return new String[0];
     }

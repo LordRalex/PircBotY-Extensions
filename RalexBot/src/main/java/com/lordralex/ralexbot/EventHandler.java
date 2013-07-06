@@ -17,6 +17,7 @@
 package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.EventField;
+import static com.lordralex.ralexbot.api.EventField.Kick;
 import com.lordralex.ralexbot.api.EventType;
 import com.lordralex.ralexbot.api.Listener;
 import com.lordralex.ralexbot.api.Priority;
@@ -50,6 +51,7 @@ import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
 import org.pircbotx.UserSnapshot;
 import org.pircbotx.hooks.ListenerAdapter;
+import org.pircbotx.hooks.events.ConnectEvent;
 
 public final class EventHandler extends ListenerAdapter {
 
@@ -260,6 +262,10 @@ public final class EventHandler extends ListenerAdapter {
     }
 
     @Override
+    public void onConnect(ConnectEvent event) throws Exception {
+    }
+
+    @Override
     public void onAction(org.pircbotx.hooks.events.ActionEvent event) throws Exception {
         ActionEvent nextEvt = new ActionEvent(event);
         fireEvent(nextEvt);
@@ -399,6 +405,9 @@ public final class EventHandler extends ListenerAdapter {
                                                 break;
                                             case Kick:
                                                 listener.runEvent((KickEvent) next);
+                                                break;
+                                            case Connection:
+                                                listener.runEvent((ConnectionEvent) next);
                                                 break;
                                         }
                                     } catch (Exception e) {

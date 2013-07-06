@@ -17,6 +17,7 @@
 package com.lordralex.ralexbot;
 
 import com.lordralex.ralexbot.api.Utilities;
+import com.lordralex.ralexbot.api.events.ConnectionEvent;
 import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
 import com.lordralex.ralexbot.api.users.BotUser;
 import com.lordralex.ralexbot.settings.Settings;
@@ -114,12 +115,38 @@ public final class RalexBot extends Thread {
                 logSevere("The instance was interrupted", ex);
             }
         }
+
+        eventHandler.stopRunner();
+
         Set<Channel> chans = driver.getChannels();
-        for (Channel chan : chans.toArray(new Channel[0])) {
-            driver.partChannel(chan, "Exiting channel");
+        Channel[] chanArray = chans.toArray(new Channel[0]);
+        String[] chanNames = new String[chans.size()];
+        for (int i = 0; i < chanArray.length; i++) {
+            chanNames[i] = chanArray[i].getName();
         }
-        driver.quitServer();
-        driver.disconnect();
+
+        for (String chan : chanNames) {
+            try {
+                Channel c = driver.getChannel(chan);
+                if (driver.getChannels().contains(c)) {
+                    driver.partChannel(c, "Exiting channel");
+                }
+            } catch (Exception ex) {
+                logSevere("An error occured on shutting down", ex);
+            }
+        }
+
+        try {
+            driver.quitServer();
+        } catch (Exception ex) {
+            logSevere("An error occured on shutting down", ex);
+        }
+        try {
+            driver.disconnect();
+        } catch (Exception ex) {
+            logSevere("An error occured on shutting down", ex);
+
+        }
         try {
             driver.shutdown(false);
         } catch (Exception ex) {
@@ -135,6 +162,7 @@ public final class RalexBot extends Thread {
             driver.setInetAddress(addr);
         }
         driver.setVerbose(true);
+        driver.setVersion("RalexBot - v" + VERSION);
         driver.setAutoReconnect(false);
         driver.setAutoReconnectChannels(true);
         String nick = user;
@@ -187,9 +215,11 @@ public final class RalexBot extends Thread {
             bot.sendMessage("nickserv", "identify " + pass);
             log("Logging in to nickserv");
         }
+        eventHandler.fireEvent(new ConnectionEvent());
         List<String> channels = globalSettings.getStringList("channels");
         if (channels != null && !channels.isEmpty()) {
             for (String chan : channels) {
+                log("Joining " + chan);
                 bot.joinChannel(chan);
             }
         } else {
@@ -248,6 +278,10 @@ public final class RalexBot extends Thread {
     public static void logSevere(String message, Throwable error) {
         logSevere(message);
         error.printStackTrace(System.err);
+
+
+
+
     }
 
     private RalexBot() {
