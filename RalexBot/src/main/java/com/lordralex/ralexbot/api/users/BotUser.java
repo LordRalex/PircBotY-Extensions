@@ -35,11 +35,7 @@ public class BotUser extends User {
     }
 
     public void kick(String nick, String channel) {
-        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
-            bot.kick(bot.getChannel(channel), bot.getUser(nick));
-        } else {
-            bot.sendMessage("chanserv", "kick " + channel + " " + nick);
-        }
+        kick(nick, channel, null);
     }
 
     public void kick(String nick, String channel, String reason) {
@@ -48,7 +44,11 @@ public class BotUser extends User {
             return;
         }
         if (bot.getChannel(channel).isOp(bot.getUserBot())) {
-            bot.kick(bot.getChannel(channel), bot.getUser(nick), reason);
+            if (reason == null || reason.isEmpty()) {
+                bot.kick(bot.getChannel(channel), bot.getUser(nick));
+            } else {
+                bot.kick(bot.getChannel(channel), bot.getUser(nick), reason);
+            }
         } else {
             this.sendMessage("chanserv", "kick " + channel + " " + nick + " " + reason);
         }
@@ -75,10 +75,18 @@ public class BotUser extends User {
     }
 
     public void ban(String channel, String mask) {
-        bot.ban(bot.getChannel(channel), mask);
+        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
+            bot.ban(bot.getChannel(channel), mask);
+        } else {
+            this.sendMessage("chanserv", "ban " + channel + " " + mask);
+        }
     }
 
     public void unban(String channel, String mask) {
-        bot.unBan(bot.getChannel(channel), mask);
+        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
+            bot.unBan(bot.getChannel(channel), mask);
+        } else {
+            this.sendMessage("chanserv", "unban " + channel + " " + mask);
+        }
     }
 }
