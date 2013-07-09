@@ -20,6 +20,7 @@ import com.lordralex.ralexbot.api.Utilities;
 import com.lordralex.ralexbot.api.events.ConnectionEvent;
 import com.lordralex.ralexbot.api.exceptions.NickNotOnlineException;
 import com.lordralex.ralexbot.api.users.BotUser;
+import com.lordralex.ralexbot.permissions.PermissionManager;
 import com.lordralex.ralexbot.settings.Settings;
 import com.lordralex.ralexbot.threads.KeyboardListener;
 import java.io.BufferedOutputStream;
@@ -52,6 +53,7 @@ public final class RalexBot extends Thread {
     private static boolean debugMode = false;
     private static final Map<String, String> args = new HashMap<>();
     private static boolean login = true;
+    private static final PermissionManager permManager;
 
     static {
         instance = new RalexBot();
@@ -76,6 +78,7 @@ public final class RalexBot extends Thread {
         globalSettings = Settings.loadGlobalSettings();
         driver = new PircBotX();
         eventHandler = new EventHandler(driver);
+        permManager = new PermissionManager();
     }
 
     public static void main(String[] startargs) throws IOException {
@@ -278,10 +281,6 @@ public final class RalexBot extends Thread {
     public static void logSevere(String message, Throwable error) {
         logSevere(message);
         error.printStackTrace(System.err);
-
-
-
-
     }
 
     private RalexBot() {
