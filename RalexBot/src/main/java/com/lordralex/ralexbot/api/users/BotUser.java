@@ -39,10 +39,6 @@ public class BotUser extends User {
     }
 
     public void kick(String nick, String channel, String reason) {
-        if (reason == null || reason.isEmpty()) {
-            kick(nick, channel);
-            return;
-        }
         if (bot.getChannel(channel).isOp(bot.getUserBot())) {
             if (reason == null || reason.isEmpty()) {
                 bot.kick(bot.getChannel(channel), bot.getUser(nick));
