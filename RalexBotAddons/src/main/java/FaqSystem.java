@@ -47,6 +47,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import net.ae97.ralexbot.api.channels.Channel;
+import net.ae97.ralexbot.api.users.User;
 import org.pircbotx.Colors;
 
 /**
@@ -57,7 +59,7 @@ public class FaqSystem extends Listener {
 
     private final Map<String, Database> databases = new ConcurrentHashMap<>();
     private int delay = 2;
-    private final ScheduledExecutorService es = Executors.newScheduledThreadPool(3);
+    private ScheduledExecutorService es;
     private Settings settings;
 
     @Override
@@ -65,6 +67,7 @@ public class FaqSystem extends Listener {
         settings = new Settings(new File("settings", "faq.yml"));
         loadDatabases();
         delay = settings.getInt("delay");
+        es = Executors.newScheduledThreadPool(10);
     }
 
     @Override
@@ -80,6 +83,39 @@ public class FaqSystem extends Listener {
             loadDatabases();
             event.getUser().sendMessage("Updated local storage of all databases");
             return;
+        } else if (event.getCommand().equalsIgnoreCase("togglefaq")) {
+            Channel chan = event.getChannel();
+            User user = event.getUser();
+            if (user.hasOP(chan.getName()) || user.hasPermission(chan.getName(), "fag.toggle")) {
+                Database index = null;
+                String[] dbNames = databases.keySet().toArray(new String[databases.size()]);
+                for (String name : dbNames) {
+                    if (event.getCommand().contains(name)) {
+                        index = databases.get(name);
+                        break;
+                    } else if (event.getChannel() != null) {
+                        if (event.getChannel().getName().contains(name)) {
+                            index = databases.get(name);
+                            break;
+                        }
+                    }
+                }
+                if (index == null) {
+                    StringBuilder builder = new StringBuilder();
+                    if (dbNames.length != 0) {
+                        builder.append(dbNames[0]);
+                    }
+                    user.sendNotice("There is no FAQ that I could match this to");
+                } else {
+                    boolean oldState = index.getOverride();
+                    index.setOverride(!oldState);
+                    if (oldState) {
+                        user.sendNotice("I am disabling my override on the database " + index.getName());
+                    } else {
+                        user.sendNotice("I am overriding my disable on the database " + index.getName());
+                    }
+                }
+            }
         } else {
             boolean allowExec = true;
             String cmdMethod = event.getCommand().toLowerCase();
@@ -111,7 +147,12 @@ public class FaqSystem extends Listener {
                     }
                 }
             }
+            if (cmdMethod.endsWith("^")) {
+                allowExec = true;
+            }
+            RalexBot.log("CMD: " + cmdMethod);
             if (!allowExec) {
+                RalexBot.log("Will not execute");
                 return;
             }
             if (index == null) {
@@ -122,6 +163,10 @@ public class FaqSystem extends Listener {
             for (String dbName : dbNames) {
                 cmdMethod = cmdMethod.replace(dbName, "");
             }
+            if (cmdMethod.endsWith("^")) {
+                cmdMethod = cmdMethod.replace("^", "");
+            }
+            RalexBot.log("After parsing, cmd=" + cmdMethod);
             switch (cmdMethod) {
                 case ">": {
                     String target = event.getArgs()[0];
@@ -273,7 +318,9 @@ public class FaqSystem extends Listener {
             "<<",
             "+",
             "-",
-            "~"}));
+            "~",
+            "^",
+            "togglefaq"}));
         String[] it;
         synchronized (databases) {
             it = databases.keySet().toArray(new String[0]);
@@ -286,6 +333,7 @@ public class FaqSystem extends Listener {
             aliases.add(key + "+");
             aliases.add(key + "-");
             aliases.add(key + "~");
+            aliases.add(key + "^");
         }
         return aliases.toArray(new String[aliases.size()]);
     }
@@ -412,6 +460,7 @@ public class FaqSystem extends Listener {
         private final Set<String> remove = new HashSet<>();
         private final Set<String> edit = new HashSet<>();
         private final DataType storage;
+        private boolean override = false;
 
         public Database(String n, String filePath, DataType store) {
             location = filePath;
@@ -461,7 +510,18 @@ public class FaqSystem extends Listener {
         }
 
         public String getMaster() {
+            if (override) {
+                return null;
+            }
             return master;
+        }
+
+        public void setOverride(boolean newState) {
+            override = newState;
+        }
+
+        public boolean getOverride() {
+            return override;
         }
 
         public void setReadonly(boolean newBool) {
