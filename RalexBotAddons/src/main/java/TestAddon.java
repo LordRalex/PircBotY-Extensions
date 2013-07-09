@@ -15,21 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.ActionEvent;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.events.KickEvent;
-import com.lordralex.ralexbot.api.events.MessageEvent;
-import com.lordralex.ralexbot.api.events.NickChangeEvent;
-import com.lordralex.ralexbot.api.events.NoticeEvent;
-import com.lordralex.ralexbot.api.events.PartEvent;
-import com.lordralex.ralexbot.api.events.PrivateMessageEvent;
-import com.lordralex.ralexbot.api.events.QuitEvent;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.events.ActionEvent;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.events.JoinEvent;
+import net.ae97.ralexbot.api.events.KickEvent;
+import net.ae97.ralexbot.api.events.MessageEvent;
+import net.ae97.ralexbot.api.events.NickChangeEvent;
+import net.ae97.ralexbot.api.events.NoticeEvent;
+import net.ae97.ralexbot.api.events.PartEvent;
+import net.ae97.ralexbot.api.events.PrivateMessageEvent;
+import net.ae97.ralexbot.api.events.QuitEvent;
+import net.ae97.ralexbot.permissions.Permission;
+import net.ae97.ralexbot.settings.Settings;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @version 1.0
@@ -39,12 +42,10 @@ public class TestAddon extends Listener {
 
     @Override
     public void onLoad() {
-        System.out.println("System: " + Settings.getGlobalSettings().getString("test"));
     }
 
     @Override
     public void onUnload() {
-        System.out.println("Unloaded");
     }
 
     @Override
@@ -57,6 +58,14 @@ public class TestAddon extends Listener {
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         RalexBot.log("Event fired: " + event.toString());
+        Map<String, Set<Permission>> perms = event.getUser().getPermissions();
+        for (String key : perms.keySet()) {
+            RalexBot.log("Perms in " + key);
+            for (Permission perm : perms.get(key)) {
+                RalexBot.log(" -" + perm.getName());
+            }
+        }
+        RalexBot.log("Does " + event.getUser().getNick() + " have the permission in " + event.getChannel().getName() + ": " + event.getUser().hasPermission(event.getChannel().getName(), "permission.test"));
     }
 
     @Override
@@ -105,5 +114,12 @@ public class TestAddon extends Listener {
     @EventType(event = EventField.Quit)
     public void runEvent(QuitEvent event) {
         RalexBot.log("Event fired: " + event.toString());
+    }
+
+    @Override
+    public String[] getAliases() {
+        return new String[]{
+            "test"
+        };
     }
 }

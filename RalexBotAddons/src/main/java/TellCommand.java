@@ -15,17 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.channels.Channel;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.events.MessageEvent;
-import com.lordralex.ralexbot.api.events.NickChangeEvent;
-import com.lordralex.ralexbot.api.users.User;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.channels.Channel;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.events.JoinEvent;
+import net.ae97.ralexbot.api.events.MessageEvent;
+import net.ae97.ralexbot.api.events.NickChangeEvent;
+import net.ae97.ralexbot.api.users.User;
+import net.ae97.ralexbot.settings.Settings;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -55,7 +55,7 @@ public class TellCommand extends Listener {
     @Override
     @EventType(event = EventField.Join)
     public void runEvent(JoinEvent event) {
-        User sender = event.getSender();
+        User sender = event.getUser();
 
         String[] tells;
         try {
@@ -64,9 +64,9 @@ public class TellCommand extends Listener {
             return;
         }
         if (tells.length > 0) {
-            Long timeAgo = lastTold.get(event.getSender().getNick());
+            Long timeAgo = lastTold.get(event.getUser().getNick());
             if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > refresh * 1000 * 60) {
-                lastTold.put(event.getSender().getNick(), System.currentTimeMillis());
+                lastTold.put(event.getUser().getNick(), System.currentTimeMillis());
                 sender.sendMessage("You have messages waiting for you, using ``st will show you them");
             }
         }
@@ -100,7 +100,7 @@ public class TellCommand extends Listener {
         if (event.isCancelled()) {
             return;
         }
-        User sender = event.getSender();
+        User sender = event.getUser();
         String[] tells;
         try {
             tells = getTells(sender.getNick());
@@ -108,9 +108,9 @@ public class TellCommand extends Listener {
             return;
         }
         if (tells.length > 0) {
-            Long timeAgo = lastTold.get(event.getSender().getNick());
+            Long timeAgo = lastTold.get(event.getUser().getNick());
             if (timeAgo == null || System.currentTimeMillis() - timeAgo.longValue() > refresh * 1000 * 60) {
-                lastTold.put(event.getSender().getNick(), System.currentTimeMillis());
+                lastTold.put(event.getUser().getNick(), System.currentTimeMillis());
                 sender.sendMessage("You have messages waiting for you, using ``st will show you them");
             }
         }
@@ -120,7 +120,7 @@ public class TellCommand extends Listener {
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         Channel channel = event.getChannel();
-        User sender = event.getSender();
+        User sender = event.getUser();
         String[] args = event.getArgs();
         String command = event.getCommand();
         if (sender == null || sender.getNick().isEmpty()) {

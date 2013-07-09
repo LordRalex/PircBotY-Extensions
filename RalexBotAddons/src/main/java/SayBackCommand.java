@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utilities;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.events.JoinEvent;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Utilities;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.events.JoinEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,14 +39,13 @@ public class SayBackCommand extends Listener {
         if (message == null || message.isEmpty()) {
             return;
         }
-        event.getChannel().sendMessage(event.getSender().getNick() + ", " + message);
+        event.getChannel().sendMessage(event.getUser().getNick() + ", " + message);
     }
 
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (event.getSender().hasVoice(event.getChannel().getName())
-                || event.getSender().hasOP(event.getChannel().getName())) {
+        if (event.getUser().hasOP(event.getChannel().getName()) || event.getUser().hasPermission(event.getChannel().getName(), "saymessage.set")) {
             if (event.getArgs().length == 0) {
                 mappings.remove(event.getChannel().getName().toLowerCase());
                 event.getChannel().sendMessage("I will stop telling people when they join");

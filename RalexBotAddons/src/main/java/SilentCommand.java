@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Priority;
+import net.ae97.ralexbot.api.events.CommandEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class SilentCommand extends Listener {
     @Override
     @EventType(event = EventField.Command, priority = Priority.HIGH)
     public void runEvent(CommandEvent event) {
-        if (!event.getSender().hasOP(event.getChannel().getName())) {
+        if (!event.getUser().hasOP(event.getChannel().getName()) && !event.getUser().hasPermission(event.getChannel().getName(), "silent")) {
             return;
         }
         if (event.getCommand().equalsIgnoreCase("silent")) {
@@ -46,7 +46,7 @@ public class SilentCommand extends Listener {
                 }
                 silenced.remove(channel);
                 silenced.add(channel);
-                event.getSender().sendMessage("I am now going into quiet mode for channel: " + channel);
+                event.getUser().sendMessage("I am now going into quiet mode for channel: " + channel);
             }
         }
 
@@ -62,13 +62,13 @@ public class SilentCommand extends Listener {
                 }
                 silenced.remove(channel);
                 silenced.add(channel);
-                event.getSender().sendMessage("I am now going into loud mode for channel: " + channel);
+                event.getUser().sendMessage("I am now going into loud mode for channel: " + channel);
             }
         }
 
         if (event.getChannel() != null && silenced.contains(event.getChannel().getName().toLowerCase())) {
             boolean canUse = false;
-            if (event.getSender().hasVoice(event.getChannel().getName()) || event.getSender().hasOP(event.getChannel().getName())) {
+            if (event.getUser().hasVoice(event.getChannel().getName()) || event.getUser().hasOP(event.getChannel().getName())) {
                 canUse = true;
             }
             if (!canUse) {

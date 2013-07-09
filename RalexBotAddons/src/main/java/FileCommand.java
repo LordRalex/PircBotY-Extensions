@@ -15,14 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
-import com.lordralex.ralexbot.settings.Settings;
-import java.io.BufferedInputStream;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.sender.Sender;
+import net.ae97.ralexbot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,8 +33,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Lord_Ralex
@@ -45,10 +42,11 @@ public class FileCommand extends Listener {
 
     private String urlBase;
     private File folder;
+    private Settings settings;
 
     @Override
     public void onLoad() {
-        Settings settings = Settings.getGlobalSettings();
+        settings = new Settings(new File("settings", "file.yml"));
         urlBase = settings.getString("file-url");
         String folderPath = settings.getString("file-path");
         if (folderPath == null || folderPath.isEmpty()) {
@@ -62,7 +60,7 @@ public class FileCommand extends Listener {
     public void runEvent(CommandEvent event) {
         Sender target = event.getChannel();
         if (target == null) {
-            target = event.getSender();
+            target = event.getUser();
             if (target == null) {
                 return;
             }
@@ -146,7 +144,6 @@ public class FileCommand extends Listener {
     public String[] getAliases() {
         return new String[]{
             "file",
-            "f",
             "createfile"
         };
     }

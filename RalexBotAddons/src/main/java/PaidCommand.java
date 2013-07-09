@@ -15,14 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.sender.Sender;
+import net.ae97.ralexbot.settings.Settings;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
@@ -41,7 +42,7 @@ public class PaidCommand extends Listener {
 
     @Override
     public void onLoad() {
-        MAX_NAMES = Settings.getGlobalSettings().getInt("paid-name-limit");
+        MAX_NAMES = new Settings(new File("settings", "paid.yml")).getInt("name-limit");
     }
 
     @Override
@@ -56,13 +57,13 @@ public class PaidCommand extends Listener {
             return;
         }
         if (event.getArgs().length > MAX_NAMES) {
-            event.getSender().sendNotice("I can only do " + MAX_NAMES + " lookups at once");
+            event.getUser().sendNotice("I can only do " + MAX_NAMES + " lookups at once");
             return;
         }
         for (String name : event.getArgs()) {
             Sender target = event.getChannel();
             if (target == null) {
-                target = event.getSender();
+                target = event.getUser();
             }
             es.submit(new Lookup(target, name));
         }

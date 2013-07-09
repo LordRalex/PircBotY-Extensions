@@ -15,15 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.channels.Channel;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.events.ConnectionEvent;
-import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.api.users.User;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.channels.Channel;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.events.ConnectionEvent;
+import net.ae97.ralexbot.api.users.BotUser;
+import net.ae97.ralexbot.api.users.User;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -103,11 +103,11 @@ public class BanManager extends Listener {
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (event.getChannel() == null && event.getSender() != null) {
+        if (event.getChannel() == null && event.getUser() != null) {
             return;
         }
-        if (event.getSender() != null) {
-            if (!event.getSender().hasOP(event.getChannel().getName())) {
+        if (event.getUser() != null) {
+            if (!event.getUser().hasOP(event.getChannel().getName()) && !event.getUser().hasPermission(event.getChannel().getName(), "banmanager.ban")) {
                 return;
             }
         }
@@ -137,7 +137,7 @@ public class BanManager extends Listener {
         synchronized (unbanRunnable) {
             unbanRunnable.scheduleLater();
         }
-        event.getChannel().sendMessage("I have banned " + banLine + " from " + chan + " for " + time);
+        event.getUser().sendNotice("I have banned " + banLine + " from " + chan + " for " + time);
         saveBans();
     }
 
@@ -218,7 +218,6 @@ public class BanManager extends Listener {
                 synchronized (banList) {
                     banList.remove(ban);
                 }
-                Channel.getChannel(ban.getChannel()).sendMessage("I have unbanned " + ban.getUnbanString() + " from " + ban.getChannel());
                 scheduleLater();
                 saveBans();
             }

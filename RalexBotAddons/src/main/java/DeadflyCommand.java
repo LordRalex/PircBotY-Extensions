@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.channels.Channel;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
-import com.lordralex.ralexbot.api.users.User;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Priority;
+import net.ae97.ralexbot.api.channels.Channel;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.sender.Sender;
+import net.ae97.ralexbot.api.users.User;
+import net.ae97.ralexbot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -50,7 +50,7 @@ public class DeadflyCommand extends Listener {
     @Override
     @EventType(event = EventField.Command, priority = Priority.NORMAL)
     public void runEvent(CommandEvent event) {
-        final User sender = event.getSender();
+        final User sender = event.getUser();
         final String[] args = event.getArgs();
         final Channel channel = event.getChannel();
         Sender target = channel;

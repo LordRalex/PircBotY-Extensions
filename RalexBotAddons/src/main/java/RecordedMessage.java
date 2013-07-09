@@ -15,19 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.channels.Channel;
-import com.lordralex.ralexbot.api.events.MessageEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
-import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Priority;
+import net.ae97.ralexbot.api.channels.Channel;
+import net.ae97.ralexbot.api.events.MessageEvent;
+import net.ae97.ralexbot.api.users.BotUser;
+import net.ae97.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @version 1.0
@@ -35,46 +32,25 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RecordedMessage extends Listener {
 
-    final Map<String, Thread> threads = new ConcurrentHashMap<>();
     int counter = 0;
+    private Settings settings;
+
+    @Override
+    public void onLoad() {
+        settings = new Settings(new File("settings", "recordedmessage.yml"));
+    }
 
     @Override
     @EventType(event = EventField.Message, priority = Priority.LOW)
     public void runEvent(MessageEvent event) {
-        if (!event.getSender().hasOP(event.getChannel().getName())) {
+        if (!event.getUser().hasOP(event.getChannel().getName()) && !event.getUser().hasPermission(event.getChannel().getName(), "recordedmessage.play")) {
             return;
-        }
-        Sender sender = event.getChannel();
-        if (sender == null) {
-            sender = event.getSender();
         }
         if (event.getMessage().startsWith(BotUser.getBotUser().getNick() + ", please teach")) {
             String load = event.getMessage().replace(BotUser.getBotUser().getNick() + ", please teach", "").trim();
             load = load.split(" ")[0];
-            AutomatedMessageThread thread = new AutomatedMessageThread(load, event.getChannel(), counter);
-            counter++;
-            synchronized (threads) {
-                threads.put(thread.getName(), thread);
-            }
+            AutomatedMessageThread thread = new AutomatedMessageThread(load, event.getChannel());
             thread.start();
-        } else if (event.getMessage().startsWith(BotUser.getBotUser().getNick() + ", please stop")) {
-            String load = event.getMessage().replace(BotUser.getBotUser().getNick() + ", please stop", "").trim();
-            load = load.split(" ")[0];
-            if (load.equalsIgnoreCase("all")) {
-                sender.sendMessage("Stopping all then");
-                Set<String> ids = threads.keySet();
-                for (String id : ids) {
-                    threads.remove(id).interrupt();
-                }
-                sender.sendMessage("All stopped");
-            } else {
-                Thread thread = threads.remove(load);
-                if (thread == null) {
-                    sender.sendMessage("No thread with that name");
-                } else {
-                    thread.interrupt();
-                }
-            }
         }
     }
 
@@ -85,13 +61,11 @@ public class RecordedMessage extends Listener {
         final int message_delay;
         boolean stop = false;
 
-        public AutomatedMessageThread(String section, Channel channel, int ID) {
-            super("message_" + ID);
+        public AutomatedMessageThread(String section, Channel channel) {
             chan = channel;
             chan.sendMessage("Loading " + section);
-            messages = Settings.getGlobalSettings().getStringList(section);
-            message_delay = Settings.getGlobalSettings().getInt(section + "_timing");
-            chan.sendMessage("Loaded with name " + this.getName());
+            messages = settings.getStringList(section);
+            message_delay = settings.getInt(section + "_timing");
         }
 
         @Override
@@ -109,9 +83,6 @@ public class RecordedMessage extends Listener {
                         chan.sendMessage(nextLine);
                     }
                 }
-            }
-            synchronized (threads) {
-                threads.remove(this.getName());
             }
         }
 

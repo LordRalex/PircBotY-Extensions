@@ -4,7 +4,7 @@
 
     <groupId>com.lordralex</groupId>
     <artifactId>RalexBotAddons</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
     <packaging>jar</packaging>
 
     <name>RalexBotAddons</name>
@@ -41,9 +41,9 @@
             <version>1.11</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>net.ae97</groupId>
             <artifactId>RalexBot</artifactId>
-            <version>0.2.0</version>
+            <version>1.1.4</version>
         </dependency>
     </dependencies>
 </project>

@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.ActionEvent;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.events.MessageEvent;
-import com.lordralex.ralexbot.api.users.User;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.events.ActionEvent;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.events.JoinEvent;
+import net.ae97.ralexbot.api.events.MessageEvent;
+import net.ae97.ralexbot.api.users.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,19 +39,19 @@ public class NotifyListener extends Listener {
     @Override
     @EventType(event = EventField.Action)
     public void runEvent(ActionEvent event) {
-        runCheck(event.getSender().getNick(), event.getChannel().getName(), "used an action");
+        runCheck(event.getUser().getNick(), event.getChannel().getName(), "used an action");
     }
 
     @Override
     @EventType(event = EventField.Message)
     public void runEvent(MessageEvent event) {
-        runCheck(event.getSender().getNick(), event.getChannel().getName(), "talked");
+        runCheck(event.getUser().getNick(), event.getChannel().getName(), "talked");
     }
 
     @Override
     @EventType(event = EventField.Join)
     public void runEvent(JoinEvent event) {
-        runCheck(event.getSender().getNick(), event.getChannel().getName(), "joined");
+        runCheck(event.getUser().getNick(), event.getChannel().getName(), "joined");
     }
 
     @Override
@@ -63,8 +63,8 @@ public class NotifyListener extends Listener {
         }
         String[] array = new String[2];
         array[0] = event.getArgs()[0];
-        array[1] = event.getSender().getNick();
-        event.getChannel().sendMessage(event.getSender().getNick() + ": You will be told when I see " + event.getArgs()[0]);
+        array[1] = event.getUser().getNick();
+        event.getChannel().sendMessage(event.getUser().getNick() + ": You will be told when I see " + event.getArgs()[0]);
         list.add(array);
     }
 

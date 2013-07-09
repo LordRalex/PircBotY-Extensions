@@ -15,17 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.channels.Channel;
-import com.lordralex.ralexbot.api.events.ActionEvent;
-import com.lordralex.ralexbot.api.events.MessageEvent;
-import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.api.users.User;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Priority;
+import net.ae97.ralexbot.api.channels.Channel;
+import net.ae97.ralexbot.api.events.ActionEvent;
+import net.ae97.ralexbot.api.events.MessageEvent;
+import net.ae97.ralexbot.api.users.BotUser;
+import net.ae97.ralexbot.api.users.User;
+import net.ae97.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,12 +42,12 @@ public class AntiSpamListener extends Listener {
 
     @Override
     public void onLoad() {
-        Settings settings = Settings.getGlobalSettings();
-        MAX_MESSAGES = settings.getInt("spam-message");
-        SPAM_RATE = settings.getInt("spam-time");
-        DUPE_RATE = settings.getInt("spam-dupe");
+        Settings settings = new Settings(new File("settings", "antispam.yml"));
+        MAX_MESSAGES = settings.getInt("message-count");
+        SPAM_RATE = settings.getInt("spam-rate");
+        DUPE_RATE = settings.getInt("dupe-rate");
         channels.clear();
-        channels.addAll(settings.getStringList("spam-channels"));
+        channels.addAll(settings.getStringList("channels"));
         logs.clear();
     }
 
@@ -64,9 +65,9 @@ public class AntiSpamListener extends Listener {
             if (!channels.contains(channel.getName().toLowerCase())) {
                 return;
             }
-            User sender = event.getSender();
+            User sender = event.getUser();
             String message = event.getMessage();
-            if (sender.hasOP(channel.getName()) || sender.hasVoice(channel.getName()) || sender.getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
+            if (sender.hasOP(channel.getName()) || sender.hasVoice(channel.getName()) || sender.getNick().equalsIgnoreCase(BotUser.getBotUser().getNick()) || sender.hasPermission(channel.getName(), "antispam.ignore")) {
                 return;
             }
             message = message.toString().toLowerCase();
@@ -77,7 +78,7 @@ public class AntiSpamListener extends Listener {
             if (posts.addPost(message)) {
                 if (RalexBot.getDebugMode()) {
                     BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"),
-                            "Would have kicked " + event.getSender().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
+                            "Would have kicked " + event.getUser().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
                 } else {
                     BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
                 }
@@ -96,7 +97,7 @@ public class AntiSpamListener extends Listener {
                 return;
             }
             Channel channel = event.getChannel();
-            User sender = event.getSender();
+            User sender = event.getUser();
             String message = event.getAction();
             if (sender.hasOP(channel.getName()) || sender.hasVoice(channel.getName()) || sender.getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
                 return;
@@ -109,7 +110,7 @@ public class AntiSpamListener extends Listener {
             if (posts.addPost(message)) {
                 if (RalexBot.getDebugMode()) {
                     BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"),
-                            "Would have kicked " + event.getSender().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
+                            "Would have kicked " + event.getUser().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
                 } else {
                     BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
                 }

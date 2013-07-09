@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.users.User;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.events.JoinEvent;
+import net.ae97.ralexbot.api.users.User;
 
 public class GuestListener extends Listener {
 
@@ -29,7 +29,7 @@ public class GuestListener extends Listener {
         if (event.isCancelled()) {
             return;
         }
-        User sender = event.getSender();
+        User sender = event.getUser();
         String nick = sender.getNick().toLowerCase().trim();
         if (nick.startsWith("guest") || nick.startsWith("mib_")) {
             sender.sendNotice("Please use /nick <name> to change your name");

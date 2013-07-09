@@ -15,15 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.events.JoinEvent;
-import com.lordralex.ralexbot.api.events.NickChangeEvent;
-import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.api.users.User;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Priority;
+import net.ae97.ralexbot.api.events.JoinEvent;
+import net.ae97.ralexbot.api.events.NickChangeEvent;
+import net.ae97.ralexbot.api.users.BotUser;
+import net.ae97.ralexbot.api.users.User;
+import net.ae97.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -40,22 +41,24 @@ public class SpecialNameListener extends Listener {
     private final List<String> notAllowed = new ArrayList<>();
     private final List<String> channelsToAffect = new ArrayList<>();
     private final ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
+    private Settings settings;
 
     @Override
     public void onLoad() {
-        List<String> temp = Settings.getGlobalSettings().getStringList("banned-nicks");
+        settings = new Settings(new File("settings", "specialnames.yml"));
+        List<String> temp = settings.getStringList("nicks");
         if (temp != null) {
             for (String name : temp) {
                 notAllowed.add(name.toLowerCase());
             }
         }
-        temp = Settings.getGlobalSettings().getStringList("banned-nicks-channels");
+        temp = settings.getStringList("channels");
         if (temp != null) {
             for (String name : temp) {
                 channelsToAffect.add(name.toLowerCase());
             }
         }
-        unbanDelay = Settings.getGlobalSettings().getInt("banned-nicks-delay");
+        unbanDelay = settings.getInt("delay");
     }
 
     @Override
@@ -81,11 +84,11 @@ public class SpecialNameListener extends Listener {
     @Override
     @EventType(event = EventField.Join, priority = Priority.LOW)
     public void runEvent(JoinEvent event) {
-        if (notAllowed.contains(event.getSender().getNick().toLowerCase())) {
-            String[] chans = event.getSender().getChannels();
+        if (notAllowed.contains(event.getUser().getNick().toLowerCase())) {
+            String[] chans = event.getUser().getChannels();
             for (String chan : chans) {
                 if (channelsToAffect.contains(chan.toLowerCase())) {
-                    handleNick(chan, event.getSender());
+                    handleNick(chan, event.getUser());
                 }
             }
         }

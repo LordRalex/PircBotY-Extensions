@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Utilities;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
-import com.lordralex.ralexbot.api.users.BotUser;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Utilities;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.sender.Sender;
+import net.ae97.ralexbot.api.users.BotUser;
 import java.util.Random;
 
 public class ChooseCommand extends Listener {
@@ -31,7 +31,7 @@ public class ChooseCommand extends Listener {
     public void runEvent(CommandEvent event) {
         Sender target = event.getChannel();
         if (target == null) {
-            target = event.getSender();
+            target = event.getUser();
         }
         if (target == null) {
             return;
@@ -57,8 +57,8 @@ public class ChooseCommand extends Listener {
 
         String answer = choices[new Random().nextInt(choices.length)];
         answer = answer.trim();
-        if (event.getSender() != null) {
-            target.sendMessage(event.getSender().getNick() + ": " + answer);
+        if (event.getUser() != null) {
+            target.sendMessage(event.getUser().getNick() + ": " + answer);
         } else {
             target.sendMessage(answer);
         }

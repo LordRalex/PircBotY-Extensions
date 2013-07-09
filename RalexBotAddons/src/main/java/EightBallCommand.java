@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.sender.Sender;
 import java.util.Random;
 import org.pircbotx.Colors;
 
@@ -30,7 +30,7 @@ public class EightBallCommand extends Listener {
     public void runEvent(CommandEvent event) {
         Sender dest = event.getChannel();
         if (dest == null) {
-            dest = event.getSender();
+            dest = event.getUser();
             if (dest == null) {
                 return;
             }
@@ -72,7 +72,7 @@ public class EightBallCommand extends Listener {
                 reply = Colors.RED + "No";
                 break;
         }
-        dest.sendMessage(event.getSender().getNick() + ": " + reply);
+        dest.sendMessage(event.getUser().getNick() + ": " + reply);
     }
 
     @Override

@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.sender.Sender;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.sender.Sender;
+import net.ae97.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.List;
 
 public class HelpCommand extends Listener {
@@ -29,7 +30,7 @@ public class HelpCommand extends Listener {
 
     @Override
     public void onLoad() {
-        List<String> helpLines = Settings.getGlobalSettings().getStringList("help-list");
+        List<String> helpLines = new Settings(new File("settings", "help.yml")).getStringList("help-list");
         help = helpLines.toArray(new String[0]);
     }
 
@@ -41,7 +42,7 @@ public class HelpCommand extends Listener {
         }
         Sender target = event.getChannel();
         if (target == null) {
-            target = event.getSender();
+            target = event.getUser();
         }
         if (target == null) {
             return;
@@ -54,7 +55,7 @@ public class HelpCommand extends Listener {
         if (helpLine.endsWith(",")) {
             helpLine = helpLine.substring(0, helpLine.length() - 2);
         }
-        target.sendMessage(event.getSender().getNick() + ", " + helpLine);
+        target.sendMessage(event.getUser().getNick() + ", " + helpLine);
     }
 
     @Override

@@ -15,18 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.EventHandler;
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.data.DataStorage;
-import com.lordralex.ralexbot.data.DataType;
-import static com.lordralex.ralexbot.data.DataType.SQL;
-import com.lordralex.ralexbot.mysql.MySQLConnection;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.EventHandler;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.users.BotUser;
+import net.ae97.ralexbot.data.DataType;
+import static net.ae97.ralexbot.data.DataType.SQL;
+import net.ae97.ralexbot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -38,13 +36,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,8 +47,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.pircbotx.Colors;
 
 /**
@@ -66,13 +58,16 @@ public class FaqSystem extends Listener {
     private final Map<String, Database> databases = new ConcurrentHashMap<>();
     private int delay = 2;
     private final ScheduledExecutorService es = Executors.newScheduledThreadPool(3);
+    private Settings settings;
 
     @Override
     public void onLoad() {
+        settings = new Settings(new File("settings", "faq.yml"));
         loadDatabases();
-        delay = Settings.getGlobalSettings().getInt("faq-delay");
+        delay = settings.getInt("delay");
     }
 
+    @Override
     public void onUnload() {
         databases.clear();
         es.shutdown();
@@ -83,7 +78,7 @@ public class FaqSystem extends Listener {
     public void runEvent(CommandEvent event) {
         if (event.getCommand().equalsIgnoreCase("refresh")) {
             loadDatabases();
-            event.getSender().sendMessage("Updated local storage of all databases");
+            event.getUser().sendMessage("Updated local storage of all databases");
             return;
         } else {
             boolean allowExec = true;
@@ -120,7 +115,7 @@ public class FaqSystem extends Listener {
                 return;
             }
             if (index == null) {
-                event.getSender().sendNotice("No database is selected");
+                event.getUser().sendNotice("No database is selected");
                 return;
             }
             boolean databaseChanged = false;
@@ -133,7 +128,7 @@ public class FaqSystem extends Listener {
                     String channel = event.getChannel().getName();
                     String[] lines = index.getEntry(event.getArgs()[1].toLowerCase());
                     if (lines == null || lines.length == 0) {
-                        event.getSender().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[1] + " in the database");
+                        event.getUser().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[1] + " in the database");
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, false);
@@ -145,7 +140,7 @@ public class FaqSystem extends Listener {
                     String channel = event.getChannel().getName();
                     String[] lines = index.getEntry(event.getArgs()[1].toLowerCase());
                     if (lines == null || lines.length == 0) {
-                        event.getSender().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[1] + " in the database");
+                        event.getUser().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[1] + " in the database");
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, true);
@@ -157,7 +152,7 @@ public class FaqSystem extends Listener {
                     String channel = event.getChannel().getName();
                     String[] lines = index.getEntry(event.getArgs()[1].toLowerCase());
                     if (lines == null || lines.length == 0) {
-                        event.getSender().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[1] + " in the database");
+                        event.getUser().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[1] + " in the database");
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, true);
@@ -165,11 +160,11 @@ public class FaqSystem extends Listener {
                 }
                 break;
                 case "<": {
-                    String target = event.getSender().getNick();
+                    String target = event.getUser().getNick();
                     String channel = event.getChannel().getName();
                     String[] lines = index.getEntry(event.getArgs()[0].toLowerCase());
                     if (lines == null || lines.length == 0) {
-                        event.getSender().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[0] + " in the database");
+                        event.getUser().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[0] + " in the database");
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[0].toLowerCase(), target, channel, lines, true);
@@ -177,16 +172,16 @@ public class FaqSystem extends Listener {
                 }
                 break;
                 case "+": {
-                    String loginName = event.getSender().isVerified();
+                    String loginName = event.getUser().isVerified();
                     if (loginName == null || !index.canEdit(loginName)) {
                         break;
                     }
                     if (index.isReadonly()) {
-                        event.getSender().sendNotice("The " + index.getName() + " FAQ database is read-only");
+                        event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
                         break;
                     }
                     if (event.getArgs().length < 2) {
-                        event.getSender().sendNotice("Command usage: " + EventHandler.getCommandPrefixes().get(0) + "+ [factoid] [message]");
+                        event.getUser().sendNotice("Command usage: " + EventHandler.getCommandPrefixes().get(0) + "+ [factoid] [message]");
                         break;
                     }
                     String message = "";
@@ -197,41 +192,41 @@ public class FaqSystem extends Listener {
                     String[] faq = message.split(";;");
                     index.setEntry(event.getArgs()[0].toLowerCase(), faq);
                     databaseChanged = true;
-                    event.getSender().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " has been added");
+                    event.getUser().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " has been added");
                 }
                 break;
                 case "-": {
-                    String loginName = event.getSender().isVerified();
+                    String loginName = event.getUser().isVerified();
                     if (loginName == null || !index.canRemove(loginName)) {
                         break;
                     }
                     if (index.isReadonly()) {
-                        event.getSender().sendNotice("The " + index.getName() + " FAQ database is read-only");
+                        event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
                         break;
                     }
                     if (event.getArgs().length != 1) {
-                        event.getSender().sendNotice("Command usage: " + EventHandler.getCommandPrefixes().get(0) + "- [factoid]");
+                        event.getUser().sendNotice("Command usage: " + EventHandler.getCommandPrefixes().get(0) + "- [factoid]");
                         break;
                     }
                     if (index.removeEntry(event.getArgs()[0].toLowerCase())) {
                         databaseChanged = true;
-                        event.getSender().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " has been removed");
+                        event.getUser().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " has been removed");
                     } else {
-                        event.getSender().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " does not exist");
+                        event.getUser().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " does not exist");
                     }
                 }
                 break;
                 case "~": {
-                    String loginName = event.getSender().isVerified();
+                    String loginName = event.getUser().isVerified();
                     if (loginName == null || !index.canEdit(loginName)) {
                         break;
                     }
                     if (index.isReadonly()) {
-                        event.getSender().sendNotice("The " + index.getName() + " FAQ database is read-only");
+                        event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
                         break;
                     }
                     if (event.getArgs().length < 2) {
-                        event.getSender().sendNotice("Command usage: " + EventHandler.getCommandPrefixes().get(0) + "+ [factoid] [message]");
+                        event.getUser().sendNotice("Command usage: " + EventHandler.getCommandPrefixes().get(0) + "+ [factoid] [message]");
                         break;
                     }
                     String message = "";
@@ -242,7 +237,7 @@ public class FaqSystem extends Listener {
                     String[] faq = message.split(";;");
                     index.setEntry(event.getArgs()[0].toLowerCase(), faq);
                     databaseChanged = true;
-                    event.getSender().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " has been modified");
+                    event.getUser().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " has been modified");
                 }
                 break;
                 default: {
@@ -250,7 +245,7 @@ public class FaqSystem extends Listener {
                     String channel = event.getChannel().getName();
                     String[] lines = index.getEntry(event.getArgs()[0].toLowerCase());
                     if (lines == null || lines.length == 0) {
-                        event.getSender().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[0] + " in the database");
+                        event.getUser().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[0] + " in the database");
                         return;
                     }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[0].toLowerCase(), target, channel, lines, false);
@@ -301,8 +296,7 @@ public class FaqSystem extends Listener {
     }
 
     private synchronized void loadDatabases() {
-        Settings settings = Settings.getGlobalSettings();
-        List<String> databasesToLoad = settings.getStringList("faq-databases");
+        List<String> databasesToLoad = settings.getStringList("databases");
         for (String load : databasesToLoad) {
             try {
                 String name = load.split(" ")[0].toLowerCase();

@@ -15,20 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.channels.Channel;
-import com.lordralex.ralexbot.api.events.ActionEvent;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.events.MessageEvent;
-import com.lordralex.ralexbot.api.events.PartEvent;
-import com.lordralex.ralexbot.api.events.QuitEvent;
-import com.lordralex.ralexbot.api.users.BotUser;
-import com.lordralex.ralexbot.api.users.User;
-import com.lordralex.ralexbot.settings.Settings;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Priority;
+import net.ae97.ralexbot.api.channels.Channel;
+import net.ae97.ralexbot.api.events.ActionEvent;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.events.MessageEvent;
+import net.ae97.ralexbot.api.events.PartEvent;
+import net.ae97.ralexbot.api.events.QuitEvent;
+import net.ae97.ralexbot.api.users.BotUser;
+import net.ae97.ralexbot.api.users.User;
+import net.ae97.ralexbot.settings.Settings;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ServerIPListener extends Listener {
     @Override
     public void onLoad() {
         channels.clear();
-        channels.addAll(Settings.getGlobalSettings().getStringList("ip-channels"));
+        channels.addAll(new Settings(new File("settings", "iplistener.yml")).getStringList("channels"));
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ServerIPListener extends Listener {
             return;
         }
         String message = event.getMessage();
-        User sender = event.getSender();
+        User sender = event.getUser();
         Channel channel = event.getChannel();
         boolean silence = false;
         if (ignorePeople.contains(sender.getNick().toLowerCase()) || ignorePeople.contains(channel.getName().toLowerCase())) {
@@ -84,7 +85,7 @@ public class ServerIPListener extends Listener {
                 } else if (triggered.contains(sender.getNick().toLowerCase())) {
                     BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
                     if (RalexBot.getDebugMode()) {
-                        BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getSender().getNick() + " triggered the ip censor with his line: " + event.getMessage());
+                        BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getUser().getNick() + " triggered the ip censor with his line: " + event.getMessage());
                     }
                     event.setCancelled(true);
                 }
@@ -100,7 +101,7 @@ public class ServerIPListener extends Listener {
             return;
         }
         String message = event.getAction();
-        User sender = event.getSender();
+        User sender = event.getUser();
         Channel channel = event.getChannel();
         boolean silence = false;
         if (ignorePeople.contains(sender.getNick().toLowerCase()) || ignorePeople.contains(channel.getName().toLowerCase())) {
@@ -109,7 +110,7 @@ public class ServerIPListener extends Listener {
 
         if (triggered.contains(sender.getNick().toLowerCase())) {
             silence = true;
-        } else if (triggered.contains(event.getSender().getIP().toLowerCase())) {
+        } else if (triggered.contains(event.getUser().getIP().toLowerCase())) {
             silence = true;
         }
         String[] messageParts = message.split(" ");
@@ -117,14 +118,14 @@ public class ServerIPListener extends Listener {
             if (isServer(part)) {
                 if (!silence) {
                     channel.sendMessage("Please do not advertise servers here");
-                    triggered.remove(event.getSender().getIP().toLowerCase());
-                    triggered.remove(event.getSender().getIP().toLowerCase());
+                    triggered.remove(event.getUser().getIP().toLowerCase());
+                    triggered.remove(event.getUser().getIP().toLowerCase());
                     triggered.add(sender.getNick().toLowerCase());
-                    triggered.add(event.getSender().getIP().toLowerCase());
+                    triggered.add(event.getUser().getIP().toLowerCase());
                 } else if (triggered.contains(sender.getNick().toLowerCase())) {
                     BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
                     if (RalexBot.getDebugMode()) {
-                        BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getSender().getNick() + " triggered the ip censor with his line: " + event.getAction());
+                        BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getUser().getNick() + " triggered the ip censor with his line: " + event.getAction());
                     }
                     event.setCancelled(true);
                 }
@@ -136,19 +137,19 @@ public class ServerIPListener extends Listener {
     @Override
     @EventType(event = EventField.Part)
     public void runEvent(PartEvent event) {
-        triggered.remove(event.getSender().getNick().toLowerCase());
+        triggered.remove(event.getUser().getNick().toLowerCase());
     }
 
     @Override
     @EventType(event = EventField.Quit)
     public void runEvent(QuitEvent event) {
-        triggered.remove(event.getSender().getNick().toLowerCase());
+        triggered.remove(event.getUser().getNick().toLowerCase());
     }
 
     @Override
     @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (!event.getSender().hasOP(event.getChannel().getName())) {
+        if (!event.getUser().hasOP(event.getChannel().getName())) {
             return;
         }
         if (event.getCommand().equalsIgnoreCase("ignoread")) {

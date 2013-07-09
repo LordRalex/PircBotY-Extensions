@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.lordralex.ralexbot.RalexBot;
-import com.lordralex.ralexbot.api.EventField;
-import com.lordralex.ralexbot.api.EventType;
-import com.lordralex.ralexbot.api.Listener;
-import com.lordralex.ralexbot.api.Priority;
-import com.lordralex.ralexbot.api.Utilities;
-import com.lordralex.ralexbot.api.channels.Channel;
-import com.lordralex.ralexbot.api.events.CommandEvent;
-import com.lordralex.ralexbot.api.users.User;
+import net.ae97.ralexbot.RalexBot;
+import net.ae97.ralexbot.api.EventField;
+import net.ae97.ralexbot.api.EventType;
+import net.ae97.ralexbot.api.Listener;
+import net.ae97.ralexbot.api.Priority;
+import net.ae97.ralexbot.api.Utilities;
+import net.ae97.ralexbot.api.channels.Channel;
+import net.ae97.ralexbot.api.events.CommandEvent;
+import net.ae97.ralexbot.api.users.User;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
 public class RemCommand extends Listener {
 
@@ -68,37 +67,36 @@ public class RemCommand extends Listener {
         String command = event.getCommand().toLowerCase();
         String[] args = event.getArgs();
 
-        User user = event.getSender();
-        Channel channel = event.getChannel();
+        User user = event.getUser();
 
-        if (command.equalsIgnoreCase("remshutup")) {
-            if (!user.hasOP(channel.getName())) {
+        Channel channel = event.getChannel();
+        String target;
+        if (args.length != 0) {
+            target = args[0];
+        } else {
+            if (event.getChannel() == null) {
                 return;
             }
-            String target = channel.getName();
-            if (args.length != 0) {
-                target = args[0];
+            target = channel.getName();
+        }
+        target = target.toLowerCase();
+
+        if (command.equalsIgnoreCase("remshutup")) {
+            if (!user.hasOP(target) && !user.hasPermission(target, "rem.shutup")) {
+                return;
             }
-            target = target.toLowerCase();
-            boolean wasThere = dontReply.remove(channel.getName());
+            boolean wasThere = dontReply.remove(target);
             if (wasThere) {
-                if (channel != null) {
-                    channel.sendMessage("Returning to normal");
-                } else {
-                    user.sendMessage("Returning to normal");
-                }
+                user.sendMessage("Returning to normal");
             } else {
                 dontReply.add(target);
-                if (channel != null) {
-                    channel.sendMessage("Shutting up");
-                } else {
-                    user.sendMessage("Shutting up");
-                }
+                channel.sendMessage("Shutting up");
+                user.sendMessage("Shutting up");
             }
             return;
         }
 
-        if (dontReply.contains(channel.getName())) {
+        if (dontReply.contains(target)) {
             return;
         }
 
@@ -116,7 +114,7 @@ public class RemCommand extends Listener {
             }
             Map<String, String> placers = new HashMap<>();
             placers.put("User", user.getNick());
-            placers.put("Channel", channel.getName());
+            placers.put("Channel", target);
             for (int i = 0; i < args.length; i++) {
                 placers.put(new Integer(i).toString(), args[i]);
             }
