@@ -213,7 +213,7 @@ public final class RalexBot extends Thread {
                 logSevere("Could not claim the nick " + nick);
             }
         }
-        BotUser bot = new BotUser();
+        BotUser bot = BotUser.getBotUser();
         if (pass != null && !pass.isEmpty() && login) {
             bot.sendMessage("nickserv", "identify " + pass);
             log("Logging in to nickserv");

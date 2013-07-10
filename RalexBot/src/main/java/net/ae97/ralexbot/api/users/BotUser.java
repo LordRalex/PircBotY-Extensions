@@ -27,7 +27,7 @@ import java.util.Set;
  */
 public class BotUser extends User {
 
-    public BotUser() {
+    protected BotUser() {
         super(bot.getUserBot());
     }
 

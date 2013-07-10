@@ -31,8 +31,8 @@ public class ActionEvent implements UserEvent, ChannelEvent, CancellableEvent {
     private boolean isCancelled = false;
 
     public ActionEvent(org.pircbotx.hooks.events.ActionEvent event) {
-        channel = new Channel(event.getChannel());
-        sender = new User(event.getUser());
+        channel = Channel.getChannel(event.getChannel());
+        sender = User.getUser(event.getUser());
         action = event.getMessage();
     }
 

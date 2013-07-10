@@ -25,7 +25,7 @@ public class PrivateMessageEvent implements UserEvent, CancellableEvent {
     private boolean isCancelled = false;
 
     public PrivateMessageEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
-        sender = new User(event.getUser());
+        sender = User.getUser(event.getUser());
         message = event.getMessage();
     }
 

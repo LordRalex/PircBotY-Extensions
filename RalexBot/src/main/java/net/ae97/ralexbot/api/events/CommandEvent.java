@@ -39,8 +39,8 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
             }
         }
         command = commandTemp;
-        sender = new User(event.getUser());
-        channel = new Channel(event.getChannel());
+        sender = User.getUser(event.getUser());
+        channel = Channel.getChannel(event.getChannel());
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
             System.arraycopy(temp, 1, args, 0, args.length);
@@ -50,7 +50,7 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
     public CommandEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
-        sender = new User(event.getUser().getNick());
+        sender = User.getUser(event.getUser().getNick());
         channel = null;
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
@@ -61,7 +61,7 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
     public CommandEvent(org.pircbotx.hooks.events.NoticeEvent event) throws NickNotOnlineException {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
-        sender = new User(event.getUser().getNick());
+        sender = User.getUser(event.getUser().getNick());
         channel = null;
         args = new String[temp.length - 1];
         if (temp.length >= 2) {

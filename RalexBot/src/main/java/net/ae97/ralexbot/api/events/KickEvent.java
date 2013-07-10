@@ -32,9 +32,9 @@ public class KickEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private boolean isCancelled = false;
 
     public KickEvent(org.pircbotx.hooks.events.KickEvent event) {
-        kicker = new User(event.getRecipient());
-        user = new User(event.getSource());
-        channel = new Channel(event.getChannel());
+        kicker = User.getUser(event.getRecipient());
+        user = User.getUser(event.getSource());
+        channel = Channel.getChannel(event.getChannel());
         message = event.getReason();
     }
 

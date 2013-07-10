@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.pircbotx.User;
 
 /**
@@ -36,17 +37,28 @@ public class Channel extends Utilities implements Sender, Permissible {
 
     private final org.pircbotx.Channel pircbotxChannel;
     protected final Map<String, Set<Permission>> permMap = new HashMap<>();
+    protected final static Map<org.pircbotx.Channel, net.ae97.ralexbot.api.channels.Channel> existingChannels = new ConcurrentHashMap<>();
 
-    public Channel(String name) {
+    protected Channel(String name) {
         pircbotxChannel = bot.getChannel(name);
     }
 
-    public Channel(org.pircbotx.Channel chan) {
+    protected Channel(org.pircbotx.Channel chan) {
         pircbotxChannel = chan;
     }
 
-    public static Channel getChannel(String channel) {
-        return new Channel(channel);
+    public static Channel getChannel(org.pircbotx.Channel temp) {
+        net.ae97.ralexbot.api.channels.Channel chan = existingChannels.get(temp);
+        if (chan == null) {
+            chan = new Channel(temp);
+            existingChannels.put(temp, chan);
+        }
+        return chan;
+    }
+
+    public static Channel getChannel(String name) {
+        org.pircbotx.Channel temp = bot.getChannel(name);
+        return getChannel(temp);
     }
 
     @Override

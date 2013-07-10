@@ -25,7 +25,7 @@ public class NoticeEvent implements UserEvent, CancellableEvent {
     private boolean isCancelled = false;
 
     public NoticeEvent(org.pircbotx.hooks.events.NoticeEvent event) {
-        sender = new User(event.getUser());
+        sender = User.getUser(event.getUser());
         message = event.getMessage();
     }
 

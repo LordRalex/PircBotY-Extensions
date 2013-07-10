@@ -26,13 +26,13 @@ public class PartEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private boolean isCancelled = false;
 
     public PartEvent(org.pircbotx.hooks.events.PartEvent event) {
-        sender = new User(event.getUser());
-        channel = new Channel(event.getChannel());
+        sender = User.getUser(event.getUser());
+        channel = Channel.getChannel(event.getChannel());
     }
 
     public PartEvent(org.pircbotx.User s, org.pircbotx.Channel c) {
-        sender = new User(s);
-        channel = new Channel(c);
+        sender = User.getUser(s);
+        channel = Channel.getChannel(c);
     }
 
     public String getHostname() {

@@ -24,7 +24,7 @@ public class QuitEvent implements UserEvent, CancellableEvent {
     private boolean isCancelled = false;
 
     public QuitEvent(org.pircbotx.hooks.events.QuitEvent event) {
-        sender = new User(event.getUser());
+        sender = User.getUser(event.getUser());
     }
 
     public User getSender() {

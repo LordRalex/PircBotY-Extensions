@@ -34,7 +34,7 @@ public class PermissionEvent implements UserEvent, ChannelEvent {
     }
 
     public PermissionEvent(String u, String c) {
-        this(new User(u), new Channel(c));
+        this(User.getUser(u), Channel.getChannel(c));
     }
 
     @Override

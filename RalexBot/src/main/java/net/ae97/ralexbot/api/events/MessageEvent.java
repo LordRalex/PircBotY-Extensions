@@ -27,8 +27,8 @@ public final class MessageEvent implements UserEvent, ChannelEvent, CancellableE
     private boolean isCancelled = false;
 
     public MessageEvent(org.pircbotx.hooks.events.MessageEvent event) {
-        sender = new User(event.getUser());
-        channel = new Channel(event.getChannel());
+        sender = User.getUser(event.getUser());
+        channel = Channel.getChannel(event.getChannel());
         message = event.getMessage();
     }
 

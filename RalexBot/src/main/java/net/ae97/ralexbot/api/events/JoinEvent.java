@@ -26,8 +26,8 @@ public class JoinEvent implements UserEvent, ChannelEvent, CancellableEvent {
     private boolean isCancelled = false;
 
     public JoinEvent(org.pircbotx.hooks.events.JoinEvent event) {
-        channel = new Channel(event.getChannel());
-        sender = new User(event.getUser());
+        channel = Channel.getChannel(event.getChannel());
+        sender = User.getUser(event.getUser());
     }
 
     public String getHostname() {

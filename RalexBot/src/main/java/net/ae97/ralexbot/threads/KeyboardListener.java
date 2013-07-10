@@ -44,7 +44,7 @@ public final class KeyboardListener extends Thread {
 
     @Override
     public void run() {
-        bot = new BotUser();
+        bot = BotUser.getBotUser();
         String line;
         boolean run = true;
         String currentChan = "";

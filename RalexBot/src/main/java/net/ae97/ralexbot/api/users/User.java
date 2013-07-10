@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pircbotx.hooks.WaitForQueue;
@@ -37,21 +38,32 @@ public class User extends Utilities implements Sender, Permissible {
 
     protected final org.pircbotx.User pircbotxUser;
     protected final Map<String, Set<Permission>> permMap = new HashMap<>();
+    protected final static Map<org.pircbotx.User, net.ae97.ralexbot.api.users.User> existingUsers = new ConcurrentHashMap<>();
 
-    public User(String nick) {
+    protected User(String nick) {
         pircbotxUser = bot.getUser(nick);
     }
 
-    public User(org.pircbotx.User u) {
+    protected User(org.pircbotx.User u) {
         pircbotxUser = u;
     }
 
-    public User(org.pircbotx.UserSnapshot snap) {
+    protected User(org.pircbotx.UserSnapshot snap) {
         pircbotxUser = snap;
     }
 
     public static User getUser(String username) {
-        return new User(username);
+        org.pircbotx.User temp = bot.getUser(username);
+        return getUser(temp);
+    }
+
+    public static User getUser(org.pircbotx.User pbUser) {
+        net.ae97.ralexbot.api.users.User user = existingUsers.get(pbUser);
+        if (user == null) {
+            user = new User(pbUser);
+            existingUsers.put(pbUser, user);
+        }
+        return user;
     }
 
     @Override
@@ -92,15 +104,23 @@ public class User extends Utilities implements Sender, Permissible {
             WhoisEvent evt;
             try {
                 pircbotxUser.getBot().sendRawLineNow("whois " + pircbotxUser.getNick());
+
+
+
+
                 while (true) {
                     evt = queue.waitFor(WhoisEvent.class);
-                    if (evt.getNick().equals(this.pircbotxUser.getNick())) {
+                    if (evt.getNick()
+                            .equals(this.pircbotxUser.getNick())) {
                         name = evt.getRegisteredAs();
                         break;
                     }
                 }
+
+
             } catch (InterruptedException ex) {
-                Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(User.class
+                        .getName()).log(Level.SEVERE, null, ex);
                 name = null;
             }
             if (name != null && name.isEmpty()) {

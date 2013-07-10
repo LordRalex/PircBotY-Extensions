@@ -27,7 +27,7 @@ public class NickChangeEvent implements UserEvent, CancellableEvent {
     public NickChangeEvent(org.pircbotx.hooks.events.NickChangeEvent event) {
         oldNick = event.getOldNick();
         newNick = event.getNewNick();
-        sender = new User(event.getUser());
+        sender = User.getUser(event.getUser());
     }
 
     public String getOldNick() {
