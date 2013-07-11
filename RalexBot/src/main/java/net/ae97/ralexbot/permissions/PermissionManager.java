@@ -43,15 +43,13 @@ public class PermissionManager {
 
     public void runPermissionEvent(PermissionEvent event) {
         User user = event.getUser();
-        RalexBot.log("Updating perms for " + user.getNick());
         String ver = user.isVerified();
-        RalexBot.log("Is verified: " + ver);
         if (ver == null || ver.isEmpty()) {
             return;
         }
         Map<String, Set<Permission>> existing = user.getPermissions();
-        for (String key : existing.keySet()) {
-            for (Permission perm : existing.get(key)) {
+        for (String key : existing.keySet().toArray(new String[0])) {
+            for (Permission perm : existing.get(key).toArray(new Permission[0])) {
                 user.removePermission(key, perm.getName());
             }
         }
