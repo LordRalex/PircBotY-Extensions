@@ -46,7 +46,7 @@
                             <finalName>RalexBot-${project.version}</finalName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.lordralex.ralexbot.RalexBot</mainClass>
+                                    <mainClass>net.ae97.ralexbot.RalexBot</mainClass>
                                 </transformer>
                             </transformers>
                             <filters>
