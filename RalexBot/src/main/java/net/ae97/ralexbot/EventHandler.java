@@ -354,11 +354,16 @@ public final class EventHandler extends ListenerAdapter {
                             }
                             chan = evt.getChannel();
                             PermissionEvent permEvent = new PermissionEvent(user, chan);
-                            RalexBot.getPermManager().runPermissionEvent(permEvent);
+                            try {
+                                RalexBot.getPermManager().runPermissionEvent(permEvent);
+                            } catch (Exception e) {
+                                RalexBot.logSevere("Error on permission event", e);
+                                continue;
+                            }
                             if (evt.getCommand().equalsIgnoreCase("reload")) {
                                 User sender = evt.getUser();
                                 if (sender != null) {
-                                    if (!sender.hasPermission(null, "bot.reload")) {
+                                    if (!sender.hasPermission((String) null, "bot.reload")) {
                                         continue;
                                     }
                                 }
@@ -376,7 +381,7 @@ public final class EventHandler extends ListenerAdapter {
                             } else if (evt.getCommand().equalsIgnoreCase("permreload")) {
                                 User sender = evt.getUser();
                                 if (sender != null) {
-                                    if (!sender.hasPermission(null, "bot.permreload")) {
+                                    if (!sender.hasPermission((String) null, "bot.permreload")) {
                                         continue;
                                     }
                                 }
