@@ -36,9 +36,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +51,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import net.ae97.ralexbot.api.channels.Channel;
 import net.ae97.ralexbot.api.users.User;
+import net.ae97.ralexbot.mysql.MySQLConnection;
 import org.pircbotx.Colors;
 
 /**
@@ -81,7 +84,7 @@ public class FaqSystem extends Listener {
     public void runEvent(CommandEvent event) {
         if (event.getCommand().equalsIgnoreCase("refresh")) {
             loadDatabases();
-            event.getUser().sendMessage("Updated local storage of all databases");
+            event.getUser().sendNotice("Updated local storage of all databases");
             return;
         } else if (event.getCommand().equalsIgnoreCase("togglefaq")) {
             Channel chan = event.getChannel();
@@ -150,9 +153,7 @@ public class FaqSystem extends Listener {
             if (cmdMethod.endsWith("^")) {
                 allowExec = true;
             }
-            RalexBot.log("CMD: " + cmdMethod);
             if (!allowExec) {
-                RalexBot.log("Will not execute");
                 return;
             }
             if (index == null) {
@@ -166,7 +167,6 @@ public class FaqSystem extends Listener {
             if (cmdMethod.endsWith("^")) {
                 cmdMethod = cmdMethod.replace("^", "");
             }
-            RalexBot.log("After parsing, cmd=" + cmdMethod);
             switch (cmdMethod) {
                 case ">": {
                     String target = event.getArgs()[0];
@@ -217,9 +217,8 @@ public class FaqSystem extends Listener {
                 }
                 break;
                 case "+": {
-                    String loginName = event.getUser().isVerified();
-                    if (loginName == null || !index.canEdit(loginName)) {
-                        break;
+                    if (!event.getUser().hasPermission((String) null, "faq.add." + index.getName())) {
+                        return;
                     }
                     if (index.isReadonly()) {
                         event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
@@ -241,9 +240,8 @@ public class FaqSystem extends Listener {
                 }
                 break;
                 case "-": {
-                    String loginName = event.getUser().isVerified();
-                    if (loginName == null || !index.canRemove(loginName)) {
-                        break;
+                    if (!event.getUser().hasPermission((String) null, "faq.remove." + index.getName())) {
+                        return;
                     }
                     if (index.isReadonly()) {
                         event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
@@ -262,9 +260,8 @@ public class FaqSystem extends Listener {
                 }
                 break;
                 case "~": {
-                    String loginName = event.getUser().isVerified();
-                    if (loginName == null || !index.canEdit(loginName)) {
-                        break;
+                    if (!event.getUser().hasPermission((String) null, "faq.edit." + index.getName())) {
+                        return;
                     }
                     if (index.isReadonly()) {
                         event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
@@ -347,51 +344,55 @@ public class FaqSystem extends Listener {
         List<String> databasesToLoad = settings.getStringList("databases");
         for (String load : databasesToLoad) {
             try {
-                String name = load.split(" ")[0].toLowerCase();
-                String loadPath = load.split(" ")[1];
-                String savePath = load.split(" ")[2];
-                Database newDatabase = new Database(name, savePath, DataType.FLAT);
-                if (load.split(" ").length <= 4) {
-                    newDatabase.setReadonly(Boolean.parseBoolean(load.split(" ")[3]));
+                switch (load.split(" ")[0]) {
+                    case "FLAT": {
+                        String name = load.split(" ")[1].toLowerCase();
+                        String loadPath = load.split(" ")[2];
+                        String savePath = load.split(" ")[3];
+                        Database newDatabase = new Database(name, savePath, DataType.FLAT);
+                        if (load.split(" ").length <= 5) {
+                            newDatabase.setReadonly(Boolean.parseBoolean(load.split(" ")[4]));
+                        }
+                        if (load.split(" ").length <= 6) {
+                            newDatabase.setMaster(load.split(" ")[5]);
+                        }
+                        RalexBot.log("    Creating database: " + newDatabase.getName());
+                        RalexBot.log("      Path to get info: " + loadPath);
+                        RalexBot.log("      Path to save info: " + newDatabase.getFile());
+                        RalexBot.log("      Read-only: " + newDatabase.isReadonly());
+                        RalexBot.log("      Database owner: " + newDatabase.getMaster());
+                        if (!loadPath.equals(newDatabase.getFile())) {
+                            RalexBot.log("        Downloading database: " + loadPath);
+                            RalexBot.log("        Saving to " + newDatabase.getFile());
+                            File save = new File(newDatabase.getFile());
+                            save.delete();
+                            save.getParentFile().mkdirs();
+                            save.createNewFile();
+                            FileOutputStream out = new FileOutputStream(save);
+                            InputStream in = new URL(loadPath).openStream();
+                            copyInputStream(in, out);
+                            RalexBot.log("        Downloaded: " + (save.length() / 1024) + "kb");
+                            RalexBot.log("        Installed: " + newDatabase.getName());
+                        }
+                        RalexBot.log("    Loading database: " + newDatabase.getName());
+                        newDatabase.load(newDatabase.getFile());
+                        databases.put(newDatabase.getName().toLowerCase(), newDatabase);
+                    }
+                    break;
+                    case "SQL": {
+                        String name = load.split(" ")[1].toLowerCase();
+                        String details = load.split(" ")[2];
+                        Database newDatabase = new Database(name, details, DataType.SQL);
+                        if (load.split(" ").length == 4) {
+                            newDatabase.setMaster(load.split(" ")[3]);
+                        }
+                        newDatabase.load(details);
+                        databases.put(newDatabase.getName().toLowerCase(), newDatabase);
+                    }
+                    break;
                 }
-                if (load.split(" ").length <= 5) {
-                    newDatabase.setMaster(load.split(" ")[4]);
-                }
-                RalexBot.log("Creating database: " + newDatabase.getName());
-                RalexBot.log("  Path to get info: " + loadPath);
-                RalexBot.log("  Path to save info: " + newDatabase.getFile());
-                RalexBot.log("  Read-only: " + newDatabase.isReadonly());
-                RalexBot.log("  Database owner: " + newDatabase.getMaster());
-                List<String> addable = settings.getStringList("faq-database-add-" + newDatabase.getName());
-                for (String n : addable) {
-                    newDatabase.addAddable(n);
-                }
-                List<String> editable = settings.getStringList("faq-database-edit-" + newDatabase.getName());
-                for (String n : editable) {
-                    newDatabase.addEditable(n);
-                }
-                List<String> removeable = settings.getStringList("faq-database-remove-" + newDatabase.getName());
-                for (String n : removeable) {
-                    newDatabase.addRemoveable(n);
-                }
-                if (!loadPath.equals(newDatabase.getFile())) {
-                    RalexBot.log("  Downloading database: " + loadPath);
-                    RalexBot.log("  Saving to " + newDatabase.getFile());
-                    File save = new File(newDatabase.getFile());
-                    save.delete();
-                    save.getParentFile().mkdirs();
-                    save.createNewFile();
-                    FileOutputStream out = new FileOutputStream(save);
-                    InputStream in = new URL(loadPath).openStream();
-                    copyInputStream(in, out);
-                    RalexBot.log("  Downloaded: " + (save.length() / 1024) + "kb");
-                    RalexBot.log("  Installed: " + newDatabase.getName());
-                }
-                RalexBot.log("  Loading database: " + newDatabase.getName());
-                newDatabase.load(newDatabase.getFile());
-                databases.put(newDatabase.getName().toLowerCase(), newDatabase);
             } catch (Exception ex) {
-                RalexBot.logSevere("There was an error with this setting: " + load, ex);
+                RalexBot.logSevere("    There was an error with this setting: " + load, ex);
             }
         }
     }
@@ -456,14 +457,11 @@ public class FaqSystem extends Listener {
         private String master = null;
         private boolean readOnly = false;
         private final String name;
-        private final Set<String> add = new HashSet<>();
-        private final Set<String> remove = new HashSet<>();
-        private final Set<String> edit = new HashSet<>();
         private final DataType storage;
         private boolean override = false;
 
-        public Database(String n, String filePath, DataType store) {
-            location = filePath;
+        public Database(String n, String path, DataType store) {
+            location = path;
             name = n;
             storage = store;
         }
@@ -488,15 +486,11 @@ public class FaqSystem extends Listener {
                         }
                     } catch (IOException ex) {
                         RalexBot.logSevere("There was an error", ex);
+                        RalexBot.log("Path loading from: " + loadPath);
+                        RalexBot.log("Location: " + location);
                     }
                     break;
                 case SQL:
-                    try {
-                        //storage.load();
-                        throw new IOException("SQL is not set up yet");
-                    } catch (IOException e) {
-                        RalexBot.logSevere("There was an error", e);
-                    }
                     break;
             }
         }
@@ -534,26 +528,39 @@ public class FaqSystem extends Listener {
 
         public String[] getEntry(String key) {
             String[] entry;
+            key = key.toLowerCase().trim();
             synchronized (factoids) {
                 entry = factoids.get(key);
             }
-            /*if (entry == null) {
-             switch (storage.getType()) {
-             case SQL: {
-             try {
-             PreparedStatement statement = ((MySQLConnection) storage).getPreparedStatement("SELECT ? FROM ? WHERE ID=?", location, ((MySQLConnection) storage).getTable(), key);
-             ResultSet set = statement.executeQuery();
-             String result = set.getString(1);
-             entry = result.split(";;");
-             setEntry(key, entry);
-             } catch (SQLException ex) {
-             RalexBot.logSevere("An error occured", ex);
-             }
-             }
-             break;
-             }
-
-             }*/
+            if (entry == null) {
+                switch (storage) {
+                    case SQL: {
+                        try {
+                            String[] details = location.split(",");
+                            String host = details[0];
+                            String port = details[1];
+                            String user = details[2];
+                            String pass = details[3];
+                            String db = details[4];
+                            String table = details[5];
+                            String column = details[6];
+                            MySQLConnection conn = new MySQLConnection(host, Integer.parseInt(port), user, pass, db, table);
+                            conn.load();
+                            conn.getPreparedStatement("USE scrolls").execute();
+                            PreparedStatement statement = conn.getPreparedStatement("SELECT " + column
+                                    + " FROM " + ((MySQLConnection) conn).getTable() + " WHERE name='" + key + "';");
+                            ResultSet set = statement.executeQuery();
+                            set.first();
+                            String result = set.getString(column);
+                            entry = result.split(";;");
+                            setEntry(key, entry);
+                        } catch (SQLException ex) {
+                            RalexBot.logSevere("An error occured", ex);
+                        }
+                    }
+                    break;
+                }
+            }
             return entry;
         }
 
@@ -561,17 +568,6 @@ public class FaqSystem extends Listener {
             synchronized (factoids) {
                 factoids.put(key, newEntry);
             }
-            /*switch (storage.getType()) {
-             case SQL: {
-             try {
-             PreparedStatement statement = ((MySQLConnection) storage).getPreparedStatement("UPDATE ? FROM ? WHERE ID=?", location, ((MySQLConnection) storage).getTable(), key);
-             statement.execute();
-             } catch (SQLException ex) {
-             RalexBot.logSevere("An error occured", ex);
-             }
-             }
-             break;
-             }*/
             return true;
         }
 
@@ -612,39 +608,6 @@ public class FaqSystem extends Listener {
                     break;
                 }
             }
-        }
-
-        public boolean canEdit(String login) {
-            if (login == null) {
-                return false;
-            }
-            return edit.contains(login.toLowerCase());
-        }
-
-        public boolean canAdd(String login) {
-            if (login == null) {
-                return false;
-            }
-            return add.contains(login.toLowerCase());
-        }
-
-        public boolean canRemove(String login) {
-            if (login == null) {
-                return false;
-            }
-            return remove.contains(login.toLowerCase());
-        }
-
-        public void addAddable(String n) {
-            add.add(n.toLowerCase());
-        }
-
-        public void addEditable(String n) {
-            edit.add(n.toLowerCase());
-        }
-
-        public void addRemoveable(String n) {
-            remove.add(n.toLowerCase());
         }
     }
 }
