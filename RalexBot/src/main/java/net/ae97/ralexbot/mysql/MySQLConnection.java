@@ -44,8 +44,7 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
         database = d;
         table = t;
         conn = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, user, pass);
-        PreparedStatement st = conn.prepareStatement("USE 1");
-        st.setString(1, table);
+        PreparedStatement st = conn.prepareStatement("USE " + database);
         st.execute();
     }
 
@@ -62,8 +61,6 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
     }
 
     public <T> PreparedStatement getPreparedStatement(String statement, T... objs) throws SQLException {
-        PreparedStatement st = conn.prepareStatement("USE 1");
-        st.setString(1, table);
         PreparedStatement state = conn.prepareStatement(statement);
         for (int i = 0; i < objs.length; i++) {
             T obj = (T) objs[i];
@@ -85,8 +82,6 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
     @Override
     public String getString(PreparedStatement key) throws IOException {
         try {
-            PreparedStatement st = conn.prepareStatement("USE 1");
-            st.setString(1, table);
             ResultSet set = key.executeQuery();
             Object obj = set.getObject(1);
             key.close();
@@ -103,8 +98,6 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
     @Override
     public List<String> getStringList(PreparedStatement key) throws IOException {
         try {
-            PreparedStatement st = conn.prepareStatement("USE 1");
-            st.setString(1, table);
             ResultSet set = key.executeQuery();
             Object obj = set.getObject(1);
             key.close();
@@ -121,8 +114,6 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
     @Override
     public int getInt(PreparedStatement key) throws IOException {
         try {
-            PreparedStatement st = conn.prepareStatement("USE 1");
-            st.setString(1, table);
             ResultSet set = key.executeQuery();
             Object obj = set.getObject(1);
             key.close();
@@ -139,8 +130,6 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
     @Override
     public boolean getBoolean(PreparedStatement key) throws IOException {
         try {
-            PreparedStatement st = conn.prepareStatement("USE 1");
-            st.setString(1, table);
             ResultSet set = key.executeQuery();
             Object obj = set.getObject(1);
             key.close();

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.ae97.ralexbot.api.channels.Channel;
 import org.pircbotx.hooks.WaitForQueue;
 import org.pircbotx.hooks.events.WhoisEvent;
 
@@ -91,11 +92,31 @@ public class User extends Utilities implements Sender, Permissible {
     }
 
     public boolean hasVoice(String channel) {
-        return pircbotxUser.getChannelsVoiceIn().contains(bot.getChannel(channel));
+        return hasVoice(bot.getChannel(channel));
+    }
+
+    public boolean hasVoice(net.ae97.ralexbot.api.channels.Channel channel) {
+        return hasVoice(bot.getChannel(channel.getName()));
+    }
+
+    public boolean hasVoice(org.pircbotx.Channel channel) {
+        return pircbotxUser.getChannelsVoiceIn().contains(channel);
+    }
+
+    public String getLoginName() {
+        return pircbotxUser.getLogin();
     }
 
     public boolean hasOP(String channel) {
-        return pircbotxUser.getChannelsOpIn().contains(bot.getChannel(channel));
+        return hasOP(bot.getChannel(channel));
+    }
+
+    public boolean hasOP(net.ae97.ralexbot.api.channels.Channel channel) {
+        return hasOP(bot.getChannel(channel.getName()));
+    }
+
+    public boolean hasOP(org.pircbotx.Channel channel) {
+        return pircbotxUser.getChannelsOpIn().contains(channel);
     }
 
     public String isVerified() {
@@ -104,10 +125,6 @@ public class User extends Utilities implements Sender, Permissible {
             WhoisEvent evt;
             try {
                 pircbotxUser.getBot().sendRawLineNow("whois " + pircbotxUser.getNick());
-
-
-
-
                 while (true) {
                     evt = queue.waitFor(WhoisEvent.class);
                     if (evt.getNick()
@@ -116,8 +133,6 @@ public class User extends Utilities implements Sender, Permissible {
                         break;
                     }
                 }
-
-
             } catch (InterruptedException ex) {
                 Logger.getLogger(User.class
                         .getName()).log(Level.SEVERE, null, ex);
@@ -149,7 +164,7 @@ public class User extends Utilities implements Sender, Permissible {
 
     @Override
     public boolean hasPermission(String channel, String perm) {
-        Set<Permission> set = permMap.get(channel == null ? null : channel.toLowerCase());
+        Set<Permission> set = permMap.get(channel == null || channel.isEmpty() ? null : channel.toLowerCase());
         if (set != null) {
             for (Permission p : set.toArray(new Permission[set.size()])) {
                 if (p.getName().equalsIgnoreCase(perm)) {
@@ -170,6 +185,20 @@ public class User extends Utilities implements Sender, Permissible {
             }
         }
         return false;
+    }
+
+    public boolean hasPermission(org.pircbotx.Channel channel, String perm) {
+        if (channel == null) {
+            return hasPermission((String) null, perm);
+        }
+        return hasPermission(channel.getName().toLowerCase(), perm);
+    }
+
+    public boolean hasPermission(net.ae97.ralexbot.api.channels.Channel channel, String perm) {
+        if (channel == null) {
+            return hasPermission((String) null, perm);
+        }
+        return hasPermission(channel.getName().toLowerCase(), perm);
     }
 
     @Override
@@ -199,5 +228,57 @@ public class User extends Utilities implements Sender, Permissible {
     @Override
     public Map<String, Set<Permission>> getPermissions() {
         return permMap;
+    }
+
+    public String getRealName() {
+        return pircbotxUser.getRealName();
+    }
+
+    public void op(String channel) {
+        op(Channel.getChannel(channel));
+    }
+
+    public void op(net.ae97.ralexbot.api.channels.Channel channel) {
+        BotUser.getBotUser().op(channel, this);
+    }
+
+    public void deop(String channel) {
+        deop(Channel.getChannel(channel));
+    }
+
+    public void deop(net.ae97.ralexbot.api.channels.Channel channel) {
+        BotUser.getBotUser().deop(channel, this);
+    }
+
+    public void voice(String channel) {
+        voice(Channel.getChannel(channel));
+    }
+
+    public void voice(net.ae97.ralexbot.api.channels.Channel channel) {
+        BotUser.getBotUser().voice(channel, this);
+    }
+
+    public void devoice(String channel) {
+        devoice(Channel.getChannel(channel));
+    }
+
+    public void devoice(net.ae97.ralexbot.api.channels.Channel channel) {
+        BotUser.getBotUser().devoice(channel, this);
+    }
+
+    public void kick(String channel) {
+        kick(Channel.getChannel(channel));
+    }
+
+    public void kick(net.ae97.ralexbot.api.channels.Channel channel) {
+        BotUser.getBotUser().kick(channel, this);
+    }
+
+    public void ban(String channel) {
+        ban(Channel.getChannel(channel));
+    }
+
+    public void ban(net.ae97.ralexbot.api.channels.Channel channel) {
+        BotUser.getBotUser().ban(channel, this);
     }
 }

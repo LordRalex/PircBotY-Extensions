@@ -43,6 +43,10 @@ public class BotUser extends User {
         kick(nick, channel, null);
     }
 
+    public void kick(net.ae97.ralexbot.api.channels.Channel chan, User user) {
+        kick(user.getNick(), chan.getName());
+    }
+
     public void kick(String nick, String channel, String reason) {
         if (bot.getChannel(channel).isOp(bot.getUserBot())) {
             if (reason == null || reason.isEmpty()) {
@@ -75,6 +79,10 @@ public class BotUser extends User {
         bot.sendAction(target, message);
     }
 
+    public void ban(net.ae97.ralexbot.api.channels.Channel chan, User user) {
+        ban(chan.getName(), user.getIP());
+    }
+
     public void ban(String channel, String mask) {
         if (bot.getChannel(channel).isOp(bot.getUserBot())) {
             bot.ban(bot.getChannel(channel), mask);
@@ -89,6 +97,54 @@ public class BotUser extends User {
         } else {
             this.sendMessage("chanserv", "unban " + channel + " " + mask);
         }
+    }
+
+    public void op(String channel, String name) {
+        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
+            bot.op(bot.getChannel(channel), bot.getUser(name));
+        } else {
+            this.sendMessage("chanserv", "op " + channel + " " + name);
+        }
+    }
+
+    public void op(net.ae97.ralexbot.api.channels.Channel chan, net.ae97.ralexbot.api.users.User user) {
+        op(chan.getName(), user.getNick());
+    }
+
+    public void deop(String channel, String name) {
+        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
+            bot.deOp(bot.getChannel(channel), bot.getUser(name));
+        } else {
+            this.sendMessage("chanserv", "deop " + channel + " " + name);
+        }
+    }
+
+    public void deop(net.ae97.ralexbot.api.channels.Channel chan, net.ae97.ralexbot.api.users.User user) {
+        deop(chan.getName(), user.getNick());
+    }
+
+    public void voice(String channel, String name) {
+        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
+            bot.voice(bot.getChannel(channel), bot.getUser(name));
+        } else {
+            this.sendMessage("chanserv", "voice " + channel + " " + name);
+        }
+    }
+
+    public void voice(net.ae97.ralexbot.api.channels.Channel chan, net.ae97.ralexbot.api.users.User user) {
+        voice(chan.getName(), user.getNick());
+    }
+
+    public void devoice(String channel, String name) {
+        if (bot.getChannel(channel).isOp(bot.getUserBot())) {
+            bot.deVoice(bot.getChannel(channel), bot.getUser(name));
+        } else {
+            this.sendMessage("chanserv", "devoice " + channel + " " + name);
+        }
+    }
+
+    public void devoice(net.ae97.ralexbot.api.channels.Channel chan, net.ae97.ralexbot.api.users.User user) {
+        devoice(chan.getName(), user.getNick());
     }
 
     @Override
