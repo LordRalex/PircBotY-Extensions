@@ -107,7 +107,15 @@ public class BanManager extends Listener {
             return;
         }
         if (event.getUser() != null) {
-            if (!event.getUser().hasOP(event.getChannel().getName()) && !event.getUser().hasPermission(event.getChannel().getName(), "banmanager.ban")) {
+            boolean canUse;
+            if (event.getUser().hasOP(event.getChannel().getName())) {
+                canUse = true;
+            } else if (event.getUser().hasPermission(event.getChannel().getName(), "banmanager.ban")) {
+                canUse = true;
+            } else {
+                canUse = false;
+            }
+            if (!canUse) {
                 return;
             }
         }
