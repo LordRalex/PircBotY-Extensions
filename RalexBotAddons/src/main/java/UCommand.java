@@ -38,7 +38,7 @@ public class UCommand extends Listener {
             return;
         }
         if (event.getArgs().length == 0) {
-            target.sendMessage(event.getUser().getNick() + ", " + "$u <user> [profile, posts, topics, warnings, videos, friends, pm, names, admin, edit, modcp, validate, warn, suspend, iphistory]");
+            target.sendMessage(event.getUser().getNick() + ", " + "$u <user> [profile, posts, topics, infractions, pm, names, admin, edit, modcp, warn, ip_history]");
         } else {
             String link = "http://u.mcf.li/" + event.getArgs()[0];
             if (event.getArgs().length >= 2) {
