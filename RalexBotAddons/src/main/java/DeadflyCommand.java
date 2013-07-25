@@ -60,6 +60,9 @@ public class DeadflyCommand extends Listener {
         if (target == null) {
             return;
         }
+        target.sendMessage("This is currently broken due to new Adf.ly changes");
+        return;
+        /*
         if (args.length == 0) {
             target.sendMessage("*deadfly <link>");
             return;
@@ -113,6 +116,7 @@ public class DeadflyCommand extends Listener {
             }
         }
         target.sendMessage(reply);
+        */
     }
 
     @Override
