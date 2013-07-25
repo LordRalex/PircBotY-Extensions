@@ -77,7 +77,7 @@ public class ServerIPListener extends Listener {
         for (String part : messageParts) {
             if (isServer(part)) {
                 if (!silence) {
-                    channel.sendMessage("Please do not advertise servers here");
+                    channel.sendMessage(sender.getNick() + ", please do not advertise servers here");
                     triggered.remove(sender.getNick().toLowerCase());
                     triggered.remove(event.getHostname().toLowerCase());
                     triggered.add(sender.getNick().toLowerCase());
@@ -117,7 +117,7 @@ public class ServerIPListener extends Listener {
         for (String part : messageParts) {
             if (isServer(part)) {
                 if (!silence) {
-                    channel.sendMessage("Please do not advertise servers here");
+                    channel.sendMessage(sender.getNick() + ", please do not advertise servers here");
                     triggered.remove(event.getUser().getIP().toLowerCase());
                     triggered.remove(event.getUser().getIP().toLowerCase());
                     triggered.add(sender.getNick().toLowerCase());
