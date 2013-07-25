@@ -69,7 +69,7 @@ public final class EventHandler extends ListenerAdapter {
     private final List<Listener> listeners = new ArrayList<>();
     private final ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
     private final EventRunner runner;
-    private static final List<String> commandChars = new ArrayList<>();
+    private static final List<CommandPrefix> commandChars = new ArrayList<>();
     private final PircBotX masterBot;
     private ClassLoader classLoader;
     private final ExecutorService execServ;
@@ -85,7 +85,17 @@ public final class EventHandler extends ListenerAdapter {
         if (settings.isEmpty()) {
             settings.add("**");
         }
-        commandChars.addAll(settings);
+        for(String commandChar: settings) {
+            String[] args = commandChar.split("\\|");
+            String prefix = args[0];
+            String owner;
+            if(args.length == 1) {
+                owner = null;
+            } else {
+                owner = args[1];
+            }
+            commandChars.add(new CommandPrefix(prefix, owner));
+        }
         execServ = Executors.newFixedThreadPool(5);
     }
 
@@ -169,6 +179,12 @@ public final class EventHandler extends ListenerAdapter {
         try {
             className = className.replace("tempDir" + File.separator, "").replace("extension" + File.separator, "").replace(".class", "");
             Class cls = classLoader.loadClass(className);
+            try {
+                cls.getConstructor();
+            } catch (NoSuchMethodException e) {
+                RalexBot.logSevere("Class " + className + " does not have a default constructor, cannot create instance");
+                return;
+            }
             Object obj = cls.newInstance();
             if (obj instanceof Listener) {
                 Listener list = (Listener) obj;
@@ -192,7 +208,7 @@ public final class EventHandler extends ListenerAdapter {
                 if (event == null) {
                     continue;
                 }
-                RalexBot.log("    *Event " + event.event().name() + " was added with priority " + event.priority().name());
+                RalexBot.log("    Event " + event.event().name() + " was added with priority " + event.priority().name());
                 priorityMap.put(event.event(), event);
             }
             priorities.put(list, priorityMap);
@@ -211,6 +227,13 @@ public final class EventHandler extends ListenerAdapter {
     public void onMessage(org.pircbotx.hooks.events.MessageEvent event) {
         Event nextEvt;
         if (isCommand(event.getMessage())) {
+            for(CommandPrefix commandchar: commandChars) {
+                if(event.getMessage().startsWith(commandchar.getPrefix())) {
+                    if(event.getChannel().getUsers().contains(masterBot.getUser(commandchar.getPrefix()))) {
+                        return;
+                    }
+                }
+            }
             nextEvt = new CommandEvent(event);
         } else {
             nextEvt = new MessageEvent(event);
@@ -285,8 +308,8 @@ public final class EventHandler extends ListenerAdapter {
     }
 
     private boolean isCommand(String message) {
-        for (String code : commandChars) {
-            if (message.startsWith(code)) {
+        for (CommandPrefix code : commandChars) {
+            if (message.startsWith(code.getPrefix())) {
                 return true;
             }
         }
@@ -317,7 +340,9 @@ public final class EventHandler extends ListenerAdapter {
 
     public static List<String> getCommandPrefixes() {
         List<String> clone = new ArrayList<>();
-        clone.addAll(commandChars);
+        for(CommandPrefix prefix: commandChars) {
+            clone.add(prefix.getPrefix());
+        }
         return clone;
     }
 
@@ -491,6 +516,29 @@ public final class EventHandler extends ListenerAdapter {
         public Object call() throws Exception {
             listener.runEvent(event);
             return event;
+        }
+    }
+
+    private class CommandPrefix {
+
+        private final String prefix;
+        private final String owner;
+
+        public CommandPrefix(String p, String o) {
+            prefix = p;
+            owner = o;
+        }
+
+        public CommandPrefix(String p) {
+            this(p, null);
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public String getOwner() {
+            return owner;
         }
     }
 }
