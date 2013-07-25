@@ -79,7 +79,9 @@ public class MaulListener extends Listener {
             return;
         }
         if (ignoreList.contains(event.getUser().getIP())) {
-            return;
+            if (!event.getUser().hasPermission(event.getChannel(), "maul.alwaysListen")) {
+                return;
+            }
         }
         if (!channels.contains(event.getChannel().getName())) {
             return;
@@ -93,27 +95,30 @@ public class MaulListener extends Listener {
                     service.schedule(new RunThread(event.getChannel(), target, event.getUser().getNick()), delay * 2, TimeUnit.MILLISECONDS);
                 }
             }
-        } else if (event.getMessage().startsWith(nick + ", return")) {
+        } else if (event.getMessage().startsWith(nick + ", return") && event.getUser().hasPermission(event.getChannel(), "maul.return")) {
             if (service != null) {
                 event.getUser().sendNotice("Returning");
                 service.shutdownNow();
                 service = null;
             }
-        } else if (event.getMessage().equalsIgnoreCase(nick + ", I choose you") && event.getUser().isVerified().equals("Lord_Ralex")) {
+        } else if (event.getMessage().equalsIgnoreCase(nick + ", I choose you") && event.getUser().hasPermission(event.getChannel(), "maul.choose")) {
             if (service != null && !service.isShutdown()) {
                 service.shutdownNow();
             }
             service = Executors.newSingleThreadScheduledExecutor();
-        } else if (event.getMessage().startsWith(nick + ", ignnore")) {
+        } else if (event.getMessage().startsWith(nick + ", ignore") && event.getUser().hasPermission(event.getChannel(), "maul.ignore")) {
             String[] param = event.getMessage().split(" ");
             if (param.length != 3) {
                 return;
             }
             String name = param[2];
             synchronized (ignoreList) {
+                if (ignoreList.contains(event.getUser().getIP())) {
+                    return;
+                }
                 ignoreList.add(User.getUser(name).getIP());
             }
-        } else if (event.getMessage().startsWith(nick + ", listen to")) {
+        } else if (event.getMessage().startsWith(nick + ", listen to") && event.getUser().hasPermission(event.getChannel(), "maul.listen")) {
             String[] param = event.getMessage().split(" ");
             if (param.length != 4) {
                 return;
@@ -211,7 +216,27 @@ public class MaulListener extends Listener {
 
         @Override
         public void run() {
-            BotUser.getBotUser().sendAction(channel.getName(), "uses " + moves.toArray(new String[moves.size()][new Random().nextInt(moves.size())]) + " on " + target);
+            String effective;
+            switch (new Random().nextInt(5)) {
+                case 0:
+                    effective = "";
+                    break;
+                case 1:
+                    effective = "It was somewhat effective.";
+                    break;
+                case 2:
+                    effective = "It was super effective!";
+                    break;
+                case 3:
+                    effective = "It was not that effective...";
+                    break;
+                case 4:
+                    effective = "It missed";
+                    break;
+                default:
+                    effective = "";
+            }
+            BotUser.getBotUser().sendAction(channel.getName(), "uses " + moves.toArray(new String[moves.size()][new Random().nextInt(moves.size())]) + " on " + target + ". " + effective);
         }
     }
 }
