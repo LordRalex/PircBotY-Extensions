@@ -282,6 +282,34 @@ public class FaqSystem extends Listener {
                     event.getUser().sendNotice("The factoid " + event.getArgs()[0].toLowerCase() + " has been modified");
                 }
                 break;
+                case "~replace": {
+                    if (!event.getUser().hasPermission((String) null, "faq.edit." + index.getName())) {
+                        return;
+                    }
+                    if (index.isReadonly()) {
+                        event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
+                        break;
+                    }
+                    if (event.getArgs().length < 2) {
+                        event.getUser().sendNotice("Command usage: " + EventHandler.getCommandPrefixes().get(0) + "+ [factoid] [original] [replace with]");
+                        event.getUser().sendNotice("You can use ' ' to seperate the arguments");
+                        break;
+                    }
+                    StringBuilder builder = new StringBuilder();
+                    for(String arg: event.getArgs()) {
+                        builder.append(arg);
+                        builder.append(" ");
+                    }
+                    String[] args = builder.toString().split("'");
+                    String original = args[0];
+                    String replacement = args[2];
+                    String[] factoid = index.getEntry(event.getArgs()[0]);
+                    for(int i=0; i < factoid.length; i++) {
+                        factoid[i] = factoid[i].replaceAll(original, replacement);
+                    }
+                    index.setEntry(event.getArgs()[0], factoid);
+                    break;
+                }
                 default: {
                     String target = null;
                     String channel = event.getChannel().getName();
@@ -316,6 +344,7 @@ public class FaqSystem extends Listener {
             "+",
             "-",
             "~",
+            "~replace",
             "^",
             "togglefaq"}));
         String[] it;
