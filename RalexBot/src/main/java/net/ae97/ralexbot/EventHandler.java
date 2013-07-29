@@ -94,6 +94,7 @@ public final class EventHandler extends ListenerAdapter {
             } else {
                 owner = args[1];
             }
+            RalexBot.log("Adding command prefix: " + prefix + (owner == null ? "" : " ( " + owner + ")"));
             commandChars.add(new CommandPrefix(prefix, owner));
         }
         execServ = Executors.newFixedThreadPool(5);
