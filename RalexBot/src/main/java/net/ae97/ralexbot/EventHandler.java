@@ -229,7 +229,7 @@ public final class EventHandler extends ListenerAdapter {
         if (isCommand(event.getMessage())) {
             for(CommandPrefix commandchar: commandChars) {
                 if(event.getMessage().startsWith(commandchar.getPrefix())) {
-                    if(event.getChannel().getUsers().contains(masterBot.getUser(commandchar.getPrefix()))) {
+                    if(event.getChannel().getUsers().contains(masterBot.getUser(commandchar.getOwner()))) {
                         return;
                     }
                 }
