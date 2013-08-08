@@ -239,4 +239,13 @@ public class MaulListener extends Listener {
             BotUser.getBotUser().sendAction(channel.getName(), "uses " + moves.toArray(new String[moves.size()][new Random().nextInt(moves.size())]) + " on " + target + ". " + effective);
         }
     }
+
+    private enum ACTION {
+
+        ATTACK,
+        MAUL,
+        LISTEN,
+        CHOOSE,
+        RETURN;
+    }
 }
