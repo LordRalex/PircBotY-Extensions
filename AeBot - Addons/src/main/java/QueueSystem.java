@@ -169,9 +169,11 @@ public class QueueSystem extends Listener {
                 }
                 current.clear();
                 gettingHelped.remove(event.getChannel());
+                event.getChannel().setMode('m', false);
                 event.getUser().sendNotice("I have turned off the queue system");
             } else if (event.getCommand().endsWith("-on")) {
                 activeChans.add(event.getChannel());
+                event.getChannel().setMode('m', true);
                 event.getUser().sendNotice("I have turned on the queue system");
             }
         } else if (event.getCommand().equalsIgnoreCase("next")) {
