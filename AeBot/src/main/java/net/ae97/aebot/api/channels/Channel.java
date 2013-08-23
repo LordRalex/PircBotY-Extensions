@@ -169,4 +169,13 @@ public class Channel extends Utilities implements Sender, Permissible {
     public Map<String, Set<Permission>> getPermissions() {
         return permMap;
     }
+
+    public void setMode(String mode) {
+        bot.setMode(pircbotxChannel, mode);
+    }
+
+    public void setMode(char mode, boolean newState) {
+        String newMode = (newState ? "+" : "-") + mode;
+        setMode(newMode);
+    }
 }
