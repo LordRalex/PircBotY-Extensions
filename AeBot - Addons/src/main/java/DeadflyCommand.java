@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.AeBot;
 import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
@@ -25,15 +24,7 @@ import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
 import net.ae97.aebot.api.users.User;
 import net.ae97.aebot.settings.Settings;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class DeadflyCommand extends Listener {
 
@@ -97,23 +88,23 @@ public class DeadflyCommand extends Listener {
             }
             reply = forward;
         } catch (IOException ex) {
-            AeBot.logSevere(null, ex);
-            reply = "There was a problem handling the link";
+
+         AeBot.log(Level.SEVERE, null, ex);            reply = "There was a problem handling the link";
         } finally {
             try {
                 if (reader != null) {
                     reader.close();
                 }
             } catch (IOException ex) {
-                AeBot.logSevere(null, ex);
-            }
+
+         AeBot.log(Level.SEVERE, null, ex);            }
             try {
                 if (redirectReader != null) {
                     redirectReader.close();
                 }
             } catch (IOException ex) {
-                AeBot.logSevere(null, ex);
-            }
+
+         AeBot.log(Level.SEVERE, null, ex);            }
         }
         target.sendMessage(reply);
         */

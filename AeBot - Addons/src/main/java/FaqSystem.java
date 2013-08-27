@@ -49,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import net.ae97.aebot.api.channels.Channel;
 import net.ae97.aebot.api.users.User;
 import net.ae97.aebot.mysql.MySQLConnection;
@@ -327,7 +328,7 @@ public class FaqSystem extends Listener {
                 try {
                     saveDatabase(index);
                 } catch (IOException ex) {
-                    AeBot.logSevere("An error occured on saving the database " + index.getName(), ex);
+                    AeBot.log(Level.SEVERE, "An error occured on saving the database " + index.getName(), ex);
                 }
             }
         }
@@ -385,14 +386,14 @@ public class FaqSystem extends Listener {
                         if (load.split(" ").length <= 6) {
                             newDatabase.setMaster(load.split(" ")[5]);
                         }
-                        AeBot.log("    Creating database: " + newDatabase.getName());
-                        AeBot.log("      Path to get info: " + loadPath);
-                        AeBot.log("      Path to save info: " + newDatabase.getFile());
-                        AeBot.log("      Read-only: " + newDatabase.isReadonly());
-                        AeBot.log("      Database owner: " + newDatabase.getMaster());
+                        AeBot.log(Level.INFO, "    Creating database: " + newDatabase.getName());
+                        AeBot.log(Level.INFO, "      Path to get info: " + loadPath);
+                        AeBot.log(Level.INFO, "      Path to save info: " + newDatabase.getFile());
+                        AeBot.log(Level.INFO, "      Read-only: " + newDatabase.isReadonly());
+                        AeBot.log(Level.INFO, "      Database owner: " + newDatabase.getMaster());
                         if (!loadPath.equals(newDatabase.getFile())) {
-                            AeBot.log("        Downloading database: " + loadPath);
-                            AeBot.log("        Saving to " + newDatabase.getFile());
+                            AeBot.log(Level.INFO, "        Downloading database: " + loadPath);
+                            AeBot.log(Level.INFO, "        Saving to " + newDatabase.getFile());
                             File save = new File(newDatabase.getFile());
                             save.delete();
                             save.getParentFile().mkdirs();
@@ -400,10 +401,10 @@ public class FaqSystem extends Listener {
                             FileOutputStream out = new FileOutputStream(save);
                             InputStream in = new URL(loadPath).openStream();
                             copyInputStream(in, out);
-                            AeBot.log("        Downloaded: " + (save.length() / 1024) + "kb");
-                            AeBot.log("        Installed: " + newDatabase.getName());
+                            AeBot.log(Level.INFO, "        Downloaded: " + (save.length() / 1024) + "kb");
+                            AeBot.log(Level.INFO, "        Installed: " + newDatabase.getName());
                         }
-                        AeBot.log("    Loading database: " + newDatabase.getName());
+                        AeBot.log(Level.INFO, "    Loading database: " + newDatabase.getName());
                         newDatabase.load(newDatabase.getFile());
                         databases.put(newDatabase.getName().toLowerCase(), newDatabase);
                     }
@@ -421,7 +422,7 @@ public class FaqSystem extends Listener {
                     break;
                 }
             } catch (Exception ex) {
-                AeBot.logSevere("    There was an error with this setting: " + load, ex);
+                AeBot.log(Level.SEVERE, "    There was an error with this setting: " + load, ex);
             }
         }
     }
@@ -514,9 +515,9 @@ public class FaqSystem extends Listener {
                             }
                         }
                     } catch (IOException ex) {
-                        AeBot.logSevere("There was an error", ex);
-                        AeBot.log("Path loading from: " + loadPath);
-                        AeBot.log("Location: " + location);
+                        AeBot.log(Level.SEVERE, "There was an error", ex);
+                        AeBot.log(Level.INFO, "Path loading from: " + loadPath);
+                        AeBot.log(Level.INFO, "Location: " + location);
                     }
                     break;
                 case SQL:
@@ -584,7 +585,7 @@ public class FaqSystem extends Listener {
                             entry = result.split(";;");
                             setEntry(key, entry);
                         } catch (SQLException ex) {
-                            AeBot.logSevere("An error occured", ex);
+                            AeBot.log(Level.SEVERE, "An error occured", ex);
                         }
                     }
                     break;

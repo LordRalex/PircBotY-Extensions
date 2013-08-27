@@ -19,7 +19,6 @@ import net.ae97.aebot.AeBot;
 import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
-import net.ae97.aebot.api.channels.Channel;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.events.ConnectionEvent;
 import net.ae97.aebot.api.users.BotUser;
@@ -38,6 +37,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * @version 1.0
@@ -60,17 +60,17 @@ public class BanManager extends Listener {
                             Object obj = in.readObject();
                             if (obj instanceof Ban) {
                                 banList.add((Ban) obj);
-                                AeBot.log("    Loading ban: " + obj.toString());
+                                AeBot.log(Level.INFO, "    Loading ban: " + obj.toString());
                             }
                         } catch (ClassNotFoundException ex) {
-                            AeBot.logSevere("An error occured on loading bans", ex);
+                            AeBot.log(Level.SEVERE, "An error occured on loading bans", ex);
                         } catch (EOFException e) {
                             reading = false;
                         }
                     }
                 }
             } catch (IOException ex) {
-                AeBot.logSevere("An error occured on loading bans", ex);
+                AeBot.log(Level.SEVERE, "An error occured on loading bans", ex);
             }
         }
     }
@@ -90,7 +90,7 @@ public class BanManager extends Listener {
                 }
             }
         } catch (IOException ex) {
-            AeBot.logSevere("An error occured on saving bans", ex);
+            AeBot.log(Level.SEVERE, "An error occured on saving bans", ex);
         }
     }
 
@@ -159,7 +159,7 @@ public class BanManager extends Listener {
 
     private long parseTime(String time) {
         int banTime = 0;
-        AeBot.log("Input: " + time);
+        AeBot.log(Level.INFO, "Input: " + time);
         String[] args = time.split(",");
         for (String arg : args) {
             String arg0 = arg.split(" ")[1].trim().toLowerCase();
@@ -177,7 +177,7 @@ public class BanManager extends Listener {
             }
         }
         banTime *= 1000;
-        AeBot.log("Output: " + banTime);
+        AeBot.log(Level.INFO, "Output: " + banTime);
         return banTime;
     }
 
@@ -241,7 +241,7 @@ public class BanManager extends Listener {
                 if (initDelay < 0) {
                     initDelay = 0;
                 }
-                AeBot.log("Unbanning a user in " + initDelay);
+                AeBot.log(Level.INFO, "Unbanning a user in " + initDelay);
                 srv.schedule(this, initDelay, TimeUnit.MILLISECONDS);
             }
         }

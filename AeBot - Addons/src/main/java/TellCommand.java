@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TellCommand extends Listener {
 
@@ -136,7 +135,7 @@ public class TellCommand extends Listener {
             try {
                 addTell(sender.getNick(), target, message);
             } catch (IOException ex) {
-                Logger.getLogger(TellCommand.class.getName()).log(Level.SEVERE, null, ex);
+                AeBot.log(Level.INFO, "Error on saving tells", ex);
                 if (channel != null) {
                     channel.sendMessage("An error occurred, get Lord_Ralex to see what went wrong");
                 } else if (sender != null) {
@@ -197,7 +196,7 @@ public class TellCommand extends Listener {
                 try {
                     writer.close();
                 } catch (IOException ex) {
-                    AeBot.logSevere(null, ex);
+                    AeBot.log(Level.SEVERE, "Error on saving", ex);
                 }
             }
         }

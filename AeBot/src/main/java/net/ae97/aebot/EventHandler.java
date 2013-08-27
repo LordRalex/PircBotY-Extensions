@@ -41,7 +41,9 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -57,6 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.pircbotx.Channel;
@@ -85,16 +88,16 @@ public final class EventHandler extends ListenerAdapter {
         if (settings.isEmpty()) {
             settings.add("**");
         }
-        for(String commandChar: settings) {
+        for (String commandChar : settings) {
             String[] args = commandChar.split("\\|");
             String prefix = args[0];
             String owner;
-            if(args.length == 1) {
+            if (args.length == 1) {
                 owner = null;
             } else {
                 owner = args[1];
             }
-            AeBot.log("Adding command prefix: " + prefix + (owner == null ? "" : " ( " + owner + ")"));
+            AeBot.log(Level.INFO, "Adding command prefix: " + prefix + (owner == null ? "" : " ( " + owner + ")"));
             commandChars.add(new CommandPrefix(prefix, owner));
         }
         execServ = Executors.newFixedThreadPool(5);
@@ -120,7 +123,7 @@ public final class EventHandler extends ListenerAdapter {
                 temp.toURI().toURL()
             };
         } catch (MalformedURLException ex) {
-            AeBot.logSevere("The URL is broken", ex);
+            AeBot.log(Level.SEVERE, "The URL is broken", ex);
         }
         classLoader = new URLClassLoader(urls);
         for (File file : extensionFolder.listFiles()) {
@@ -146,13 +149,13 @@ public final class EventHandler extends ListenerAdapter {
                     }
 
                 } catch (IOException ex) {
-                    AeBot.logSevere("An error occured", ex);
+                    AeBot.log(Level.SEVERE, "An error occured", ex);
                 } finally {
                     if (zipFile != null) {
                         try {
                             zipFile.close();
                         } catch (IOException ex) {
-                            AeBot.logSevere("An error occured", ex);
+                            AeBot.log(Level.SEVERE, "An error occured", ex);
                         }
                     }
                 }
@@ -180,22 +183,36 @@ public final class EventHandler extends ListenerAdapter {
         try {
             className = className.replace("tempDir" + File.separator, "").replace("extension" + File.separator, "").replace(".class", "");
             Class cls = classLoader.loadClass(className);
+            if (!Listener.class.isAssignableFrom(cls)) {
+                AeBot.log(Level.SEVERE, "Class " + className + " is not a Listener");
+            }
             try {
                 cls.getConstructor();
             } catch (NoSuchMethodException e) {
-                AeBot.logSevere("Class " + className + " does not have a default constructor, cannot create instance");
+                AeBot.log(Level.SEVERE, "Class " + className + " does not have a default constructor, cannot create instance");
                 return;
+            }
+            Field[] declaredFields = cls.getDeclaredFields();
+            boolean hasStatic = false;
+            for (Field field : declaredFields) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    hasStatic = true;
+                    break;
+                }
+            }
+            if (hasStatic) {
+                AeBot.log(Level.WARNING, "The class " + className + " uses static references, this will break things when reloaded");
             }
             Object obj = cls.newInstance();
             if (obj instanceof Listener) {
                 Listener list = (Listener) obj;
                 list.onLoad();
-                AeBot.log("  Added: " + list.getClass().getName());
+                AeBot.log(Level.INFO, "  Added: " + list.getClass().getName());
                 declarePriorities(list);
                 listeners.add(list);
             }
         } catch (Throwable ex) {
-            AeBot.logSevere("Could not add " + className, ex);
+            AeBot.log(Level.SEVERE, "Could not add " + className, ex);
         }
     }
 
@@ -209,12 +226,12 @@ public final class EventHandler extends ListenerAdapter {
                 if (event == null) {
                     continue;
                 }
-                AeBot.log("    Event " + event.event().name() + " was added with priority " + event.priority().name());
+                AeBot.log(Level.INFO, "    Event " + event.event().name() + " was added with priority " + event.priority().name());
                 priorityMap.put(event.event(), event);
             }
             priorities.put(list, priorityMap);
         } catch (SecurityException ex) {
-            AeBot.logSevere("Security issue", ex);
+            AeBot.log(Level.SEVERE, "Security issue", ex);
         }
     }
 
@@ -228,9 +245,9 @@ public final class EventHandler extends ListenerAdapter {
     public void onMessage(org.pircbotx.hooks.events.MessageEvent event) {
         Event nextEvt;
         if (isCommand(event.getMessage())) {
-            for(CommandPrefix commandchar: commandChars) {
-                if(event.getMessage().startsWith(commandchar.getPrefix())) {
-                    if(commandchar.getOwner() != null && event.getChannel().getUsers().contains(masterBot.getUser(commandchar.getOwner()))) {
+            for (CommandPrefix commandchar : commandChars) {
+                if (event.getMessage().startsWith(commandchar.getPrefix())) {
+                    if (commandchar.getOwner() != null && event.getChannel().getUsers().contains(masterBot.getUser(commandchar.getOwner()))) {
                         return;
                     }
                 }
@@ -329,10 +346,10 @@ public final class EventHandler extends ListenerAdapter {
         synchronized (listeners) {
             for (Listener list : listeners) {
                 try {
-                    AeBot.log("Unloading " + list.getClass().getSimpleName());
+                    AeBot.log(Level.INFO, "Unloading " + list.getClass().getSimpleName());
                     list.onUnload();
                 } catch (Exception e) {
-                    AeBot.logSevere("Error on unloading " + list.getClass().getSimpleName(), e);
+                    AeBot.log(Level.SEVERE, "Error on unloading " + list.getClass().getSimpleName(), e);
                 }
             }
             listeners.clear();
@@ -341,7 +358,7 @@ public final class EventHandler extends ListenerAdapter {
 
     public static List<String> getCommandPrefixes() {
         List<String> clone = new ArrayList<>();
-        for(CommandPrefix prefix: commandChars) {
+        for (CommandPrefix prefix : commandChars) {
             clone.add(prefix.getPrefix());
         }
         return clone;
@@ -383,7 +400,7 @@ public final class EventHandler extends ListenerAdapter {
                             try {
                                 AeBot.getPermManager().runPermissionEvent(permEvent);
                             } catch (Exception e) {
-                                AeBot.logSevere("Error on permission event", e);
+                                AeBot.log(Level.SEVERE, "Error on permission event", e);
                                 continue;
                             }
                             if (evt.getCommand().equalsIgnoreCase("reload")) {
@@ -393,13 +410,13 @@ public final class EventHandler extends ListenerAdapter {
                                         continue;
                                     }
                                 }
-                                AeBot.log("Performing a reload, please hold");
+                                AeBot.log(Level.INFO, "Performing a reload, please hold");
                                 if (sender != null) {
                                     sender.sendNotice("Reloading");
                                 }
                                 unload();
                                 load();
-                                AeBot.log("Reloaded");
+                                AeBot.log(Level.INFO, "Reloaded");
                                 if (sender != null) {
                                     sender.sendNotice("Reloaded");
                                 }
@@ -411,12 +428,12 @@ public final class EventHandler extends ListenerAdapter {
                                         continue;
                                     }
                                 }
-                                AeBot.log("Performing a permission reload, please hold");
+                                AeBot.log(Level.INFO, "Performing a permission reload, please hold");
                                 if (sender != null) {
                                     sender.sendNotice("Reloading permissions");
                                 }
                                 AeBot.getPermManager().reloadFile();
-                                AeBot.log("Reloaded permissions");
+                                AeBot.log(Level.INFO, "Reloaded permissions");
                                 if (sender != null) {
                                     sender.sendNotice("Reloaded permissions");
                                 }
@@ -478,7 +495,7 @@ public final class EventHandler extends ListenerAdapter {
                                                 break;
                                         }
                                     } catch (Exception e) {
-                                        AeBot.logSevere("Unhandled exception on event execution", e);
+                                        AeBot.log(Level.SEVERE, "Unhandled exception on event execution", e);
                                     }
                                 }
                             }
@@ -486,7 +503,7 @@ public final class EventHandler extends ListenerAdapter {
                     }
                 }
             }
-            AeBot.log("Ending event listener");
+            AeBot.log(Level.INFO, "Ending event listener");
         }
 
         public void ping() {
@@ -498,7 +515,7 @@ public final class EventHandler extends ListenerAdapter {
                     }
                 }
             } catch (IllegalMonitorStateException e) {
-                AeBot.logSevere("Major issue on pinging event system", e);
+                AeBot.log(Level.SEVERE, "Major issue on pinging event system", e);
             }
         }
     }

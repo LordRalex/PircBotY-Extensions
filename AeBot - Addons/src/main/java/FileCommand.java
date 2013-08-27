@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
+import java.util.logging.Level;
 
 /**
  * @author Lord_Ralex
@@ -124,7 +125,7 @@ public class FileCommand extends Listener {
                 target.sendMessage("Invalid url");
             } catch (IOException ex) {
                 target.sendMessage("Error occured");
-                AeBot.logSevere("Error on making stuff", ex);
+                AeBot.log(Level.SEVERE, "Error on making stuff", ex);
             }
         }
         try {

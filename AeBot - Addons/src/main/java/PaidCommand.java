@@ -98,7 +98,7 @@ public class PaidCommand extends Listener {
                     target.sendMessage("The user '" + name + "' is NOT a premium account");
                 }
             } catch (Exception e) {
-                AeBot.logSevere("An error occured on looking up " + name, e);
+                AeBot.log(Level.SEVERE, "An error occured on looking up " + name, e);
                 target.sendMessage("An error occured while looking to see if '" + name + "' has paid");
             }
         }

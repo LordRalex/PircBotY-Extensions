@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -58,7 +59,7 @@ public final class Settings implements DataStorage<String> {
         try {
             it = yml.loadAll(new FileInputStream(name));
         } catch (FileNotFoundException ex) {
-            AeBot.logSevere("Cannot find " + name, ex);
+            AeBot.log(Level.SEVERE, "Cannot find " + name, ex);
         }
         if (it != null) {
             for (Object in : it) {

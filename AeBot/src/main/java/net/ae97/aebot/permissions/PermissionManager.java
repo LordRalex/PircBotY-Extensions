@@ -16,7 +16,6 @@
  */
 package net.ae97.aebot.permissions;
 
-import net.ae97.aebot.AeBot;
 import net.ae97.aebot.api.events.PermissionEvent;
 import net.ae97.aebot.api.users.User;
 import net.ae97.aebot.settings.Settings;

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 public class RemCommand extends Listener {
 
@@ -51,7 +52,7 @@ public class RemCommand extends Listener {
                 String line = reader.nextLine().trim();
                 remMap.put(name, line);
             } catch (FileNotFoundException ex) {
-                AeBot.logSevere(null, ex);
+                AeBot.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -204,13 +205,13 @@ public class RemCommand extends Listener {
             writer.write(line);
             writer.flush();
         } catch (IOException ex) {
-            AeBot.logSevere(null, ex);
+            AeBot.log(Level.SEVERE, null, ex);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException ex) {
-                    AeBot.logSevere(null, ex);
+                    AeBot.log(Level.SEVERE, null, ex);
                 }
             }
         }

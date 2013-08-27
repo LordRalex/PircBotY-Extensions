@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import jline.console.ConsoleReader;
 import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
@@ -62,7 +63,7 @@ public final class AeBot extends Thread {
             temp = new KeyboardListener(instance);
         } catch (IOException | NickNotOnlineException ex) {
             temp = null;
-            logSevere("An error occured", ex);
+            log(Level.SEVERE, "An error occured", ex);
         }
         kblistener = temp;
         if (!(new File("settings", "config.yml").exists())) {
@@ -72,7 +73,7 @@ public final class AeBot extends Thread {
                 BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("settings", "config.yml")));
                 AeBot.copyInputStream(input, output);
             } catch (FileNotFoundException ex) {
-                logSevere("Cannot find the config file", ex);
+                log(Level.SEVERE, "Cannot find the config file", ex);
             }
         }
         globalSettings = Settings.loadGlobalSettings();
@@ -89,7 +90,7 @@ public final class AeBot extends Thread {
         if (startargs.length != 0) {
             for (String arg : startargs) {
                 if (arg.equalsIgnoreCase("-debugmode")) {
-                    log("Starting with DEBUG MODE ENABLED");
+                    log(Level.INFO, "Starting with DEBUG MODE ENABLED");
                     debugMode = true;
                 } else if (arg.equalsIgnoreCase("-nologin")) {
                     login = false;
@@ -109,13 +110,13 @@ public final class AeBot extends Thread {
         try {
             instance.createInstance(args.get("user"), args.get("pass"));
         } catch (IOException | IrcException ex) {
-            logSevere("An error occurred", ex);
+            log(Level.SEVERE, "An error occurred", ex);
         }
         synchronized (instance) {
             try {
                 instance.wait();
             } catch (InterruptedException ex) {
-                logSevere("The instance was interrupted", ex);
+                log(Level.SEVERE, "The instance was interrupted", ex);
             }
         }
 
@@ -135,25 +136,25 @@ public final class AeBot extends Thread {
                     driver.partChannel(c, "Exiting channel");
                 }
             } catch (Exception ex) {
-                logSevere("An error occured on shutting down", ex);
+                log(Level.SEVERE, "An error occured on shutting down", ex);
             }
         }
 
         try {
             driver.quitServer();
         } catch (Exception ex) {
-            logSevere("An error occured on shutting down", ex);
+            log(Level.SEVERE, "An error occured on shutting down", ex);
         }
         try {
             driver.disconnect();
         } catch (Exception ex) {
-            logSevere("An error occured on shutting down", ex);
+            log(Level.SEVERE, "An error occured on shutting down", ex);
 
         }
         try {
             driver.shutdown(false);
         } catch (Exception ex) {
-            logSevere("An error occured on shutting down", ex);
+            log(Level.SEVERE, "An error occured on shutting down", ex);
         }
         System.exit(0);
     }
@@ -178,16 +179,16 @@ public final class AeBot extends Thread {
         driver.setName(nick);
         driver.setLogin(nick);
 
-        log("Nick of bot: " + nick);
+        log(Level.INFO, "Nick of bot: " + nick);
 
         Utilities.setUtils(driver);
 
         eventHandler.load();
         boolean eventSuccess = driver.getListenerManager().addListener(eventHandler);
         if (eventSuccess) {
-            log("Listener hook attached to bot");
+            log(Level.INFO, "Listener hook attached to bot");
         } else {
-            log("Listener hook was unable to attach to the bot");
+            log(Level.INFO, "Listener hook was unable to attach to the bot");
         }
         String network = globalSettings.getString("network");
         int port = globalSettings.getInt("port");
@@ -200,39 +201,39 @@ public final class AeBot extends Thread {
         if (pass == null || pass.isEmpty()) {
             pass = globalSettings.getString("nick-pw");
         }
-        log("Connecting to: " + network + ":" + port);
+        log(Level.INFO, "Connecting to: " + network + ":" + port);
         try {
             driver.connect(network, port);
         } catch (NickAlreadyInUseException ex) {
-            logSevere("The nick is already taken");
+            log(Level.SEVERE, "The nick is already taken");
             driver.changeNick(nick + "_");
             driver.connect(network, port);
             driver.sendMessage("chanserv", "ghost " + nick + " " + pass);
             driver.changeNick(nick);
             if (!globalSettings.getString("nick").equalsIgnoreCase(driver.getNick())) {
-                logSevere("Could not claim the nick " + nick);
+                log(Level.SEVERE, "Could not claim the nick " + nick);
             }
         }
         BotUser bot = BotUser.getBotUser();
         if (pass != null && !pass.isEmpty() && login) {
             bot.sendMessage("nickserv", "identify " + pass);
-            log("Logging in to nickserv");
+            log(Level.INFO, "Logging in to nickserv");
         }
         eventHandler.fireEvent(new ConnectionEvent());
         List<String> channels = globalSettings.getStringList("channels");
         if (channels != null && !channels.isEmpty()) {
             for (String chan : channels) {
-                log("Joining " + chan);
+                log(Level.INFO, "Joining " + chan);
                 bot.joinChannel(chan);
             }
         } else {
             bot.joinChannel("#ae97");
         }
-        log("Initial loading complete, engaging listeners");
+        log(Level.INFO, "Initial loading complete, engaging listeners");
         eventHandler.startQueue();
-        log("Starting keyboard listener");
+        log(Level.INFO, "Starting keyboard listener");
         kblistener.start();
-        log("All systems operational");
+        log(Level.INFO, "All systems operational");
     }
 
     public EventHandler getEventHandler() {
@@ -261,26 +262,45 @@ public final class AeBot extends Thread {
             in.close();
             out.close();
         } catch (IOException ex) {
-            logSevere("An error occurred on copying the streams", ex);
+            log(Level.SEVERE, "An error occurred on copying the streams", ex);
         }
     }
 
+    /**
+     * @deprecated Use log(Level.INFO, message) instead
+     */
     public static void log(String message) {
-        System.out.println(message);
+        log(Level.INFO, message);
     }
 
+    /**
+     * @deprecated Use log(Level.INFO, message, error) instead
+     */
     public static void log(String message, Throwable error) {
-        log(message);
-        error.printStackTrace(System.out);
+        log(Level.INFO, message, error);
     }
 
-    public static void logSevere(String message) {
-        System.err.println("[SEVERE] " + message);
+    /**
+     * @deprecated Use log(Level.SEVERE, message) instead
+     */
+    public static void logSevere(Level level, String message) {
+        log(Level.SEVERE, message);
     }
 
+    /**
+     * @deprecated Use log(Level.SEVERE, message, error) instead
+     */
     public static void logSevere(String message, Throwable error) {
-        logSevere(message);
-        error.printStackTrace(System.err);
+        log(Level.SEVERE, message, error);
+    }
+
+    public static void log(Level level, String message) {
+        System.out.println("[" + level + "] " + message);
+    }
+
+    public static void log(Level level, String message, Throwable error) {
+        log(level, message);
+        error.printStackTrace(System.out);
     }
 
     public static PermissionManager getPermManager() {

@@ -76,7 +76,7 @@ public class GoogleImagesCommand extends Listener {
                 }
             }
         } catch (IOException ex) {
-            AeBot.logSevere(null, ex);
+            AeBot.log(Level.SEVERE, null, ex);
             target.sendMessage("An error occured");
         } finally {
             try {
@@ -84,7 +84,7 @@ public class GoogleImagesCommand extends Listener {
                     reader.close();
                 }
             } catch (IOException ex) {
-                AeBot.logSevere(null, ex);
+                AeBot.log(Level.SEVERE, null, ex);
             }
         }
     }
