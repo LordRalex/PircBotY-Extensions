@@ -297,7 +297,7 @@ public class FaqSystem extends Listener {
                         break;
                     }
                     StringBuilder builder = new StringBuilder();
-                    for(String arg: event.getArgs()) {
+                    for (String arg : event.getArgs()) {
                         builder.append(arg);
                         builder.append(" ");
                     }
@@ -305,7 +305,7 @@ public class FaqSystem extends Listener {
                     String original = args[0];
                     String replacement = args[2];
                     String[] factoid = index.getEntry(event.getArgs()[0]);
-                    for(int i=0; i < factoid.length; i++) {
+                    for (int i = 0; i < factoid.length; i++) {
                         factoid[i] = factoid[i].replaceAll(original, replacement);
                     }
                     index.setEntry(event.getArgs()[0], factoid);
@@ -347,7 +347,8 @@ public class FaqSystem extends Listener {
             "~",
             "~replace",
             "^",
-            "togglefaq"}));
+            "togglefaq",
+            ""}));
         String[] it;
         synchronized (databases) {
             it = databases.keySet().toArray(new String[0]);
