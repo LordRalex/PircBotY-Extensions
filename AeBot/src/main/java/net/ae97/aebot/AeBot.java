@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -160,6 +161,7 @@ public final class AeBot extends Thread {
     }
 
     private void createInstance(String user, String pass) throws IOException, IrcException {
+        driver.setEncoding(Charset.forName("UTF-8"));
         String bind = Settings.getGlobalSettings().getString("bind-ip");
         if (bind != null && !bind.isEmpty()) {
             InetAddress addr = InetAddress.getByName(bind);
