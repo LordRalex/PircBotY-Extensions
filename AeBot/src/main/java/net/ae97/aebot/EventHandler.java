@@ -44,8 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -371,71 +370,75 @@ public final class EventHandler extends ListenerAdapter {
                             run = false;
                         }
                     }
-                } else {
-                    if (next instanceof PermissionEvent) {
-                        AeBot.getPermManager().runPermissionEvent((PermissionEvent) next);
-                    } else if (next instanceof CommandEvent) {
-                        net.ae97.aebot.api.users.User user;
-                        net.ae97.aebot.api.channels.Channel chan;
-                        CommandEvent evt = (CommandEvent) next;
-                        user = evt.getUser();
-                        if (user.getNick().toLowerCase().endsWith("esper.net")) {
-                            continue;
+                    continue;
+                }
+
+                if (next instanceof PermissionEvent) {
+                    AeBot.getPermManager().runPermissionEvent((PermissionEvent) next);
+                } else if (next instanceof CommandEvent) {
+                    CommandEvent evt = (CommandEvent) next;
+                    net.ae97.aebot.api.users.User user = evt.getUser();
+                    net.ae97.aebot.api.channels.Channel chan = evt.getChannel();
+                    if (user.getNick().toLowerCase().endsWith("esper.net")) {
+                        continue;
+                    }
+                    PermissionEvent permEvent = new PermissionEvent(user, chan);
+                    try {
+                        AeBot.getPermManager().runPermissionEvent(permEvent);
+                    } catch (Exception e) {
+                        AeBot.log(Level.SEVERE, "Error on permission event", e);
+                        continue;
+                    }
+                    if (evt.getCommand().equalsIgnoreCase("reload")) {
+                        User sender = evt.getUser();
+                        if (sender != null) {
+                            if (!sender.hasPermission((String) null, "bot.reload")) {
+                                continue;
+                            }
                         }
-                        chan = evt.getChannel();
-                        PermissionEvent permEvent = new PermissionEvent(user, chan);
-                        try {
-                            AeBot.getPermManager().runPermissionEvent(permEvent);
-                        } catch (Exception e) {
-                            AeBot.log(Level.SEVERE, "Error on permission event", e);
-                            continue;
+                        AeBot.log(Level.INFO, "Performing a reload, please hold");
+                        if (sender != null) {
+                            sender.sendNotice("Reloading");
                         }
-                        if (evt.getCommand().equalsIgnoreCase("reload")) {
-                            User sender = evt.getUser();
-                            if (sender != null) {
-                                if (!sender.hasPermission((String) null, "bot.reload")) {
-                                    continue;
-                                }
+                        unload();
+                        load();
+                        AeBot.log(Level.INFO, "Reloaded");
+                        if (sender != null) {
+                            sender.sendNotice("Reloaded");
+                        }
+                    } else if (evt.getCommand().equalsIgnoreCase("permreload")) {
+                        User sender = evt.getUser();
+                        if (sender != null) {
+                            if (!sender.hasPermission((String) null, "bot.permreload")) {
+                                continue;
                             }
-                            AeBot.log(Level.INFO, "Performing a reload, please hold");
-                            if (sender != null) {
-                                sender.sendNotice("Reloading");
-                            }
-                            unload();
-                            load();
-                            AeBot.log(Level.INFO, "Reloaded");
-                            if (sender != null) {
-                                sender.sendNotice("Reloaded");
-                            }
-                            continue;
-                        } else if (evt.getCommand().equalsIgnoreCase("permreload")) {
-                            User sender = evt.getUser();
-                            if (sender != null) {
-                                if (!sender.hasPermission((String) null, "bot.permreload")) {
-                                    continue;
-                                }
-                            }
-                            AeBot.log(Level.INFO, "Performing a permission reload, please hold");
-                            if (sender != null) {
-                                sender.sendNotice("Reloading permissions");
-                            }
-                            AeBot.getPermManager().reloadFile();
-                            AeBot.log(Level.INFO, "Reloaded permissions");
-                            if (sender != null) {
-                                sender.sendNotice("Reloaded permissions");
-                            }
-                            continue;
+                        }
+                        AeBot.log(Level.INFO, "Performing a permission reload, please hold");
+                        if (sender != null) {
+                            sender.sendNotice("Reloading permissions");
+                        }
+                        AeBot.getPermManager().reloadFile();
+                        AeBot.log(Level.INFO, "Reloaded permissions");
+                        if (sender != null) {
+                            sender.sendNotice("Reloaded permissions");
                         }
                     } else {
-                        Set<EventExecutor> executors = eventExecutors.get(next.getClass());
-                        for (Priority prio : Priority.values()) {
-                            for (EventExecutor exec : executors) {
-                                if (exec.getPriority() == prio) {
-                                    try {
-                                        exec.getMethod().invoke(exec.getListener(), next);
-                                    } catch (Exception e) {
-                                        AeBot.log(Level.SEVERE, "Error on handling " + next.getClass().getName() + " in " + exec.getListener().getClass().getName(), e);
-                                    }
+                        for (CommandExecutor exec : commandExecutors) {
+                            if (Arrays.asList(exec.getAliases()).contains(evt.getCommand())) {
+                                exec.runEvent(evt);
+                            }
+                        }
+                    }
+                } else {
+                    Set<EventExecutor> executors = eventExecutors.get(next.getClass());
+                    for (Priority prio : Priority.values()) {
+                        for (EventExecutor exec : executors) {
+                            if (exec.getPriority() == prio) {
+                                try {
+                                    exec.getMethod().invoke(exec.getListener(), next);
+                                } catch (Exception e) {
+                                    AeBot.log(Level.SEVERE, "Error on handling " + next.getClass().getName() + " in " + exec.getListener().getClass().getName(), e);
+
                                 }
                             }
                         }
