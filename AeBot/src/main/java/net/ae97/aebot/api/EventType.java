@@ -25,8 +25,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EventType {
 
-    EventField event();
-
     Priority priority() default Priority.NORMAL;
 
     boolean ignoreCancel() default false;

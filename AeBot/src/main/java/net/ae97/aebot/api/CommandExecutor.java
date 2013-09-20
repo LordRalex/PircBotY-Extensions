@@ -16,5 +16,18 @@
  */
 package net.ae97.aebot.api;
 
-public interface Listener {
+import net.ae97.aebot.api.events.CommandEvent;
+
+/**
+ * @version 1.0
+ * @author Lord_Ralex
+ */
+public class CommandExecutor {
+
+    public void runEvent(CommandEvent event) {
+    }
+
+    public String[] getAliases() {
+        return new String[0];
+    }
 }

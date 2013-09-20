@@ -47,7 +47,7 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class AeBot extends Thread {
 
     private static final PircBotX driver;
-    public static final String VERSION = "1.1.5";
+    public static final String VERSION = "2.0.0";
     private static final EventHandler eventHandler;
     private static final AeBot instance;
     private static final KeyboardListener kblistener;

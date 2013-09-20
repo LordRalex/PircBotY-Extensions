@@ -21,17 +21,13 @@ import net.ae97.aebot.api.events.ActionEvent;
 import net.ae97.aebot.api.events.PermissionEvent;
 import net.ae97.aebot.api.events.PrivateMessageEvent;
 import net.ae97.aebot.api.events.NickChangeEvent;
-import net.ae97.aebot.api.events.CancellableEvent;
 import net.ae97.aebot.api.events.NoticeEvent;
-import net.ae97.aebot.api.events.ConnectionEvent;
 import net.ae97.aebot.api.events.KickEvent;
 import net.ae97.aebot.api.events.PartEvent;
 import net.ae97.aebot.api.events.QuitEvent;
 import net.ae97.aebot.api.events.Event;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.events.MessageEvent;
-import net.ae97.aebot.api.EventField;
-import static net.ae97.aebot.api.EventField.Kick;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.Priority;
@@ -48,9 +44,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +59,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import net.ae97.aebot.api.CommandExecutor;
 import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
 import org.pircbotx.UserSnapshot;
@@ -69,14 +67,15 @@ import org.pircbotx.hooks.ListenerAdapter;
 
 public final class EventHandler extends ListenerAdapter {
 
-    private final List<Listener> listeners = new ArrayList<>();
+    private final Map<Class<? extends Event>, Set<EventExecutor>> eventExecutors = new ConcurrentHashMap<>();
+    private final Set<CommandExecutor> commandExecutors = new HashSet<>();
+    private final Set<Class<? extends Event>> eventClasses = new HashSet<>();
     private final ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
     private final EventRunner runner;
     private static final List<CommandPrefix> commandChars = new ArrayList<>();
     private final PircBotX masterBot;
     private ClassLoader classLoader;
     private final ExecutorService execServ;
-    private final Map<Listener, Map<EventField, EventType>> priorities = new ConcurrentHashMap<>();
 
     public EventHandler(PircBotX bot) {
         super();
@@ -115,7 +114,8 @@ public final class EventHandler extends ListenerAdapter {
         }
         temp.delete();
         extensionFolder.mkdirs();
-        listeners.clear();
+        eventExecutors.clear();
+        commandExecutors.clear();
         URL[] urls = new URL[0];
         try {
             urls = new URL[]{
@@ -172,19 +172,16 @@ public final class EventHandler extends ListenerAdapter {
     }
 
     public void unload() {
-        for (Listener listener : listeners) {
-            listener.onUnload();
-        }
-        listeners.clear();
-        priorities.clear();
+        eventExecutors.clear();
     }
 
     private void loadClass(String className) {
         try {
             className = className.replace("tempDir" + File.separator, "").replace("extension" + File.separator, "").replace(".class", "");
             Class cls = classLoader.loadClass(className);
-            if (!Listener.class.isAssignableFrom(cls)) {
-                AeBot.log(Level.SEVERE, "Class " + className + " is not a Listener");
+            if (!Listener.class.isAssignableFrom(cls) && !CommandExecutor.class.isAssignableFrom(cls)) {
+                AeBot.log(Level.SEVERE, "Class " + className + " is not a Listener or a CommandExecutor");
+                return;
             }
             try {
                 cls.getConstructor();
@@ -206,33 +203,36 @@ public final class EventHandler extends ListenerAdapter {
             Object obj = cls.newInstance();
             if (obj instanceof Listener) {
                 Listener list = (Listener) obj;
-                list.onLoad();
-                AeBot.log(Level.INFO, "  Added: " + list.getClass().getName());
-                declarePriorities(list);
-                listeners.add(list);
+                AeBot.log(Level.INFO, "  Added listener: " + list.getClass().getName());
+                Method[] methods = list.getClass().getDeclaredMethods();
+                for (Method method : methods) {
+                    if (method.isAnnotationPresent(EventType.class)) {
+                        Class<?>[] params = method.getParameterTypes();
+                        if (params.length != 1) {
+                            continue;
+                        }
+                        for (Class<? extends Event> clz : eventClasses) {
+                            if (clz.equals(params[0])) {
+                                eventExecutors.get(clz).add(new EventExecutor(list, method, method.getAnnotation(EventType.class).priority()));
+                                AeBot.log(Level.INFO, "    Registered event: " + clz.getName() + "(" + method.getAnnotation(EventType.class).priority().toString() + ")");
+                            }
+                        }
+                    }
+                }
+            }
+            if (obj instanceof CommandExecutor) {
+                CommandExecutor exec = (CommandExecutor) obj;
+                AeBot.log(Level.INFO, "  Added command executor: " + exec.getClass().getName());
+                commandExecutors.add(exec);
             }
         } catch (Throwable ex) {
             AeBot.log(Level.SEVERE, "Could not add " + className, ex);
         }
     }
 
-    private void declarePriorities(Listener list) {
-        Class thisClass = list.getClass();
-        Map<EventField, EventType> priorityMap = new HashMap<>();
-        try {
-            Method[] methods = thisClass.getDeclaredMethods();
-            for (Method method : methods) {
-                EventType event = method.getAnnotation(EventType.class);
-                if (event == null) {
-                    continue;
-                }
-                AeBot.log(Level.INFO, "    Event " + event.event().name() + " was added with priority " + event.priority().name());
-                priorityMap.put(event.event(), event);
-            }
-            priorities.put(list, priorityMap);
-        } catch (SecurityException ex) {
-            AeBot.log(Level.SEVERE, "Security issue", ex);
-        }
+    public void registerEvent(Class<? extends Event> cl) {
+        eventClasses.add(cl);
+        eventExecutors.put(cl, new HashSet<EventExecutor>());
     }
 
     public void startQueue() {
@@ -343,16 +343,8 @@ public final class EventHandler extends ListenerAdapter {
         synchronized (runner) {
             runner.interrupt();
         }
-        synchronized (listeners) {
-            for (Listener list : listeners) {
-                try {
-                    AeBot.log(Level.INFO, "Unloading " + list.getClass().getSimpleName());
-                    list.onUnload();
-                } catch (Exception e) {
-                    AeBot.log(Level.SEVERE, "Error on unloading " + list.getClass().getSimpleName(), e);
-                }
-            }
-            listeners.clear();
+        synchronized (eventExecutors) {
+            eventExecutors.clear();
         }
     }
 
@@ -380,122 +372,69 @@ public final class EventHandler extends ListenerAdapter {
                         }
                     }
                 } else {
-                    EventField type = EventField.getEvent(next);
-                    if (type == null) {
-                        continue;
-                    }
-                    if (type == EventField.Permission) {
+                    if (next instanceof PermissionEvent) {
                         AeBot.getPermManager().runPermissionEvent((PermissionEvent) next);
-                    } else {
-                        if (type == EventField.Command) {
-                            net.ae97.aebot.api.users.User user;
-                            net.ae97.aebot.api.channels.Channel chan;
-                            CommandEvent evt = (CommandEvent) next;
-                            user = evt.getUser();
-                            if (user.getNick().toLowerCase().endsWith("esper.net")) {
-                                continue;
-                            }
-                            chan = evt.getChannel();
-                            PermissionEvent permEvent = new PermissionEvent(user, chan);
-                            try {
-                                AeBot.getPermManager().runPermissionEvent(permEvent);
-                            } catch (Exception e) {
-                                AeBot.log(Level.SEVERE, "Error on permission event", e);
-                                continue;
-                            }
-                            if (evt.getCommand().equalsIgnoreCase("reload")) {
-                                User sender = evt.getUser();
-                                if (sender != null) {
-                                    if (!sender.hasPermission((String) null, "bot.reload")) {
-                                        continue;
-                                    }
-                                }
-                                AeBot.log(Level.INFO, "Performing a reload, please hold");
-                                if (sender != null) {
-                                    sender.sendNotice("Reloading");
-                                }
-                                unload();
-                                load();
-                                AeBot.log(Level.INFO, "Reloaded");
-                                if (sender != null) {
-                                    sender.sendNotice("Reloaded");
-                                }
-                                continue;
-                            } else if (evt.getCommand().equalsIgnoreCase("permreload")) {
-                                User sender = evt.getUser();
-                                if (sender != null) {
-                                    if (!sender.hasPermission((String) null, "bot.permreload")) {
-                                        continue;
-                                    }
-                                }
-                                AeBot.log(Level.INFO, "Performing a permission reload, please hold");
-                                if (sender != null) {
-                                    sender.sendNotice("Reloading permissions");
-                                }
-                                AeBot.getPermManager().reloadFile();
-                                AeBot.log(Level.INFO, "Reloaded permissions");
-                                if (sender != null) {
-                                    sender.sendNotice("Reloaded permissions");
-                                }
-                                continue;
-                            }
+                    } else if (next instanceof CommandEvent) {
+                        net.ae97.aebot.api.users.User user;
+                        net.ae97.aebot.api.channels.Channel chan;
+                        CommandEvent evt = (CommandEvent) next;
+                        user = evt.getUser();
+                        if (user.getNick().toLowerCase().endsWith("esper.net")) {
+                            continue;
                         }
+                        chan = evt.getChannel();
+                        PermissionEvent permEvent = new PermissionEvent(user, chan);
+                        try {
+                            AeBot.getPermManager().runPermissionEvent(permEvent);
+                        } catch (Exception e) {
+                            AeBot.log(Level.SEVERE, "Error on permission event", e);
+                            continue;
+                        }
+                        if (evt.getCommand().equalsIgnoreCase("reload")) {
+                            User sender = evt.getUser();
+                            if (sender != null) {
+                                if (!sender.hasPermission((String) null, "bot.reload")) {
+                                    continue;
+                                }
+                            }
+                            AeBot.log(Level.INFO, "Performing a reload, please hold");
+                            if (sender != null) {
+                                sender.sendNotice("Reloading");
+                            }
+                            unload();
+                            load();
+                            AeBot.log(Level.INFO, "Reloaded");
+                            if (sender != null) {
+                                sender.sendNotice("Reloaded");
+                            }
+                            continue;
+                        } else if (evt.getCommand().equalsIgnoreCase("permreload")) {
+                            User sender = evt.getUser();
+                            if (sender != null) {
+                                if (!sender.hasPermission((String) null, "bot.permreload")) {
+                                    continue;
+                                }
+                            }
+                            AeBot.log(Level.INFO, "Performing a permission reload, please hold");
+                            if (sender != null) {
+                                sender.sendNotice("Reloading permissions");
+                            }
+                            AeBot.getPermManager().reloadFile();
+                            AeBot.log(Level.INFO, "Reloaded permissions");
+                            if (sender != null) {
+                                sender.sendNotice("Reloaded permissions");
+                            }
+                            continue;
+                        }
+                    } else {
+                        Set<EventExecutor> executors = eventExecutors.get(next.getClass());
                         for (Priority prio : Priority.values()) {
-                            for (Listener listener : listeners) {
-                                EventType info = priorities.get(listener).get(type);
-                                if (info == null) {
-                                    continue;
-                                }
-                                if (next instanceof CancellableEvent && ((CancellableEvent) next).isCancelled() && !info.ignoreCancel()) {
-                                    continue;
-                                }
-                                Priority temp = info.priority();
-                                if (temp != null && temp == prio) {
+                            for (EventExecutor exec : executors) {
+                                if (exec.getPriority() == prio) {
                                     try {
-                                        switch (type) {
-                                            case Message:
-                                                listener.runEvent((MessageEvent) next);
-                                                break;
-                                            case Command:
-                                                List<String> aliases = Arrays.asList(listener.getAliases());
-                                                String cmd = ((CommandEvent) next).getCommand().toLowerCase();
-                                                if (listener.getAliases().length == 0
-                                                        || aliases.contains(cmd)) {
-                                                    CommandEvent evt = (CommandEvent) next;
-                                                    CommandCallable call = new CommandCallable(listener, evt);
-                                                    execServ.submit(call);
-                                                    if (listener.getAliases() != null) {
-                                                        evt.setCancelled(true);
-                                                    }
-                                                }
-                                                break;
-                                            case Join:
-                                                listener.runEvent((JoinEvent) next);
-                                                break;
-                                            case NickChange:
-                                                listener.runEvent((NickChangeEvent) next);
-                                                break;
-                                            case Notice:
-                                                listener.runEvent((NoticeEvent) next);
-                                                break;
-                                            case Part:
-                                                listener.runEvent((PartEvent) next);
-                                                break;
-                                            case PrivateMessage:
-                                                listener.runEvent((PrivateMessageEvent) next);
-                                                break;
-                                            case Quit:
-                                                listener.runEvent((QuitEvent) next);
-                                                break;
-                                            case Kick:
-                                                listener.runEvent((KickEvent) next);
-                                                break;
-                                            case Connection:
-                                                listener.runEvent((ConnectionEvent) next);
-                                                break;
-                                        }
+                                        exec.getMethod().invoke(exec.getListener(), next);
                                     } catch (Exception e) {
-                                        AeBot.log(Level.SEVERE, "Unhandled exception on event execution", e);
+                                        AeBot.log(Level.SEVERE, "Error on handling " + next.getClass().getName() + " in " + exec.getListener().getClass().getName(), e);
                                     }
                                 }
                             }
@@ -522,10 +461,10 @@ public final class EventHandler extends ListenerAdapter {
 
     private class CommandCallable implements Callable {
 
-        private final Listener listener;
+        private final CommandExecutor listener;
         private final CommandEvent event;
 
-        public CommandCallable(Listener list, CommandEvent evt) {
+        public CommandCallable(CommandExecutor list, CommandEvent evt) {
             listener = list;
             event = evt;
         }
@@ -557,6 +496,31 @@ public final class EventHandler extends ListenerAdapter {
 
         public String getOwner() {
             return owner;
+        }
+    }
+
+    private class EventExecutor {
+
+        private final Method method;
+        private final Listener listener;
+        private final Priority priority;
+
+        public EventExecutor(Listener l, Method m, Priority p) {
+            method = m;
+            listener = l;
+            priority = p;
+        }
+
+        public Listener getListener() {
+            return listener;
+        }
+
+        public Priority getPriority() {
+            return priority;
+        }
+
+        public Method getMethod() {
+            return method;
         }
     }
 }
