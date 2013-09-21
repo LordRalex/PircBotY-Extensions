@@ -16,9 +16,6 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.Utilities;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
@@ -30,15 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import net.ae97.aebot.api.CommandExecutor;
 
-public class MCFCommand extends Listener {
+public class MCFCommand extends CommandExecutor {
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
         String[] args = event.getArgs();
         BufferedReader reader = null;
         Sender target = event.getChannel();

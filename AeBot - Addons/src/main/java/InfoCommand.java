@@ -16,18 +16,15 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
+import net.ae97.aebot.api.CommandExecutor;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
 import net.ae97.aebot.api.users.BotUser;
 import org.pircbotx.PircBotX;
 
-public class InfoCommand extends Listener {
+public class InfoCommand extends CommandExecutor {
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         Sender target = event.getChannel();
         if (target == null) {

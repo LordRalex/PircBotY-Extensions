@@ -17,9 +17,6 @@
 
 import net.ae97.aebot.EventHandler;
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.users.BotUser;
 import net.ae97.aebot.data.DataType;
@@ -28,14 +25,16 @@ import net.ae97.aebot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,6 +49,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import net.ae97.aebot.api.CommandExecutor;
 import net.ae97.aebot.api.channels.Channel;
 import net.ae97.aebot.api.users.User;
 import net.ae97.aebot.mysql.MySQLConnection;
@@ -59,15 +59,14 @@ import org.pircbotx.Colors;
  * @author Lord_Ralex
  * @version 1.0
  */
-public class FaqSystem extends Listener {
+public class FaqSystem extends CommandExecutor {
 
     private final Map<String, Database> databases = new ConcurrentHashMap<>();
-    private int delay = 2;
-    private ScheduledExecutorService es;
-    private Settings settings;
+    private final int delay;
+    private final ScheduledExecutorService es;
+    private final Settings settings;
 
-    @Override
-    public void onLoad() {
+    public FaqSystem() {
         settings = new Settings(new File("settings", "faq.yml"));
         loadDatabases();
         delay = settings.getInt("delay");
@@ -75,13 +74,6 @@ public class FaqSystem extends Listener {
     }
 
     @Override
-    public void onUnload() {
-        databases.clear();
-        es.shutdown();
-    }
-
-    @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         if (event.getCommand().equalsIgnoreCase("refresh")) {
             loadDatabases();
@@ -434,11 +426,11 @@ public class FaqSystem extends Listener {
 
     private class RunLaterThread implements Runnable {
 
-        private List<String> lines;
-        private String channel;
-        private String user;
-        private boolean notice = false;
-        private String name;
+        private final List<String> lines;
+        private final String channel;
+        private final String user;
+        private final boolean notice;
+        private final String name;
         private ScheduledFuture future = null;
 
         public RunLaterThread(String na, String u, String c, String[] l, boolean n) {
@@ -506,7 +498,7 @@ public class FaqSystem extends Listener {
                             FileOutputStream writer = new FileOutputStream(new File(location));
                             copyInputStream(reader, writer);
                         }
-                        BufferedReader filereader = new BufferedReader(new FileReader(new File(location)));
+                        BufferedReader filereader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(location)), Charset.forName("UTF-8")));
                         String line;
                         while ((line = filereader.readLine()) != null) {
                             if (line.contains("|")) {

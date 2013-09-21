@@ -23,6 +23,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import net.ae97.aebot.api.CommandExecutor;
+import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.channels.Channel;
 import net.ae97.aebot.api.events.CommandEvent;
@@ -37,7 +39,7 @@ import net.ae97.aebot.settings.Settings;
  * @version 1.0
  * @author Lord_Ralex
  */
-public class QueueSystem extends Listener {
+public class QueueSystem extends CommandExecutor implements Listener {
 
     private final Map<Channel, Queue<User>> queueMap = new ConcurrentHashMap<>();
     private final Set<Channel> activeChans = new HashSet<>();
@@ -46,8 +48,7 @@ public class QueueSystem extends Listener {
     private final Set<String> loginNames = new HashSet<>();
     private Settings settings;
 
-    @Override
-    public void onLoad() {
+    public QueueSystem() {
         queueMap.clear();
         activeChans.clear();
         channelsToUseIn.clear();
@@ -67,7 +68,6 @@ public class QueueSystem extends Listener {
         }
     }
 
-    @Override
     public void onUnload() {
         for (Channel key : gettingHelped.keySet()) {
             for (User user : gettingHelped.get(key)) {
@@ -77,7 +77,7 @@ public class QueueSystem extends Listener {
         gettingHelped.clear();
     }
 
-    @Override
+    @EventType
     public void runEvent(QuitEvent event) {
         String[] chans = event.getUser().getChannels();
         for (String chan : chans) {
@@ -97,7 +97,7 @@ public class QueueSystem extends Listener {
         }
     }
 
-    @Override
+    @EventType
     public void runEvent(PartEvent event) {
         Channel ch = event.getChannel();
         Queue<User> queue = queueMap.get(ch);
@@ -114,7 +114,7 @@ public class QueueSystem extends Listener {
         gettingHelped.put(ch, helping);
     }
 
-    @Override
+    @EventType
     public void runEvent(KickEvent event) {
         Channel ch = event.getChannel();
         Queue<User> queue = queueMap.get(ch);
@@ -131,7 +131,7 @@ public class QueueSystem extends Listener {
         gettingHelped.put(ch, helping);
     }
 
-    @Override
+    @EventType
     public void runEvent(JoinEvent event) {
         Channel chan = event.getChannel();
         if (!channelsToUseIn.contains(chan.getName())) {

@@ -15,27 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
 import net.ae97.aebot.settings.Settings;
 import java.io.File;
 import java.util.List;
+import net.ae97.aebot.api.CommandExecutor;
 
-public class HelpCommand extends Listener {
+public class HelpCommand extends CommandExecutor {
 
-    private String[] help;
+    private final String[] help;
 
-    @Override
-    public void onLoad() {
+    public HelpCommand() {
         List<String> helpLines = new Settings(new File("settings", "help.yml")).getStringList("help-list");
         help = helpLines.toArray(new String[0]);
     }
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         if (event.isCancelled()) {
             return;

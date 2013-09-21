@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.Utilities;
@@ -23,17 +22,17 @@ import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.events.JoinEvent;
 import java.util.HashMap;
 import java.util.Map;
+import net.ae97.aebot.api.CommandExecutor;
 
 /**
  *
  * @author Joshua
  */
-public class SayBackCommand extends Listener {
+public class SayBackCommand extends CommandExecutor implements Listener {
 
-    private Map<String, String> mappings = new HashMap<>();
+    private final Map<String, String> mappings = new HashMap<>();
 
-    @Override
-    @EventType(event = EventField.Join)
+    @EventType
     public void runEvent(JoinEvent event) {
         String message = mappings.get(event.getChannel().getName().toLowerCase());
         if (message == null || message.isEmpty()) {
@@ -43,7 +42,6 @@ public class SayBackCommand extends Listener {
     }
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         if (event.getUser().hasOP(event.getChannel().getName()) || event.getUser().hasPermission(event.getChannel().getName(), "saymessage.set")) {
             if (event.getArgs().length == 0) {

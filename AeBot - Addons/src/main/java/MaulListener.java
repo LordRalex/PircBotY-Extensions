@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.channels.Channel;
@@ -37,23 +36,19 @@ import net.ae97.aebot.settings.Settings;
  * @version 1.0
  * @author Lord_Ralex
  */
-public class MaulListener extends Listener {
+public class MaulListener implements Listener {
 
-    private int delay;
+    private final int delay;
     private final List<String> channels = new ArrayList<>();
     private final List<String> replies = new ArrayList<>();
     private volatile ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private final Set<String> ignoreList = new HashSet<>();
     private final Set<String> moves = new HashSet<>();
 
-    @Override
-    public void onLoad() {
+    public MaulListener() {
         Settings settings = new Settings(new File("settings", "maul.yml"));
         List<String> chans = settings.getStringList("channels");
-        delay = settings.getInt("delay");
-        if (delay == 0) {
-            delay = 2000;
-        }
+        delay = settings.getInt("delay") == 0 ? 2000 : settings.getInt("delay");
         if (chans != null) {
             channels.addAll(chans);
         }
@@ -67,13 +62,7 @@ public class MaulListener extends Listener {
         }
     }
 
-    @Override
-    public void onUnload() {
-        service.shutdownNow();
-    }
-
-    @Override
-    @EventType(event = EventField.Message)
+    @EventType
     public void runEvent(MessageEvent event) {
         if (!event.getMessage().startsWith("Absol,")) {
             return;
@@ -99,7 +88,6 @@ public class MaulListener extends Listener {
             if (service != null) {
                 event.getUser().sendNotice("Returning");
                 service.shutdownNow();
-                service = null;
             }
         } else if (event.getMessage().equalsIgnoreCase(nick + ", I choose you") && event.getUser().hasPermission(event.getChannel(), "maul.choose")) {
             if (service != null && !service.isShutdown()) {

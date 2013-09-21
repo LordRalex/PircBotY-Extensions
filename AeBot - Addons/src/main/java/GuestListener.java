@@ -15,16 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.JoinEvent;
 import net.ae97.aebot.api.users.User;
 
-public class GuestListener extends Listener {
+public class GuestListener implements Listener {
 
-    @Override
-    @EventType(event = EventField.Join)
+    @EventType
     public void runEvent(JoinEvent event) {
         if (event.isCancelled()) {
             return;

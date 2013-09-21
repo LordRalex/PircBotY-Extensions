@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.ActionEvent;
@@ -25,37 +24,32 @@ import net.ae97.aebot.api.events.MessageEvent;
 import net.ae97.aebot.api.users.User;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import net.ae97.aebot.api.CommandExecutor;
 
 /**
  * @version 1.0
  * @author Lord_Ralex
  */
-public class NotifyListener extends Listener {
+public class NotifyListener extends CommandExecutor implements Listener {
 
     private final List<String[]> list = new ArrayList<>();
 
-    @Override
-    @EventType(event = EventField.Action)
+    @EventType
     public void runEvent(ActionEvent event) {
         runCheck(event.getUser().getNick(), event.getChannel().getName(), "used an action");
     }
 
-    @Override
-    @EventType(event = EventField.Message)
+    @EventType
     public void runEvent(MessageEvent event) {
         runCheck(event.getUser().getNick(), event.getChannel().getName(), "talked");
     }
 
-    @Override
-    @EventType(event = EventField.Join)
+    @EventType
     public void runEvent(JoinEvent event) {
         runCheck(event.getUser().getNick(), event.getChannel().getName(), "joined");
     }
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         if (event.getArgs().length != 1) {
             event.getChannel().sendMessage("Usage: notify [name]");

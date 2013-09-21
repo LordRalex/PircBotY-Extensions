@@ -16,7 +16,6 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.channels.Channel;
@@ -37,22 +36,22 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import net.ae97.aebot.api.CommandExecutor;
 
-public class TellCommand extends Listener {
+public class TellCommand extends CommandExecutor implements Listener {
 
-    private Map<String, Long> lastTold = new ConcurrentHashMap<>();
-    private int refresh;
+    private final Map<String, Long> lastTold = new ConcurrentHashMap<>();
+    private final int refresh;
 
-    @Override
-    public void onLoad() {
-        refresh = Settings.getGlobalSettings().getInt("refresh-minutes");
-        if (refresh == 0) {
-            refresh = 5;
+    public TellCommand() {
+        int delay = new Settings(new File("settings", "tells.yml")).getInt("refresh-minutes");
+        if (delay == 0) {
+            delay = 5;
         }
+        refresh = delay;
     }
 
-    @Override
-    @EventType(event = EventField.Join)
+    @EventType
     public void runEvent(JoinEvent event) {
         User sender = event.getUser();
 
@@ -71,8 +70,7 @@ public class TellCommand extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.NickChange)
+    @EventType
     public void runEvent(NickChangeEvent event) {
         String sender = event.getNewNick();
         String[] tells;
@@ -93,8 +91,7 @@ public class TellCommand extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.Message)
+    @EventType
     public void runEvent(MessageEvent event) {
         if (event.isCancelled()) {
             return;
@@ -116,7 +113,6 @@ public class TellCommand extends Listener {
     }
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         Channel channel = event.getChannel();
         User sender = event.getUser();
@@ -138,21 +134,18 @@ public class TellCommand extends Listener {
                 AeBot.log(Level.INFO, "Error on saving tells", ex);
                 if (channel != null) {
                     channel.sendMessage("An error occurred, get Lord_Ralex to see what went wrong");
-                } else if (sender != null) {
+                } else {
                     sender.sendMessage("An error occurred, get Lord_Ralex to see what went wrong");
                 }
                 return;
             }
             if (channel != null) {
                 channel.sendMessage("Message will be delivered to " + target);
-            } else if (sender != null) {
+            } else {
                 sender.sendMessage("Message will be delivered to " + target);
             }
         } else if (command.equalsIgnoreCase("st") || command.equalsIgnoreCase("showtells")) {
-            if (sender == null) {
-                return;
-            }
-            String[] messages = null;
+            String[] messages;
             try {
                 messages = getTells(sender.getNick());
             } catch (FileNotFoundException ex) {

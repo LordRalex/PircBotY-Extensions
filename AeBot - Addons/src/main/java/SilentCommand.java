@@ -15,20 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
-import net.ae97.aebot.api.Priority;
 import net.ae97.aebot.api.events.CommandEvent;
 import java.util.ArrayList;
 import java.util.List;
+import net.ae97.aebot.api.CommandExecutor;
 
-public class SilentCommand extends Listener {
+public class SilentCommand extends CommandExecutor {
 
-    List<String> silenced = new ArrayList<>();
+    private final List<String> silenced = new ArrayList<>();
 
     @Override
-    @EventType(event = EventField.Command, priority = Priority.HIGH)
     public void runEvent(CommandEvent event) {
         if (!event.getUser().hasOP(event.getChannel().getName()) && !event.getUser().hasPermission(event.getChannel().getName(), "silent")) {
             return;

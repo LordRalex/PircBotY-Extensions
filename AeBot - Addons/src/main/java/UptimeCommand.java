@@ -19,9 +19,7 @@ import java.lang.management.ManagementFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
+import net.ae97.aebot.api.CommandExecutor;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
 
@@ -29,16 +27,17 @@ import net.ae97.aebot.api.sender.Sender;
  * @version 1.0
  * @author Lord_Ralex
  */
-public class UptimeCommand extends Listener {
+public class UptimeCommand extends CommandExecutor {
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
-        final long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        String uptimeString = "%S, %H, %M"
-                .replace("%S", TimeUnit.DAYS.convert(uptime, TimeUnit.MILLISECONDS) + " days")
-                .replace("%H", TimeUnit.HOURS.convert(uptime, TimeUnit.MILLISECONDS) + " hours")
-                .replace("%M", TimeUnit.MINUTES.convert(uptime, TimeUnit.MILLISECONDS) + " minutes");
+        long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
+        String uptimeString = "%D, %H, %M";
+        uptimeString = uptimeString.replace("%D", TimeUnit.DAYS.convert(uptime, TimeUnit.MILLISECONDS) + " days");
+        uptime -= TimeUnit.DAYS.convert(uptime, TimeUnit.MILLISECONDS) * 24 * 60 * 60 * 100;
+        uptimeString = uptimeString.replace("%H", TimeUnit.HOURS.convert(uptime, TimeUnit.MILLISECONDS) + " hours");
+        uptime -= TimeUnit.MINUTES.convert(uptime, TimeUnit.MILLISECONDS) * 60 * 100;
+        uptimeString = uptimeString.replace("%M", TimeUnit.MINUTES.convert(uptime, TimeUnit.MILLISECONDS) + " minutes");
         Sender target = event.getChannel();
         if (target == null) {
             target = event.getChannel();

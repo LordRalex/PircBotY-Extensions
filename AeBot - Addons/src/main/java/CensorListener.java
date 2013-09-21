@@ -16,7 +16,6 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.ActionEvent;
@@ -35,15 +34,14 @@ import java.util.Set;
  *
  * @author Joshua
  */
-public class CensorListener extends Listener {
+public class CensorListener implements Listener {
 
     private final List<String> censor = new ArrayList<>();
     private final List<String> channels = new ArrayList<>();
     private final Set<String> warned = new HashSet<>();
-    private Settings settings;
+    private final Settings settings;
 
-    @Override
-    public void onLoad() {
+    public CensorListener() {
         settings = new Settings(new File("settings", "censor.yml"));
         censor.clear();
         censor.addAll(settings.getStringList("words"));
@@ -51,14 +49,7 @@ public class CensorListener extends Listener {
         channels.addAll(settings.getStringList("channels"));
     }
 
-    @Override
-    public void onUnload() {
-        censor.clear();
-        channels.clear();
-    }
-
-    @Override
-    @EventType(event = EventField.Message)
+    @EventType
     public void runEvent(MessageEvent event) {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
@@ -89,8 +80,7 @@ public class CensorListener extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.Notice)
+    @EventType
     public void runEvent(ActionEvent event) {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
@@ -115,8 +105,7 @@ public class CensorListener extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.NickChange)
+    @EventType
     public void runEvent(NickChangeEvent event) {
         String message = event.getNewNick().toLowerCase();
         if (scanMessage(message)) {
@@ -128,8 +117,7 @@ public class CensorListener extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.Join)
+    @EventType
     public void runEvent(JoinEvent event) {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;

@@ -15,18 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
 import java.util.Random;
+import net.ae97.aebot.api.CommandExecutor;
 import org.pircbotx.Colors;
 
-public class EightBallCommand extends Listener {
+public class EightBallCommand extends CommandExecutor {
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         Sender dest = event.getChannel();
         if (dest == null) {

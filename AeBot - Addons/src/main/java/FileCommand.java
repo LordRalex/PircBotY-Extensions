@@ -16,9 +16,6 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
 import net.ae97.aebot.settings.Settings;
@@ -34,19 +31,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 import java.util.logging.Level;
+import net.ae97.aebot.api.CommandExecutor;
 
 /**
  * @author Lord_Ralex
  * @version 1.0
  */
-public class FileCommand extends Listener {
+public class FileCommand extends CommandExecutor {
 
-    private String urlBase;
-    private File folder;
-    private Settings settings;
+    private final String urlBase;
+    private final File folder;
+    private final Settings settings;
 
-    @Override
-    public void onLoad() {
+    public FileCommand() {
         settings = new Settings(new File("settings", "file.yml"));
         urlBase = settings.getString("file-url");
         String folderPath = settings.getString("file-path");
@@ -57,7 +54,6 @@ public class FileCommand extends Listener {
     }
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         Sender target = event.getChannel();
         if (target == null) {
@@ -108,10 +104,8 @@ public class FileCommand extends Listener {
                         while ((line = reader.readLine()) != null) {
                             if (isStuff && !line.trim().equalsIgnoreCase("</pre>")) {
                                 writer.write(line.replace("<br/>", System.lineSeparator()));
-                            } else if (line.trim().equalsIgnoreCase("<pre>")) {
-                                isStuff = true;
                             } else {
-                                isStuff = false;
+                                isStuff = line.trim().equalsIgnoreCase("<pre>");
                             }
                         }
                     }

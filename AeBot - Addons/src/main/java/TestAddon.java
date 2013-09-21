@@ -16,7 +16,6 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.ActionEvent;
@@ -30,32 +29,22 @@ import net.ae97.aebot.api.events.PartEvent;
 import net.ae97.aebot.api.events.PrivateMessageEvent;
 import net.ae97.aebot.api.events.QuitEvent;
 import net.ae97.aebot.permissions.Permission;
-import net.ae97.aebot.settings.Settings;
 import java.util.Map;
 import java.util.Set;
+import net.ae97.aebot.api.CommandExecutor;
 
 /**
  * @version 1.0
  * @author Lord_Ralex
  */
-public class TestAddon extends Listener {
+public class TestAddon extends CommandExecutor implements Listener {
 
-    @Override
-    public void onLoad() {
-    }
-
-    @Override
-    public void onUnload() {
-    }
-
-    @Override
-    @EventType(event = EventField.Action)
+    @EventType
     public void runEvent(ActionEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         AeBot.log("Event fired: " + event.toString());
         Map<String, Set<Permission>> perms = event.getUser().getPermissions();
@@ -68,50 +57,42 @@ public class TestAddon extends Listener {
         AeBot.log("Does " + event.getUser().getNick() + " have the permission in " + event.getChannel().getName() + ": " + event.getUser().hasPermission(event.getChannel().getName(), "permission.test"));
     }
 
-    @Override
-    @EventType(event = EventField.Join)
+    @EventType
     public void runEvent(JoinEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }
 
-    @Override
-    @EventType(event = EventField.Kick)
+    @EventType
     public void runEvent(KickEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }
 
-    @Override
-    @EventType(event = EventField.Message)
+    @EventType
     public void runEvent(MessageEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }
 
-    @Override
-    @EventType(event = EventField.NickChange)
+    @EventType
     public void runEvent(NickChangeEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }
 
-    @Override
-    @EventType(event = EventField.Notice)
+    @EventType
     public void runEvent(NoticeEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }
 
-    @Override
-    @EventType(event = EventField.Part)
+    @EventType
     public void runEvent(PartEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }
 
-    @Override
-    @EventType(event = EventField.PrivateMessage)
+    @EventType
     public void runEvent(PrivateMessageEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }
 
-    @Override
-    @EventType(event = EventField.Quit)
+    @EventType
     public void runEvent(QuitEvent event) {
         AeBot.log("Event fired: " + event.toString());
     }

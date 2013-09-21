@@ -15,19 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.Utilities;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
-import net.ae97.aebot.api.users.BotUser;
 import java.util.Random;
+import net.ae97.aebot.api.CommandExecutor;
 
-public class ChooseCommand extends Listener {
+public class ChooseCommand extends CommandExecutor {
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         Sender target = event.getChannel();
         if (target == null) {

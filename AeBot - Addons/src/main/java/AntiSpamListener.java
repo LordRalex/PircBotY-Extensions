@@ -16,7 +16,6 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.Priority;
@@ -32,16 +31,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AntiSpamListener extends Listener {
+public class AntiSpamListener implements Listener {
 
     private final Map<String, Posts> logs = new HashMap<>();
-    private int MAX_MESSAGES;
-    private int SPAM_RATE;
-    private int DUPE_RATE;
+    private final int MAX_MESSAGES;
+    private final int SPAM_RATE;
+    private final int DUPE_RATE;
     private final List<String> channels = new ArrayList<>();
 
-    @Override
-    public void onLoad() {
+    public AntiSpamListener() {
         Settings settings = new Settings(new File("settings", "antispam.yml"));
         MAX_MESSAGES = settings.getInt("message-count");
         SPAM_RATE = settings.getInt("spam-rate");
@@ -51,14 +49,7 @@ public class AntiSpamListener extends Listener {
         logs.clear();
     }
 
-    @Override
-    public void onUnload() {
-        channels.clear();
-        logs.clear();
-    }
-
-    @Override
-    @EventType(event = EventField.Message, priority = Priority.LOW)
+    @EventType(priority = Priority.LOW)
     public void runEvent(MessageEvent event) {
         synchronized (logs) {
             Channel channel = event.getChannel();
@@ -89,8 +80,7 @@ public class AntiSpamListener extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.Action, priority = Priority.LOW)
+    @EventType(priority = Priority.LOW)
     public void runEvent(ActionEvent event) {
         synchronized (logs) {
             if (event.isCancelled()) {

@@ -15,11 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import java.util.logging.Level;
-import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
+import net.ae97.aebot.api.CommandExecutor;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
 
@@ -27,10 +23,9 @@ import net.ae97.aebot.api.sender.Sender;
  * @version 1.0
  * @author Lord_Ralex
  */
-public class HTopCommand extends Listener {
+public class HTopCommand extends CommandExecutor {
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         Runtime runtime = Runtime.getRuntime();
         long free, total, max;

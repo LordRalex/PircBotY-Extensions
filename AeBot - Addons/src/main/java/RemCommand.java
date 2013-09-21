@@ -16,10 +16,6 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
-import net.ae97.aebot.api.Priority;
 import net.ae97.aebot.api.Utilities;
 import net.ae97.aebot.api.channels.Channel;
 import net.ae97.aebot.api.events.CommandEvent;
@@ -35,15 +31,14 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import net.ae97.aebot.api.CommandExecutor;
 
-public class RemCommand extends Listener {
+public class RemCommand extends CommandExecutor {
 
-    Map<String, String> remMap = new ConcurrentHashMap<>();
-    List<String> dontReply = new ArrayList<>();
+    private final Map<String, String> remMap = new ConcurrentHashMap<>();
+    private final List<String> dontReply = new ArrayList<>();
 
-    @Override
-    public void onLoad() {
-        remMap.clear();
+    public RemCommand() {
         new File("data" + File.separator + "rem").mkdirs();
         for (File file : new File("data" + File.separator + "rem").listFiles()) {
             try {
@@ -58,12 +53,6 @@ public class RemCommand extends Listener {
     }
 
     @Override
-    public void onUnload() {
-        remMap.clear();
-    }
-
-    @Override
-    @EventType(event = EventField.Command, priority = Priority.HIGH)
     public void runEvent(CommandEvent event) {
         String command = event.getCommand().toLowerCase();
         String[] args = event.getArgs();
@@ -102,8 +91,18 @@ public class RemCommand extends Listener {
         }
 
         if (command.equalsIgnoreCase("remupdate")) {
-            onUnload();
-            onLoad();
+            remMap.clear();
+            new File("data" + File.separator + "rem").mkdirs();
+            for (File file : new File("data" + File.separator + "rem").listFiles()) {
+                try {
+                    String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
+                    Scanner reader = new Scanner(file);
+                    String line = reader.nextLine().trim();
+                    remMap.put(name, line);
+                } catch (FileNotFoundException ex) {
+                    AeBot.log(Level.SEVERE, null, ex);
+                }
+            }
             user.sendMessage("Rems updated");
             return;
         }

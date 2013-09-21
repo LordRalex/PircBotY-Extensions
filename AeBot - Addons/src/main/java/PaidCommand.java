@@ -16,9 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.sender.Sender;
 import net.ae97.aebot.settings.Settings;
@@ -29,29 +26,23 @@ import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import net.ae97.aebot.api.CommandExecutor;
 
 /**
  * @version 1.0
  * @author Lord_Ralex
  */
-public class PaidCommand extends Listener {
+public class PaidCommand extends CommandExecutor {
 
     private final String HASPAID = "https://minecraft.net/haspaid.jsp?user={0}";
-    private int MAX_NAMES;
+    private final int MAX_NAMES;
     private final ExecutorService es = Executors.newSingleThreadExecutor();
 
-    @Override
-    public void onLoad() {
+    public PaidCommand() {
         MAX_NAMES = new Settings(new File("settings", "paid.yml")).getInt("name-limit");
     }
 
     @Override
-    public void onUnload() {
-        es.shutdown();
-    }
-
-    @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         if (event.getArgs().length == 0) {
             return;
@@ -78,8 +69,8 @@ public class PaidCommand extends Listener {
 
     private class Lookup implements Runnable {
 
-        private String name;
-        private Sender target;
+        private final String name;
+        private final Sender target;
 
         public Lookup(Sender tar, String n) {
             target = tar;

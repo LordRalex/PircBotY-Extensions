@@ -15,33 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.api.EventField;
-import net.ae97.aebot.api.EventType;
-import net.ae97.aebot.api.Listener;
-import net.ae97.aebot.api.Priority;
 import net.ae97.aebot.api.channels.Channel;
 import net.ae97.aebot.api.events.MessageEvent;
 import net.ae97.aebot.api.users.BotUser;
 import net.ae97.aebot.settings.Settings;
 import java.io.File;
 import java.util.List;
+import net.ae97.aebot.api.EventType;
+import net.ae97.aebot.api.Listener;
+import net.ae97.aebot.api.Priority;
 
 /**
  * @version 1.0
  * @author Lord_Ralex
  */
-public class RecordedMessage extends Listener {
+public class RecordedMessage implements Listener {
 
     int counter = 0;
-    private Settings settings;
+    private final Settings settings;
 
-    @Override
-    public void onLoad() {
+    public RecordedMessage() {
         settings = new Settings(new File("settings", "recordedmessage.yml"));
     }
 
-    @Override
-    @EventType(event = EventField.Message, priority = Priority.LOW)
+    @EventType(priority = Priority.LOW)
     public void runEvent(MessageEvent event) {
         if (!event.getUser().hasOP(event.getChannel().getName()) && !event.getUser().hasPermission(event.getChannel().getName(), "recordedmessage.play")) {
             return;

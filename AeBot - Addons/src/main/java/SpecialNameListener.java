@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.Priority;
@@ -35,16 +34,15 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  * @author Lord_Ralex
  */
-public class SpecialNameListener extends Listener {
+public class SpecialNameListener implements Listener {
 
-    private int unbanDelay;
+    private final int unbanDelay;
     private final List<String> notAllowed = new ArrayList<>();
     private final List<String> channelsToAffect = new ArrayList<>();
     private final ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
-    private Settings settings;
+    private final Settings settings;
 
-    @Override
-    public void onLoad() {
+    public SpecialNameListener() {
         settings = new Settings(new File("settings", "specialnames.yml"));
         List<String> temp = settings.getStringList("nicks");
         if (temp != null) {
@@ -61,15 +59,7 @@ public class SpecialNameListener extends Listener {
         unbanDelay = settings.getInt("delay");
     }
 
-    @Override
-    public void onUnload() {
-        channelsToAffect.clear();
-        notAllowed.clear();
-        es.shutdown();
-    }
-
-    @Override
-    @EventType(event = EventField.NickChange, priority = Priority.LOW)
+    @EventType(priority = Priority.LOW)
     public void runEvent(NickChangeEvent event) {
         if (notAllowed.contains(event.getNewNick().toLowerCase())) {
             String[] chans = event.getUser().getChannels();
@@ -81,8 +71,7 @@ public class SpecialNameListener extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.Join, priority = Priority.LOW)
+    @EventType(priority = Priority.LOW)
     public void runEvent(JoinEvent event) {
         if (notAllowed.contains(event.getUser().getNick().toLowerCase())) {
             String[] chans = event.getUser().getChannels();

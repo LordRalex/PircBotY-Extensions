@@ -16,7 +16,6 @@
  */
 
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.Priority;
@@ -34,28 +33,19 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import net.ae97.aebot.api.CommandExecutor;
 
-public class ServerIPListener extends Listener {
+public class ServerIPListener extends CommandExecutor implements Listener {
 
-    protected final List<String> triggered = new ArrayList();
-    protected final List<String> ignorePeople = new ArrayList();
+    private final List<String> triggered = new ArrayList();
+    private final List<String> ignorePeople = new ArrayList();
     private final Set<String> channels = new HashSet<>();
 
-    @Override
-    public void onLoad() {
-        channels.clear();
+    public ServerIPListener() {
         channels.addAll(new Settings(new File("settings", "iplistener.yml")).getStringList("channels"));
     }
 
-    @Override
-    public void onUnload() {
-        triggered.clear();
-        ignorePeople.clear();
-        channels.clear();
-    }
-
-    @Override
-    @EventType(event = EventField.Message, priority = Priority.HIGH)
+    @EventType(priority = Priority.HIGH)
     public void runEvent(MessageEvent event) {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
@@ -94,8 +84,7 @@ public class ServerIPListener extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.Action, priority = Priority.HIGH)
+    @EventType
     public void runEvent(ActionEvent event) {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
@@ -134,20 +123,17 @@ public class ServerIPListener extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.Part)
+    @EventType
     public void runEvent(PartEvent event) {
         triggered.remove(event.getUser().getNick().toLowerCase());
     }
 
-    @Override
-    @EventType(event = EventField.Quit)
+    @EventType
     public void runEvent(QuitEvent event) {
         triggered.remove(event.getUser().getNick().toLowerCase());
     }
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         if (!event.getUser().hasOP(event.getChannel().getName())) {
             return;

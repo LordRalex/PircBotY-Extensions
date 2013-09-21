@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import net.ae97.aebot.AeBot;
-import net.ae97.aebot.api.EventField;
 import net.ae97.aebot.api.EventType;
 import net.ae97.aebot.api.Listener;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.events.ConnectionEvent;
 import net.ae97.aebot.api.users.BotUser;
 import net.ae97.aebot.api.users.User;
+import net.ae97.aebot.api.CommandExecutor;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,14 +43,13 @@ import java.util.logging.Level;
  * @version 1.0
  * @author Lord_Ralex
  */
-public class BanManager extends Listener {
+public class BanManager extends CommandExecutor implements Listener {
 
     private final Set<Ban> banList = new TreeSet<>(new BanComparator());
     private final ScheduledExecutorService srv = Executors.newSingleThreadScheduledExecutor();
     private final UnbanRunnable unbanRunnable = new UnbanRunnable();
 
-    @Override
-    public void onLoad() {
+    public BanManager() {
         if (new File("bans.dat").exists()) {
             try {
                 try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(new File("bans.dat")))) {
@@ -75,12 +74,6 @@ public class BanManager extends Listener {
         }
     }
 
-    @Override
-    public void onUnload() {
-        saveBans();
-        srv.shutdownNow();
-    }
-
     public void saveBans() {
         new File("bans.dat").delete();
         try {
@@ -94,14 +87,12 @@ public class BanManager extends Listener {
         }
     }
 
-    @Override
-    @EventType(event = EventField.Connection)
+    @EventType
     public void runEvent(ConnectionEvent event) {
         unbanRunnable.scheduleLater();
     }
 
     @Override
-    @EventType(event = EventField.Command)
     public void runEvent(CommandEvent event) {
         if (event.getChannel() == null && event.getUser() != null) {
             return;
