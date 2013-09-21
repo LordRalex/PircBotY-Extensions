@@ -59,6 +59,8 @@ import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import net.ae97.aebot.api.CommandExecutor;
+import net.ae97.aebot.api.events.CancellableEvent;
+import net.ae97.aebot.api.events.ConnectionEvent;
 import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
 import org.pircbotx.UserSnapshot;
@@ -115,6 +117,17 @@ public final class EventHandler extends ListenerAdapter {
         extensionFolder.mkdirs();
         eventExecutors.clear();
         commandExecutors.clear();
+        registerEvent(ActionEvent.class);
+        registerEvent(ConnectionEvent.class);
+        registerEvent(JoinEvent.class);
+        registerEvent(KickEvent.class);
+        registerEvent(MessageEvent.class);
+        registerEvent(NickChangeEvent.class);
+        registerEvent(NoticeEvent.class);
+        registerEvent(PartEvent.class);
+        registerEvent(PermissionEvent.class);
+        registerEvent(PrivateMessageEvent.class);
+        registerEvent(QuitEvent.class);
         URL[] urls = new URL[0];
         try {
             urls = new URL[]{
@@ -425,7 +438,7 @@ public final class EventHandler extends ListenerAdapter {
                     } else {
                         for (CommandExecutor exec : commandExecutors) {
                             if (Arrays.asList(exec.getAliases()).contains(evt.getCommand())) {
-                                exec.runEvent(evt);
+                                execServ.submit(new CommandCallable(exec, evt));
                             }
                         }
                     }
@@ -435,10 +448,15 @@ public final class EventHandler extends ListenerAdapter {
                         for (EventExecutor exec : executors) {
                             if (exec.getPriority() == prio) {
                                 try {
+                                    if (next instanceof CancellableEvent) {
+                                        CancellableEvent evt = (CancellableEvent) next;
+                                        if (evt.isCancelled() && !exec.ignoreCancelled()) {
+                                            continue;
+                                        }
+                                    }
                                     exec.getMethod().invoke(exec.getListener(), next);
                                 } catch (Exception e) {
                                     AeBot.log(Level.SEVERE, "Error on handling " + next.getClass().getName() + " in " + exec.getListener().getClass().getName(), e);
-
                                 }
                             }
                         }
@@ -507,11 +525,17 @@ public final class EventHandler extends ListenerAdapter {
         private final Method method;
         private final Listener listener;
         private final Priority priority;
+        private final boolean ignoreCancelled;
 
         public EventExecutor(Listener l, Method m, Priority p) {
+            this(l, m, p, false);
+        }
+
+        public EventExecutor(Listener l, Method m, Priority p, boolean ignore) {
             method = m;
             listener = l;
             priority = p;
+            ignoreCancelled = ignore;
         }
 
         public Listener getListener() {
@@ -524,6 +548,10 @@ public final class EventHandler extends ListenerAdapter {
 
         public Method getMethod() {
             return method;
+        }
+
+        public boolean ignoreCancelled() {
+            return ignoreCancelled;
         }
     }
 }

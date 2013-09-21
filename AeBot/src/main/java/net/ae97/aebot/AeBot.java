@@ -47,7 +47,7 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class AeBot extends Thread {
 
     private static final PircBotX driver;
-    public static final String VERSION = "2.0.0";
+    public static final String VERSION = "3.1.4";
     private static final EventHandler eventHandler;
     private static final AeBot instance;
     private static final KeyboardListener kblistener;
@@ -268,32 +268,8 @@ public final class AeBot extends Thread {
         }
     }
 
-    /**
-     * @deprecated Use log(Level.INFO, message) instead
-     */
     public static void log(String message) {
         log(Level.INFO, message);
-    }
-
-    /**
-     * @deprecated Use log(Level.INFO, message, error) instead
-     */
-    public static void log(String message, Throwable error) {
-        log(Level.INFO, message, error);
-    }
-
-    /**
-     * @deprecated Use log(Level.SEVERE, message) instead
-     */
-    public static void logSevere(Level level, String message) {
-        log(Level.SEVERE, message);
-    }
-
-    /**
-     * @deprecated Use log(Level.SEVERE, message, error) instead
-     */
-    public static void logSevere(String message, Throwable error) {
-        log(Level.SEVERE, message, error);
     }
 
     public static void log(Level level, String message) {
