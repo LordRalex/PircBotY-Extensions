@@ -23,27 +23,30 @@ import net.ae97.aebot.api.users.User;
  * @author Lord_Ralex
  * @version 1.0
  */
-public class PermissionEvent implements UserEvent, ChannelEvent {
+public class PermissionEvent implements UserEvent {
 
     private final User user;
-    private final Channel channel;
+    private final boolean isForced;
 
-    public PermissionEvent(User u, Channel c) {
+    public PermissionEvent(User u) {
+        this(u, false);
+    }
+
+    public PermissionEvent(User u, boolean isF) {
         user = u;
-        channel = c;
+        isForced = isF;
     }
 
-    public PermissionEvent(String u, String c) {
-        this(User.getUser(u), Channel.getChannel(c));
-    }
-
-    @Override
-    public Channel getChannel() {
-        return channel;
+    public PermissionEvent(String u) {
+        this(User.getUser(u));
     }
 
     @Override
     public User getUser() {
         return user;
+    }
+
+    public boolean isForced() {
+        return isForced;
     }
 }

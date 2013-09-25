@@ -117,6 +117,7 @@ public final class EventHandler extends ListenerAdapter {
         extensionFolder.mkdirs();
         eventExecutors.clear();
         commandExecutors.clear();
+        eventClasses.clear();
         registerEvent(ActionEvent.class);
         registerEvent(ConnectionEvent.class);
         registerEvent(JoinEvent.class);
@@ -138,11 +139,12 @@ public final class EventHandler extends ListenerAdapter {
             AeBot.log(Level.SEVERE, "The URL is broken", ex);
         }
         classLoader = new URLClassLoader(urls);
+
         for (File file : extensionFolder.listFiles()) {
             if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
                 String className = file.getName();
                 loadClass(className);
-            } else if (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")) {
+            } else if (file.getName().endsWith(".zip")) {
                 ZipFile zipFile = null;
                 try {
                     zipFile = new ZipFile(file);
@@ -395,7 +397,7 @@ public final class EventHandler extends ListenerAdapter {
                     if (user.getNick().toLowerCase().endsWith("esper.net")) {
                         continue;
                     }
-                    PermissionEvent permEvent = new PermissionEvent(user, chan);
+                    PermissionEvent permEvent = new PermissionEvent(user);
                     try {
                         AeBot.getPermManager().runPermissionEvent(permEvent);
                     } catch (Exception e) {
@@ -435,10 +437,26 @@ public final class EventHandler extends ListenerAdapter {
                         if (sender != null) {
                             sender.sendNotice("Reloaded permissions");
                         }
+                    } else if (evt.getCommand().equalsIgnoreCase("permcache")) {
+                        User sender = evt.getUser();
+                        if (sender != null) {
+                            if (!sender.hasPermission((String) null, "bot.permcache")) {
+                                continue;
+                            }
+                        }
+                        if (evt.getArgs().length == 0) {
+                            continue;
+                        }
+                        for (String arg : evt.getArgs()) {
+                            AeBot.log("Forcing cache update on " + arg);
+                            PermissionEvent p = new PermissionEvent(arg);
+                            AeBot.getPermManager().runPermissionEvent(p);
+                        }
                     } else {
                         for (CommandExecutor exec : commandExecutors) {
                             if (Arrays.asList(exec.getAliases()).contains(evt.getCommand())) {
                                 execServ.submit(new CommandCallable(exec, evt));
+                                break;
                             }
                         }
                     }

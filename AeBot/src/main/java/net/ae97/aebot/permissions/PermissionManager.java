@@ -20,9 +20,15 @@ import net.ae97.aebot.api.events.PermissionEvent;
 import net.ae97.aebot.api.users.User;
 import net.ae97.aebot.settings.Settings;
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @version 1.0
@@ -31,9 +37,13 @@ import java.util.Set;
 public class PermissionManager {
 
     private final Settings permFile;
+    private final Map<User, Long> cache = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService srv;
 
     public PermissionManager() {
         permFile = new Settings(new File("permissions", "permFile.yml"));
+        srv = Executors.newSingleThreadScheduledExecutor();
+        srv.scheduleAtFixedRate(new CacheRunnable(), 5, 5, TimeUnit.MINUTES);
     }
 
     public void reloadFile() {
@@ -42,6 +52,14 @@ public class PermissionManager {
 
     public void runPermissionEvent(PermissionEvent event) {
         User user = event.getUser();
+        synchronized (cache) {
+            if (!event.isForced()) {
+                if (cache.containsKey(user)) {
+                    return;
+                }
+            }
+            cache.put(user, System.currentTimeMillis());
+        }
         String ver = user.isVerified();
         if (ver == null || ver.isEmpty()) {
             return;
@@ -60,6 +78,25 @@ public class PermissionManager {
                 chan = null;
             }
             user.addPermission(chan, perm);
+        }
+    }
+
+    private class CacheRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            long currentTime = System.currentTimeMillis();
+            synchronized (cache) {
+                Set<User> toRemove = new HashSet<>();
+                for (Entry<User, Long> entry : cache.entrySet()) {
+                    if (entry.getValue() + (10 * 60 * 1000) < currentTime) {
+                        toRemove.add(entry.getKey());
+                    }
+                }
+                for (User user : toRemove) {
+                    cache.remove(user);
+                }
+            }
         }
     }
 }
