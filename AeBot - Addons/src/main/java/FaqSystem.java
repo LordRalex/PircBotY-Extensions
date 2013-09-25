@@ -20,12 +20,12 @@ import net.ae97.aebot.AeBot;
 import net.ae97.aebot.api.events.CommandEvent;
 import net.ae97.aebot.api.users.BotUser;
 import net.ae97.aebot.data.DataType;
-import static net.ae97.aebot.data.DataType.SQL;
 import net.ae97.aebot.settings.Settings;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -366,19 +366,16 @@ public class FaqSystem extends CommandExecutor {
     private synchronized void loadDatabases() {
         List<String> databasesToLoad = settings.getStringList("databases");
         for (String load : databasesToLoad) {
+            String databaseType = settings.getString(load + "-type");
             try {
-                switch (load.split(" ")[0]) {
+                switch (databaseType.toUpperCase()) {
                     case "FLAT": {
-                        String name = load.split(" ")[1].toLowerCase();
-                        String loadPath = load.split(" ")[2];
-                        String savePath = load.split(" ")[3];
+                        String name = load;
+                        String loadPath = settings.getString(load + "-load");
+                        String savePath = settings.getString(load + "-save");
                         Database newDatabase = new Database(name, savePath, DataType.FLAT);
-                        if (load.split(" ").length <= 5) {
-                            newDatabase.setReadonly(Boolean.parseBoolean(load.split(" ")[4]));
-                        }
-                        if (load.split(" ").length <= 6) {
-                            newDatabase.setMaster(load.split(" ")[5]);
-                        }
+                        newDatabase.setReadonly(settings.getBoolean(load + "-readonly"));
+                        newDatabase.setMaster(settings.getString(load + "-owner"));
                         AeBot.log(Level.INFO, "    Creating database: " + newDatabase.getName());
                         AeBot.log(Level.INFO, "      Path to get info: " + loadPath);
                         AeBot.log(Level.INFO, "      Path to save info: " + newDatabase.getFile());
@@ -398,7 +395,7 @@ public class FaqSystem extends CommandExecutor {
                             AeBot.log(Level.INFO, "        Installed: " + newDatabase.getName());
                         }
                         AeBot.log(Level.INFO, "    Loading database: " + newDatabase.getName());
-                        newDatabase.load(newDatabase.getFile());
+                        newDatabase.load();
                         databases.put(newDatabase.getName().toLowerCase(), newDatabase);
                     }
                     break;
@@ -409,12 +406,12 @@ public class FaqSystem extends CommandExecutor {
                         if (load.split(" ").length == 4) {
                             newDatabase.setMaster(load.split(" ")[3]);
                         }
-                        newDatabase.load(details);
+                        newDatabase.load();
                         databases.put(newDatabase.getName().toLowerCase(), newDatabase);
                     }
                     break;
                 }
-            } catch (Exception ex) {
+            } catch (IOException | IndexOutOfBoundsException | NullPointerException ex) {
                 AeBot.log(Level.SEVERE, "    There was an error with this setting: " + load, ex);
             }
         }
@@ -489,16 +486,12 @@ public class FaqSystem extends CommandExecutor {
             storage = store;
         }
 
-        public void load(String loadPath) {
+        public void load() {
             switch (storage) {
                 case FLAT:
+                    BufferedReader filereader = null;
                     try {
-                        if (!loadPath.equals(location)) {
-                            InputStream reader = new URL(loadPath).openStream();
-                            FileOutputStream writer = new FileOutputStream(new File(location));
-                            copyInputStream(reader, writer);
-                        }
-                        BufferedReader filereader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(location)), Charset.forName("UTF-8")));
+                        filereader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(location)), Charset.forName("UTF-8")));
                         String line;
                         while ((line = filereader.readLine()) != null) {
                             if (line.contains("|")) {
@@ -509,8 +502,40 @@ public class FaqSystem extends CommandExecutor {
                         }
                     } catch (IOException ex) {
                         AeBot.log(Level.SEVERE, "There was an error", ex);
-                        AeBot.log(Level.INFO, "Path loading from: " + loadPath);
                         AeBot.log(Level.INFO, "Location: " + location);
+                    } finally {
+                        try {
+                            if (filereader != null) {
+                                filereader.close();
+                            }
+                        } catch (IOException ex) {
+                            AeBot.log(Level.SEVERE, "There was an error", ex);
+                        }
+                    }
+                    filereader = null;
+                    try {
+                        filereader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(location + "-override")), Charset.forName("UTF-8")));
+                        String line;
+                        while ((line = filereader.readLine()) != null) {
+                            if (line.contains("|")) {
+                                String key = line.split("\\|")[0];
+                                String value = line.split("\\|", 2)[1];
+                                AeBot.log(Level.INFO, "  Inserting " + line);
+                                setEntry(key.toLowerCase(), value.split(";;"));
+                            }
+                        }
+                    } catch (FileNotFoundException ex) {
+                    } catch (IOException ex) {
+                        AeBot.log(Level.SEVERE, "There was an error", ex);
+                        AeBot.log(Level.INFO, "Location: " + location + "-override");
+                    } finally {
+                        try {
+                            if (filereader != null) {
+                                filereader.close();
+                            }
+                        } catch (IOException ex) {
+                            AeBot.log(Level.SEVERE, "There was an error", ex);
+                        }
                     }
                     break;
                 case SQL:
@@ -558,6 +583,8 @@ public class FaqSystem extends CommandExecutor {
             if (entry == null) {
                 switch (storage) {
                     case SQL: {
+                        ResultSet set = null;
+                        MySQLConnection conn = null;
                         try {
                             String[] details = location.split(",");
                             String host = details[0];
@@ -567,18 +594,33 @@ public class FaqSystem extends CommandExecutor {
                             String db = details[4];
                             String table = details[5];
                             String column = details[6];
-                            MySQLConnection conn = new MySQLConnection(host, Integer.parseInt(port), user, pass, db, table);
+                            conn = new MySQLConnection(host, Integer.parseInt(port), user, pass, db, table);
                             conn.load();
                             conn.getPreparedStatement("USE scrolls").execute();
                             PreparedStatement statement = conn.getPreparedStatement("SELECT " + column
                                     + " FROM " + ((MySQLConnection) conn).getTable() + " WHERE name='" + key + "';");
-                            ResultSet set = statement.executeQuery();
+                            set = statement.executeQuery();
                             set.first();
                             String result = set.getString(column);
                             entry = result.split(";;");
                             setEntry(key, entry);
                         } catch (SQLException ex) {
                             AeBot.log(Level.SEVERE, "An error occured", ex);
+                        } finally {
+                            try {
+                                if (set != null) {
+                                    set.close();
+                                }
+                            } catch (SQLException ex) {
+                                AeBot.log(Level.SEVERE, "An error occured", ex);
+                            }
+                            try {
+                                if (conn != null) {
+                                    conn.getConnection().close();
+                                }
+                            } catch (SQLException ex) {
+                                AeBot.log(Level.SEVERE, "An error occured", ex);
+                            }
                         }
                     }
                     break;
