@@ -34,7 +34,7 @@ public class HTopCommand extends CommandExecutor {
         free = runtime.freeMemory();
         total = runtime.totalMemory();
         max = runtime.maxMemory();
-        perTotal = (int) ((free / (double) total) * 100);
+        perTotal = (int) (((total - free) / (double) total) * 100);
         perMax = (int) ((total / (double) max) * 100);
 
         Sender target = event.getChannel();
@@ -46,7 +46,7 @@ public class HTopCommand extends CommandExecutor {
         } else {
             target.sendMessage("Processors: " + proc + " - "
                     + " Memory: "
-                    + convert(free) + "/" + convert(total) + " (" + perTotal + "%)"
+                    + convert(total - free) + "/" + convert(total) + " (" + perTotal + "%)"
                     + " up to " + convert(max) + " (" + perMax + "%)");
         }
     }
