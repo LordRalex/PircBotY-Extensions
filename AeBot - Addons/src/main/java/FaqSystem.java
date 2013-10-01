@@ -400,8 +400,8 @@ public class FaqSystem extends CommandExecutor {
                     }
                     break;
                     case "SQL": {
-                        String name = load.split(" ")[1].toLowerCase();
-                        String details = load.split(" ")[2];
+                        String name = load;
+                        String details = settings.getString(load + "-details");
                         Database newDatabase = new Database(name, details, DataType.SQL);
                         if (load.split(" ").length == 4) {
                             newDatabase.setMaster(load.split(" ")[3]);
@@ -451,7 +451,7 @@ public class FaqSystem extends CommandExecutor {
             if (user == null) {
                 message = Colors.BOLD + name.toLowerCase() + ": " + Colors.NORMAL + message;
             } else {
-                message = Colors.BOLD + user + ": " + Colors.NORMAL + "(" + name.toLowerCase() + ") " + message;
+                message = Colors.BOLD + user + ": " + Colors.NORMAL + message;
             }
             if (notice) {
                 bot.sendNotice(user, message);
@@ -586,7 +586,7 @@ public class FaqSystem extends CommandExecutor {
                         ResultSet set = null;
                         MySQLConnection conn = null;
                         try {
-                            String[] details = location.split(",");
+                            String[] details = location.split("\\|");
                             String host = details[0];
                             String port = details[1];
                             String user = details[2];
@@ -596,9 +596,13 @@ public class FaqSystem extends CommandExecutor {
                             String column = details[6];
                             conn = new MySQLConnection(host, Integer.parseInt(port), user, pass, db, table);
                             conn.load();
-                            conn.getPreparedStatement("USE scrolls").execute();
-                            PreparedStatement statement = conn.getPreparedStatement("SELECT " + column
-                                    + " FROM " + ((MySQLConnection) conn).getTable() + " WHERE name='" + key + "';");
+                            PreparedStatement st = conn.getPreparedStatement("USE ?");
+                            st.setString(1, db);
+                            st.execute();
+                            PreparedStatement statement = conn.getPreparedStatement("SELECT ? FROM ? WHERE name=?;");
+                            statement.setString(1, column);
+                            statement.setString(2, ((MySQLConnection) conn).getTable());
+                            statement.setString(3, name);
                             set = statement.executeQuery();
                             set.first();
                             String result = set.getString(column);
