@@ -40,6 +40,7 @@ public class CensorListener implements Listener {
     private final List<String> channels = new ArrayList<>();
     private final Set<String> warned = new HashSet<>();
     private final Settings settings;
+    private final String warnMessage, kickMessage;
 
     public CensorListener() {
         settings = new Settings(new File("settings", "censor.yml"));
@@ -47,6 +48,8 @@ public class CensorListener implements Listener {
         censor.addAll(settings.getStringList("words"));
         channels.clear();
         channels.addAll(settings.getStringList("channels"));
+        warnMessage = settings.getString("warnmessage");
+        kickMessage = settings.getString("kickmessage");
     }
 
     @EventType
@@ -65,17 +68,12 @@ public class CensorListener implements Listener {
         }
         String message = event.getMessage().toLowerCase();
         if (scanMessage(message)) {
-            if (!AeBot.getDebugMode()) {
-                if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getIP())) {
-                    BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), "Please keep it civil");
-                } else {
-                    warned.add(event.getUser().getNick());
-                    warned.add(event.getUser().getIP());
-                    event.getChannel().sendMessage("Please keep it civil, " + event.getUser().getNick());
-                }
-            }
-            if (AeBot.getDebugMode()) {
-                BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getUser().getNick() + " triggered the censor with his line: " + event.getMessage());
+            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getIP())) {
+                BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), kickMessage);
+            } else {
+                warned.add(event.getUser().getNick());
+                warned.add(event.getUser().getIP());
+                event.getChannel().sendMessage(warnMessage.replace("{name}", event.getUser().getNick()));
             }
         }
     }
@@ -90,17 +88,12 @@ public class CensorListener implements Listener {
         }
         String message = event.getAction().toLowerCase();
         if (scanMessage(message)) {
-            if (!AeBot.getDebugMode()) {
-                if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getIP())) {
-                    BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), "Please keep it civil");
-                } else {
-                    warned.add(event.getUser().getNick());
-                    warned.add(event.getUser().getIP());
-                    event.getChannel().sendMessage("Please keep it civil, " + event.getUser().getNick());
-                }
-            }
-            if (AeBot.getDebugMode()) {
-                BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getUser().getNick() + " triggered the censor with his line: " + event.getAction());
+            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getIP())) {
+                BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), kickMessage);
+            } else {
+                warned.add(event.getUser().getNick());
+                warned.add(event.getUser().getIP());
+                event.getChannel().sendMessage(warnMessage.replace("{name}", event.getUser().getNick()));
             }
         }
     }
@@ -110,9 +103,7 @@ public class CensorListener implements Listener {
         String message = event.getNewNick().toLowerCase();
         if (scanMessage(message)) {
             for (String chan : BotUser.getBotUser().getChannels()) {
-                if (!AeBot.getDebugMode()) {
-                    BotUser.getBotUser().kick(event.getNewNick(), chan, "Please keep it civil");
-                }
+                BotUser.getBotUser().kick(event.getNewNick(), chan, kickMessage);
             }
         }
     }
@@ -124,9 +115,7 @@ public class CensorListener implements Listener {
         }
         String message = event.getUser().getNick().toLowerCase();
         if (scanMessage(message)) {
-            if (!AeBot.getDebugMode()) {
-                BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), "Please keep it civil");
-            }
+            BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), kickMessage);
         }
     }
 

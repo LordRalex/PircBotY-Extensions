@@ -56,6 +56,9 @@ public class PaidCommand extends CommandExecutor {
             if (target == null) {
                 target = event.getUser();
             }
+            if (name.endsWith(",")) {
+                name = name.substring(0, name.length() - 2);
+            }
             es.submit(new Lookup(target, name));
         }
     }

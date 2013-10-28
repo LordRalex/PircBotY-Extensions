@@ -43,7 +43,7 @@ public class MaulListener implements Listener {
     private final List<String> replies = new ArrayList<>();
     private volatile ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private final Set<String> ignoreList = new HashSet<>();
-    private final Set<String> moves = new HashSet<>();
+    private final List<String> moves = new ArrayList<>();
 
     public MaulListener() {
         Settings settings = new Settings(new File("settings", "maul.yml"));
@@ -64,7 +64,7 @@ public class MaulListener implements Listener {
 
     @EventType
     public void runEvent(MessageEvent event) {
-        if (!event.getMessage().startsWith("Absol,")) {
+        if (!event.getMessage().startsWith(BotUser.getBotUser().getNick() + ",")) {
             return;
         }
         if (ignoreList.contains(event.getUser().getIP())) {
@@ -72,12 +72,15 @@ public class MaulListener implements Listener {
                 return;
             }
         }
-        if (!channels.contains(event.getChannel().getName())) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
         String nick = BotUser.getBotUser().getNick();
         if (event.getMessage().startsWith(nick + ", maul")) {
             String target = event.getMessage().substring((nick + ", maul").length()).trim();
+            if (target.equalsIgnoreCase(nick)) {
+                target = event.getUser().getNick();
+            }
             if (service != null) {
                 synchronized (service) {
                     service.schedule(new LookThread(event.getChannel(), target), delay, TimeUnit.MILLISECONDS);
@@ -117,9 +120,12 @@ public class MaulListener implements Listener {
             }
         } else if (event.getMessage().startsWith(nick + ", attack")) {
             String target = event.getMessage().substring((nick + ", attack").length()).trim();
+            if (target.equalsIgnoreCase(nick)) {
+                target = event.getUser().getNick();
+            }
             if (service != null) {
                 synchronized (service) {
-                    service.schedule(new AttackThread(event.getChannel(), target), delay * 2, TimeUnit.MILLISECONDS);
+                    service.schedule(new AttackThread(event.getChannel(), target), delay, TimeUnit.MILLISECONDS);
                 }
             }
         }
@@ -224,16 +230,7 @@ public class MaulListener implements Listener {
                 default:
                     effective = "";
             }
-            BotUser.getBotUser().sendAction(channel.getName(), "uses " + moves.toArray(new String[moves.size()][new Random().nextInt(moves.size())]) + " on " + target + ". " + effective);
+            BotUser.getBotUser().sendAction(channel.getName(), "uses " + moves.get(new Random().nextInt(moves.size())) + " on " + target + ". " + effective);
         }
-    }
-
-    private enum ACTION {
-
-        ATTACK,
-        MAUL,
-        LISTEN,
-        CHOOSE,
-        RETURN;
     }
 }

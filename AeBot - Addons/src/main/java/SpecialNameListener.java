@@ -40,6 +40,7 @@ public class SpecialNameListener implements Listener {
     private final List<String> notAllowed = new ArrayList<>();
     private final List<String> channelsToAffect = new ArrayList<>();
     private final ScheduledExecutorService es = Executors.newSingleThreadScheduledExecutor();
+    private final String kickMessage;
     private final Settings settings;
 
     public SpecialNameListener() {
@@ -57,15 +58,18 @@ public class SpecialNameListener implements Listener {
             }
         }
         unbanDelay = settings.getInt("delay");
+        kickMessage = settings.getString("kickmessage");
     }
 
     @EventType(priority = Priority.LOW)
     public void runEvent(NickChangeEvent event) {
-        if (notAllowed.contains(event.getNewNick().toLowerCase())) {
-            String[] chans = event.getUser().getChannels();
-            for (String chan : chans) {
-                if (channelsToAffect.contains(chan.toLowerCase())) {
-                    handleNick(chan, event.getUser());
+        for (String nope : notAllowed) {
+            if (event.getNewNick().toLowerCase().contains(nope)) {
+                String[] chans = event.getUser().getChannels();
+                for (String chan : chans) {
+                    if (channelsToAffect.contains(chan.toLowerCase())) {
+                        handleNick(chan, event.getUser(), nope);
+                    }
                 }
             }
         }
@@ -73,24 +77,26 @@ public class SpecialNameListener implements Listener {
 
     @EventType(priority = Priority.LOW)
     public void runEvent(JoinEvent event) {
-        if (notAllowed.contains(event.getUser().getNick().toLowerCase())) {
-            String[] chans = event.getUser().getChannels();
-            for (String chan : chans) {
-                if (channelsToAffect.contains(chan.toLowerCase())) {
-                    handleNick(chan, event.getUser());
+        for (String nope : notAllowed) {
+            if (event.getUser().getNick().toLowerCase().contains(nope)) {
+                String[] chans = event.getUser().getChannels();
+                for (String chan : chans) {
+                    if (channelsToAffect.contains(chan.toLowerCase())) {
+                        handleNick(chan, event.getUser(), nope);
+                    }
                 }
             }
         }
     }
 
-    private void handleNick(String chan, User user) {
+    private void handleNick(String chan, User user, String string) {
         String name = user.isVerified();
         if (name != null && name.equals(user.getNick())) {
             return;
         }
-        String ban = "*" + user.getNick() + "*!*@" + user.getIP();
+        String ban = "*" + string + "*!*@" + user.getIP();
         BotUser.getBotUser().ban(chan, ban);
-        BotUser.getBotUser().kick(user.getNick(), chan, "Nickname not allowed, use another one");
+        BotUser.getBotUser().kick(user.getNick(), chan, kickMessage);
         UnbanTimer timer = new UnbanTimer(chan, "*" + user.getNick() + "*", "*", user.getIP());
         es.schedule(timer, unbanDelay, TimeUnit.MINUTES);
     }

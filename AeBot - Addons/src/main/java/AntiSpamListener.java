@@ -38,12 +38,14 @@ public class AntiSpamListener implements Listener {
     private final int SPAM_RATE;
     private final int DUPE_RATE;
     private final List<String> channels = new ArrayList<>();
+    private final String kickMessage;
 
     public AntiSpamListener() {
         Settings settings = new Settings(new File("settings", "antispam.yml"));
         MAX_MESSAGES = settings.getInt("message-count");
         SPAM_RATE = settings.getInt("spam-rate");
         DUPE_RATE = settings.getInt("dupe-rate");
+        kickMessage = settings.getString("kickmessage");
         channels.clear();
         channels.addAll(settings.getStringList("channels"));
         logs.clear();
@@ -67,12 +69,7 @@ public class AntiSpamListener implements Listener {
                 posts = new Posts();
             }
             if (posts.addPost(message)) {
-                if (AeBot.getDebugMode()) {
-                    BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"),
-                            "Would have kicked " + event.getUser().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
-                } else {
-                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
-                }
+                BotUser.getBotUser().kick(sender.getNick(), channel.getName(), kickMessage.replace("{ip}", sender.getIP()));
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);
@@ -98,12 +95,7 @@ public class AntiSpamListener implements Listener {
                 posts = new Posts();
             }
             if (posts.addPost(message)) {
-                if (AeBot.getDebugMode()) {
-                    BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"),
-                            "Would have kicked " + event.getUser().getNick() + " with last line of " + posts.posts.get(posts.posts.size() - 1));
-                } else {
-                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Triggered Spam Guard (IP=" + sender.getIP() + ")");
-                }
+                BotUser.getBotUser().kick(sender.getNick(), channel.getName(), kickMessage.replace("{ip}", sender.getIP()));
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);
