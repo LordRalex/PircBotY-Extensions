@@ -48,7 +48,7 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class PokeBot extends Thread {
 
     private static final PircBotX driver;
-    public static final String VERSION = "4.0.0";
+    public static final String VERSION = "5.0.0";
     private final EventHandler eventHandler;
     private static final PokeBot instance;
     private static final KeyboardListener kblistener;
@@ -165,8 +165,8 @@ public final class PokeBot extends Thread {
     }
 
     private PokeBot() {
-        eventHandler = new EventHandler(instance, driver);
-        extensionManager = new ExtensionManager(instance, driver);
+        eventHandler = new EventHandler(driver);
+        extensionManager = new ExtensionManager();
         permManager = new PermissionManager();
         scheduler = new Scheduler();
     }

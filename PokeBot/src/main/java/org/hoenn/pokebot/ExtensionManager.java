@@ -37,14 +37,10 @@ import org.pircbotx.PircBotX;
  */
 public class ExtensionManager {
 
-    private final PircBotX driver;
     private final ExtensionPluginLoader pluginLoader;
-    private final PokeBot pokebot;
     private final Set<Extension> loadedExtensions = new HashSet<>();
 
-    public ExtensionManager(PokeBot instance, PircBotX d) {
-        pokebot = instance;
-        driver = d;
+    public ExtensionManager() {
         pluginLoader = new ExtensionPluginLoader();
     }
 
@@ -133,15 +129,15 @@ public class ExtensionManager {
             extension.unload();
         }
         loadedExtensions.clear();
-        pokebot.getEventHandler().unload();
+        PokeBot.getInstance().getEventHandler().unload();
     }
 
     public void addListener(Listener list) {
-        pokebot.getEventHandler().registerListener(list);
+        PokeBot.getInstance().getEventHandler().registerListener(list);
     }
 
     public void addCommandExecutor(CommandExecutor executor) {
-        pokebot.getEventHandler().registerCommandExecutor(executor);
+        PokeBot.getInstance().getEventHandler().registerCommandExecutor(executor);
     }
 
     public void addExtension(Extension extension) {

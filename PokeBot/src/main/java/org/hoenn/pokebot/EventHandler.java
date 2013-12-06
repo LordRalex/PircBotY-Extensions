@@ -64,11 +64,9 @@ public final class EventHandler extends ListenerAdapter {
     private final Set<Class<? extends Event>> eventClasses = new HashSet<>();
     private final Map<Class<? extends Event>, Set<EventHandler.EventExecutorService>> eventExecutors = new ConcurrentHashMap<>();
     private final Set<CommandExecutor> commandExecutors = new HashSet<>();
-    private final PokeBot pokebot;
 
-    public EventHandler(PokeBot instance, PircBotX bot) {
+    public EventHandler(PircBotX bot) {
         super();
-        pokebot = instance;
         masterBot = bot;
         runner = new EventRunner();
         runner.setName("Event_Runner_Thread");
@@ -286,7 +284,7 @@ public final class EventHandler extends ListenerAdapter {
                 }
 
                 if (next instanceof PermissionEvent) {
-                    pokebot.getPermManager().runPermissionEvent((PermissionEvent) next);
+                    PokeBot.getInstance().getPermManager().runPermissionEvent((PermissionEvent) next);
                 } else if (next instanceof CommandEvent) {
                     CommandEvent evt = (CommandEvent) next;
                     org.hoenn.pokebot.api.users.User user = evt.getUser();
@@ -296,7 +294,7 @@ public final class EventHandler extends ListenerAdapter {
                     }
                     PermissionEvent permEvent = new PermissionEvent(user);
                     try {
-                        pokebot.getPermManager().runPermissionEvent(permEvent);
+                        PokeBot.getInstance().getPermManager().runPermissionEvent(permEvent);
                     } catch (Exception e) {
                         PokeBot.log(Level.SEVERE, "Error on permission event", e);
                         continue;
@@ -312,8 +310,8 @@ public final class EventHandler extends ListenerAdapter {
                         if (sender != null) {
                             sender.sendNotice("Reloading");
                         }
-                        pokebot.getExtensionManager().unload();
-                        pokebot.getExtensionManager().load();
+                        PokeBot.getInstance().getExtensionManager().unload();
+                        PokeBot.getInstance().getExtensionManager().load();
                         PokeBot.log(Level.INFO, "Reloaded");
                         if (sender != null) {
                             sender.sendNotice("Reloaded");
@@ -329,7 +327,7 @@ public final class EventHandler extends ListenerAdapter {
                         if (sender != null) {
                             sender.sendNotice("Reloading permissions");
                         }
-                        pokebot.getPermManager().reloadFile();
+                        PokeBot.getInstance().getPermManager().reloadFile();
                         PokeBot.log(Level.INFO, "Reloaded permissions");
                         if (sender != null) {
                             sender.sendNotice("Reloaded permissions");
@@ -347,7 +345,7 @@ public final class EventHandler extends ListenerAdapter {
                         for (String arg : evt.getArgs()) {
                             PokeBot.log("Forcing cache update on " + arg);
                             PermissionEvent p = new PermissionEvent(arg);
-                            pokebot.getPermManager().runPermissionEvent(p);
+                            PokeBot.getInstance().getPermManager().runPermissionEvent(p);
                         }
                     } else {
                         for (CommandExecutor exec : commandExecutors) {
