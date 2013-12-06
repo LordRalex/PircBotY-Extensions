@@ -38,6 +38,7 @@ import org.pircbotx.hooks.events.WhoisEvent;
 public class User extends Utilities implements Sender, Permissible {
 
     protected final org.pircbotx.User pircbotxUser;
+    private String verifiedName = null;
     protected final Map<String, Set<Permission>> permMap = new HashMap<>();
     protected final static Map<org.pircbotx.User, org.hoenn.pokebot.api.users.User> existingUsers = new ConcurrentHashMap<>();
 
@@ -120,29 +121,30 @@ public class User extends Utilities implements Sender, Permissible {
     }
 
     public String isVerified() {
-        String name = null;
-        try (WaitForQueue queue = new WaitForQueue(pircbotxUser.getBot())) {
-            WhoisEvent evt;
-            try {
-                pircbotxUser.getBot().sendRawLineNow("whois " + pircbotxUser.getNick());
-                while (true) {
-                    evt = queue.waitFor(WhoisEvent.class);
-                    if (evt.getNick()
-                            .equals(this.pircbotxUser.getNick())) {
-                        name = evt.getRegisteredAs();
-                        break;
+        if (verifiedName == null) {
+            try (WaitForQueue queue = new WaitForQueue(pircbotxUser.getBot())) {
+                WhoisEvent evt;
+                try {
+                    pircbotxUser.getBot().sendRawLineNow("whois " + pircbotxUser.getNick());
+                    while (true) {
+                        evt = queue.waitFor(WhoisEvent.class);
+                        if (evt.getNick()
+                                .equals(this.pircbotxUser.getNick())) {
+                            verifiedName = evt.getRegisteredAs();
+                            break;
+                        }
                     }
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(User.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                    verifiedName = null;
                 }
-            } catch (InterruptedException ex) {
-                Logger.getLogger(User.class
-                        .getName()).log(Level.SEVERE, null, ex);
-                name = null;
-            }
-            if (name != null && name.isEmpty()) {
-                name = null;
+                if (verifiedName != null && verifiedName.isEmpty()) {
+                    verifiedName = null;
+                }
             }
         }
-        return name;
+        return verifiedName;
     }
 
     public String[] getChannels() {

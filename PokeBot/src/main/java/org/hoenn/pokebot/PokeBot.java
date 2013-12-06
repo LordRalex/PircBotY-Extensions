@@ -22,7 +22,7 @@ import org.hoenn.pokebot.api.exceptions.NickNotOnlineException;
 import org.hoenn.pokebot.api.users.BotUser;
 import org.hoenn.pokebot.permissions.PermissionManager;
 import org.hoenn.pokebot.settings.Settings;
-import org.hoenn.pokebot.threads.KeyboardListener;
+import org.hoenn.pokebot.input.KeyboardListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import jline.console.ConsoleReader;
+import org.hoenn.pokebot.scheduler.Scheduler;
 import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
@@ -48,14 +49,16 @@ public final class PokeBot extends Thread {
 
     private static final PircBotX driver;
     public static final String VERSION = "4.0.0";
-    private static final EventHandler eventHandler;
+    private final EventHandler eventHandler;
     private static final PokeBot instance;
     private static final KeyboardListener kblistener;
     private static final Settings globalSettings;
     private static boolean debugMode = false;
     private static final Map<String, String> args = new HashMap<>();
     private static boolean login = true;
-    private static final PermissionManager permManager;
+    private final PermissionManager permManager;
+    private final ExtensionManager extensionManager;
+    private final Scheduler scheduler;
 
     static {
         instance = new PokeBot();
@@ -71,6 +74,9 @@ public final class PokeBot extends Thread {
             new File("settings").mkdirs();
             InputStream input = PokeBot.class.getResourceAsStream("/config.yml");
             try {
+                if (input == null) {
+                    throw new FileNotFoundException("Jar does not contain config.yml in root");
+                }
                 BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("settings", "config.yml")));
                 PokeBot.copyInputStream(input, output);
             } catch (FileNotFoundException ex) {
@@ -79,8 +85,6 @@ public final class PokeBot extends Thread {
         }
         globalSettings = Settings.loadGlobalSettings();
         driver = new PircBotX();
-        eventHandler = new EventHandler(driver);
-        permManager = new PermissionManager();
     }
 
     public static void main(String[] startargs) throws IOException {
@@ -121,7 +125,7 @@ public final class PokeBot extends Thread {
             }
         }
 
-        eventHandler.stopRunner();
+        instance.getEventHandler().stopRunner();
 
         Set<Channel> chans = driver.getChannels();
         Channel[] chanArray = chans.toArray(new Channel[0]);
@@ -160,6 +164,13 @@ public final class PokeBot extends Thread {
         System.exit(0);
     }
 
+    private PokeBot() {
+        eventHandler = new EventHandler(instance, driver);
+        extensionManager = new ExtensionManager(instance, driver);
+        permManager = new PermissionManager();
+        scheduler = new Scheduler();
+    }
+
     private void createInstance(String user, String pass) throws IOException, IrcException {
         driver.setEncoding(Charset.forName("UTF-8"));
         String bind = Settings.getGlobalSettings().getString("bind-ip");
@@ -186,6 +197,7 @@ public final class PokeBot extends Thread {
         Utilities.setUtils(driver);
 
         eventHandler.load();
+        extensionManager.load();
         boolean eventSuccess = driver.getListenerManager().addListener(eventHandler);
         if (eventSuccess) {
             log(Level.INFO, "Listener hook attached to bot");
@@ -238,8 +250,20 @@ public final class PokeBot extends Thread {
         log(Level.INFO, "All systems operational");
     }
 
+    public static PokeBot getInstance() {
+        return instance;
+    }
+
     public EventHandler getEventHandler() {
         return eventHandler;
+    }
+
+    public ExtensionManager getExtensionManager() {
+        return extensionManager;
+    }
+
+    public Scheduler getScheduler() {
+        return scheduler;
     }
 
     public ConsoleReader getConsole() {
@@ -281,11 +305,8 @@ public final class PokeBot extends Thread {
         error.printStackTrace(System.out);
     }
 
-    public static PermissionManager getPermManager() {
+    public PermissionManager getPermManager() {
         return permManager;
-    }
-
-    private PokeBot() {
     }
 
     private static class SplitStream extends PrintStream {

@@ -28,24 +28,13 @@ import org.hoenn.pokebot.api.events.QuitEvent;
 import org.hoenn.pokebot.api.events.Event;
 import org.hoenn.pokebot.api.events.CommandEvent;
 import org.hoenn.pokebot.api.events.MessageEvent;
-import org.hoenn.pokebot.api.EventType;
 import org.hoenn.pokebot.api.Listener;
 import org.hoenn.pokebot.api.Priority;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.settings.Settings;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +45,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.hoenn.pokebot.api.CommandExecutor;
+import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.events.CancellableEvent;
 import org.hoenn.pokebot.api.events.ConnectionEvent;
 import org.pircbotx.Channel;
@@ -68,18 +56,19 @@ import org.pircbotx.hooks.ListenerAdapter;
 
 public final class EventHandler extends ListenerAdapter {
 
-    private final Map<Class<? extends Event>, Set<EventExecutor>> eventExecutors = new ConcurrentHashMap<>();
-    private final Set<CommandExecutor> commandExecutors = new HashSet<>();
-    private final Set<Class<? extends Event>> eventClasses = new HashSet<>();
     private final ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
     private final EventRunner runner;
     private static final List<CommandPrefix> commandChars = new ArrayList<>();
     private final PircBotX masterBot;
-    private ClassLoader classLoader;
     private final ExecutorService execServ;
+    private final Set<Class<? extends Event>> eventClasses = new HashSet<>();
+    private final Map<Class<? extends Event>, Set<EventHandler.EventExecutorService>> eventExecutors = new ConcurrentHashMap<>();
+    private final Set<CommandExecutor> commandExecutors = new HashSet<>();
+    private final PokeBot pokebot;
 
-    public EventHandler(PircBotX bot) {
+    public EventHandler(PokeBot instance, PircBotX bot) {
         super();
+        pokebot = instance;
         masterBot = bot;
         runner = new EventRunner();
         runner.setName("Event_Runner_Thread");
@@ -104,17 +93,6 @@ public final class EventHandler extends ListenerAdapter {
     }
 
     public void load() {
-        File extensionFolder = new File("extensions");
-        File temp = new File("tempDir");
-        if (temp.listFiles() != null) {
-            for (File file : temp.listFiles()) {
-                if (file != null) {
-                    file.delete();
-                }
-            }
-        }
-        temp.delete();
-        extensionFolder.mkdirs();
         eventExecutors.clear();
         commandExecutors.clear();
         eventClasses.clear();
@@ -129,124 +107,43 @@ public final class EventHandler extends ListenerAdapter {
         registerEvent(PermissionEvent.class);
         registerEvent(PrivateMessageEvent.class);
         registerEvent(QuitEvent.class);
-        URL[] urls = new URL[0];
-        try {
-            urls = new URL[]{
-                extensionFolder.toURI().toURL(),
-                temp.toURI().toURL()
-            };
-        } catch (MalformedURLException ex) {
-            PokeBot.log(Level.SEVERE, "The URL is broken", ex);
-        }
-        classLoader = new URLClassLoader(urls);
-
-        for (File file : extensionFolder.listFiles()) {
-            if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                String className = file.getName();
-                loadClass(className);
-            } else if (file.getName().endsWith(".zip")) {
-                ZipFile zipFile = null;
-                try {
-                    zipFile = new ZipFile(file);
-                    Enumeration entries = zipFile.entries();
-                    while (entries.hasMoreElements()) {
-                        ZipEntry entry = (ZipEntry) entries.nextElement();
-                        if (entry.getName().contains("/")) {
-                            (new File(temp, entry.getName().split("/")[0])).mkdir();
-                        }
-                        if (entry.isDirectory()) {
-                            new File(temp, entry.getName()).mkdirs();
-                            continue;
-                        }
-                        PokeBot.copyInputStream(zipFile.getInputStream(entry),
-                                new BufferedOutputStream(new FileOutputStream(temp + File.separator + entry.getName())));
-                    }
-
-                } catch (IOException ex) {
-                    PokeBot.log(Level.SEVERE, "An error occured", ex);
-                } finally {
-                    if (zipFile != null) {
-                        try {
-                            zipFile.close();
-                        } catch (IOException ex) {
-                            PokeBot.log(Level.SEVERE, "An error occured", ex);
-                        }
-                    }
-                }
-            }
-        }
-        if (temp.listFiles() != null) {
-            for (File file : temp.listFiles()) {
-                if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                    String className = file.getName();
-                    loadClass(className);
-                }
-            }
-        }
     }
 
     public void unload() {
         eventExecutors.clear();
     }
 
-    private void loadClass(String className) {
-        try {
-            className = className.replace("tempDir" + File.separator, "").replace("extension" + File.separator, "").replace(".class", "");
-            Class cls = classLoader.loadClass(className);
-            if (!Listener.class.isAssignableFrom(cls) && !CommandExecutor.class.isAssignableFrom(cls)) {
-                PokeBot.log(Level.SEVERE, "Class " + className + " is not a Listener or a CommandExecutor");
-                return;
-            }
-            try {
-                cls.getConstructor();
-            } catch (NoSuchMethodException e) {
-                PokeBot.log(Level.SEVERE, "Class " + className + " does not have a default constructor, cannot create instance");
-                return;
-            }
-            Field[] declaredFields = cls.getDeclaredFields();
-            boolean hasStatic = false;
-            for (Field field : declaredFields) {
-                if (Modifier.isStatic(field.getModifiers())) {
-                    hasStatic = true;
-                    break;
+    public void registerEvent(Class<? extends Event> cl) {
+        eventClasses.add(cl);
+        eventExecutors.put(cl, new HashSet<EventExecutorService>());
+    }
+
+    void registerListener(Listener list) {
+        PokeBot.log(Level.INFO, "  Added listener: " + list.getClass().getName());
+        Method[] methods = list.getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(EventExecutor.class)) {
+                Class<?>[] params = method.getParameterTypes();
+                if (params.length != 1) {
+                    continue;
                 }
-            }
-            if (hasStatic) {
-                PokeBot.log(Level.WARNING, "The class " + className + " uses static references, this will break things when reloaded");
-            }
-            Object obj = cls.newInstance();
-            if (obj instanceof Listener) {
-                Listener list = (Listener) obj;
-                PokeBot.log(Level.INFO, "  Added listener: " + list.getClass().getName());
-                Method[] methods = list.getClass().getDeclaredMethods();
-                for (Method method : methods) {
-                    if (method.isAnnotationPresent(EventType.class)) {
-                        Class<?>[] params = method.getParameterTypes();
-                        if (params.length != 1) {
-                            continue;
-                        }
-                        for (Class<? extends Event> clz : eventClasses) {
-                            if (clz.equals(params[0])) {
-                                eventExecutors.get(clz).add(new EventExecutor(list, method, method.getAnnotation(EventType.class).priority()));
-                                PokeBot.log(Level.INFO, "    Registered event: " + clz.getName() + "(" + method.getAnnotation(EventType.class).priority().toString() + ")");
-                            }
-                        }
+                for (Class<? extends Event> clz : eventClasses) {
+                    if (clz.equals(params[0])) {
+                        eventExecutors.get(clz).add(new EventHandler.EventExecutorService(list, method, method.getAnnotation(EventExecutor.class).priority()));
+                        PokeBot.log(Level.INFO, "    Registered event: " + clz.getName() + "(" + method.getAnnotation(EventExecutor.class).priority().toString() + ")");
                     }
                 }
             }
-            if (obj instanceof CommandExecutor) {
-                CommandExecutor exec = (CommandExecutor) obj;
-                PokeBot.log(Level.INFO, "  Added command executor: " + exec.getClass().getName());
-                commandExecutors.add(exec);
-            }
-        } catch (Throwable ex) {
-            PokeBot.log(Level.SEVERE, "Could not add " + className, ex);
         }
     }
 
-    public void registerEvent(Class<? extends Event> cl) {
-        eventClasses.add(cl);
-        eventExecutors.put(cl, new HashSet<EventExecutor>());
+    void registerCommandExecutor(CommandExecutor executor) {
+        PokeBot.log(Level.INFO, "  Added command executor: " + executor.getClass().getName());
+        commandExecutors.add(executor);
+    }
+
+    public Set<Class<? extends Event>> getEventClasses() {
+        return eventClasses;
     }
 
     public void startQueue() {
@@ -389,7 +286,7 @@ public final class EventHandler extends ListenerAdapter {
                 }
 
                 if (next instanceof PermissionEvent) {
-                    PokeBot.getPermManager().runPermissionEvent((PermissionEvent) next);
+                    pokebot.getPermManager().runPermissionEvent((PermissionEvent) next);
                 } else if (next instanceof CommandEvent) {
                     CommandEvent evt = (CommandEvent) next;
                     org.hoenn.pokebot.api.users.User user = evt.getUser();
@@ -399,7 +296,7 @@ public final class EventHandler extends ListenerAdapter {
                     }
                     PermissionEvent permEvent = new PermissionEvent(user);
                     try {
-                        PokeBot.getPermManager().runPermissionEvent(permEvent);
+                        pokebot.getPermManager().runPermissionEvent(permEvent);
                     } catch (Exception e) {
                         PokeBot.log(Level.SEVERE, "Error on permission event", e);
                         continue;
@@ -415,8 +312,8 @@ public final class EventHandler extends ListenerAdapter {
                         if (sender != null) {
                             sender.sendNotice("Reloading");
                         }
-                        unload();
-                        load();
+                        pokebot.getExtensionManager().unload();
+                        pokebot.getExtensionManager().load();
                         PokeBot.log(Level.INFO, "Reloaded");
                         if (sender != null) {
                             sender.sendNotice("Reloaded");
@@ -432,7 +329,7 @@ public final class EventHandler extends ListenerAdapter {
                         if (sender != null) {
                             sender.sendNotice("Reloading permissions");
                         }
-                        PokeBot.getPermManager().reloadFile();
+                        pokebot.getPermManager().reloadFile();
                         PokeBot.log(Level.INFO, "Reloaded permissions");
                         if (sender != null) {
                             sender.sendNotice("Reloaded permissions");
@@ -450,7 +347,7 @@ public final class EventHandler extends ListenerAdapter {
                         for (String arg : evt.getArgs()) {
                             PokeBot.log("Forcing cache update on " + arg);
                             PermissionEvent p = new PermissionEvent(arg);
-                            PokeBot.getPermManager().runPermissionEvent(p);
+                            pokebot.getPermManager().runPermissionEvent(p);
                         }
                     } else {
                         for (CommandExecutor exec : commandExecutors) {
@@ -461,9 +358,12 @@ public final class EventHandler extends ListenerAdapter {
                         }
                     }
                 } else {
-                    Set<EventExecutor> executors = eventExecutors.get(next.getClass());
+                    Set<EventExecutorService> executors = eventExecutors.get(next.getClass());
+                    if (executors == null) {
+                        continue;
+                    }
                     for (Priority prio : Priority.values()) {
-                        for (EventExecutor exec : executors) {
+                        for (EventExecutorService exec : executors) {
                             if (exec.getPriority() == prio) {
                                 try {
                                     if (next instanceof CancellableEvent) {
@@ -538,18 +438,18 @@ public final class EventHandler extends ListenerAdapter {
         }
     }
 
-    private class EventExecutor {
+    private class EventExecutorService {
 
         private final Method method;
         private final Listener listener;
         private final Priority priority;
         private final boolean ignoreCancelled;
 
-        public EventExecutor(Listener l, Method m, Priority p) {
+        public EventExecutorService(Listener l, Method m, Priority p) {
             this(l, m, p, false);
         }
 
-        public EventExecutor(Listener l, Method m, Priority p, boolean ignore) {
+        public EventExecutorService(Listener l, Method m, Priority p, boolean ignore) {
             method = m;
             listener = l;
             priority = p;

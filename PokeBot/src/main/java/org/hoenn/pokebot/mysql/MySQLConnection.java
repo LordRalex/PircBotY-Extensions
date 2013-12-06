@@ -24,7 +24,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @version 1.0
@@ -35,6 +37,7 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
     private final String host, user, pass, database, table;
     private final int port;
     private final Connection conn;
+    private final Map<String, PreparedStatement> preparedCache = new HashMap<>();
 
     public MySQLConnection(String h, int p, String u, String ps, String d, String t) throws SQLException {
         host = h;
@@ -61,7 +64,12 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
     }
 
     public <T> PreparedStatement getPreparedStatement(String statement, T... objs) throws SQLException {
-        PreparedStatement state = conn.prepareStatement(statement);
+        PreparedStatement state = preparedCache.get(statement);
+        if (state == null) {
+            state = conn.prepareStatement(statement);
+            preparedCache.put(statement, state);
+        }
+        state.clearParameters();
         for (int i = 0; i < objs.length; i++) {
             T obj = (T) objs[i];
             if (obj instanceof Integer) {
@@ -79,16 +87,31 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
         return state;
     }
 
+    public Object get(PreparedStatement key) throws IOException {
+        try (PreparedStatement stmt = key) {
+            try (ResultSet set = stmt.executeQuery()) {
+                Object obj = set.getObject(1);
+                return obj;
+            } catch (SQLException ex) {
+                throw new IOException(ex);
+            }
+        } catch (SQLException ex) {
+            throw new IOException(ex);
+        }
+    }
+
     @Override
     public String getString(PreparedStatement key) throws IOException {
-        try {
-            ResultSet set = key.executeQuery();
-            Object obj = set.getObject(1);
-            key.close();
-            if (obj instanceof String) {
-                return (String) obj;
-            } else {
-                throw new IOException("Cannot convert " + obj.getClass().getName() + " to a string");
+        try (PreparedStatement stmt = key) {
+            try (ResultSet set = stmt.executeQuery()) {
+                Object obj = set.getObject(1);
+                if (obj instanceof String) {
+                    return (String) obj;
+                } else {
+                    throw new IOException("Cannot convert " + obj.getClass().getName() + " to a string");
+                }
+            } catch (SQLException ex) {
+                throw new IOException(ex);
             }
         } catch (SQLException ex) {
             throw new IOException(ex);
@@ -97,14 +120,20 @@ public class MySQLConnection implements DataStorage<PreparedStatement> {
 
     @Override
     public List<String> getStringList(PreparedStatement key) throws IOException {
-        try {
-            ResultSet set = key.executeQuery();
-            Object obj = set.getObject(1);
-            key.close();
-            if (obj instanceof List) {
-                return (List<String>) obj;
-            } else {
-                throw new IOException("Cannot convert " + obj.getClass().getName() + " to a list");
+        try (PreparedStatement stmt = key) {
+            try (ResultSet set = stmt.executeQuery()) {
+                Object obj = set.getObject(1);
+                if (obj instanceof List) {
+                    try {
+                        return (List<String>) obj;
+                    } catch (ClassCastException e) {
+                        throw new IOException("Cannot convert " + obj.getClass().getName() + " to a List<String>");
+                    }
+                } else {
+                    throw new IOException("Cannot convert " + obj.getClass().getName() + " to a List<String>");
+                }
+            } catch (SQLException ex) {
+                throw new IOException(ex);
             }
         } catch (SQLException ex) {
             throw new IOException(ex);

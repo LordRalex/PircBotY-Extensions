@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.yaml.snakeyaml.Yaml;
@@ -38,7 +37,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 public final class Settings implements DataStorage<String> {
 
-    private static final Map<File, SettingsMap<String, Object>> settings = new ConcurrentHashMap<>();
+    private static final Map<File, Map<String, Object>> settings = new ConcurrentHashMap<>();
     private final File name;
     private static final Settings global;
 
@@ -63,16 +62,11 @@ public final class Settings implements DataStorage<String> {
         }
         if (it != null) {
             for (Object in : it) {
-                Set set = ((LinkedHashMap) in).keySet();
-                //currently does not do nested vars, only outer, have to loop for LinkedHashMaps for that
-                for (Object key : set) {
-                    if (((LinkedHashMap) in).get(key) != null) {
-                        local.put((String) key, ((LinkedHashMap) in).get(key));
-                    }
-                }
+                LinkedHashMap map = (LinkedHashMap) in;
+                local.putAll(map);
             }
         }
-        settings.put(name, new SettingsMap<>(local));
+        settings.put(name, new HashMap<>(local));
     }
 
     public void save() {
@@ -90,13 +84,26 @@ public final class Settings implements DataStorage<String> {
         return (global == null ? loadGlobalSettings() : global);
     }
 
-    @Override
-    public String getString(String key) {
-        if (key == null || key.isEmpty()) {
+    public Object get(String key) {
+        return get(settings.get(name), key);
+    }
+
+    private Object get(Map<String, Object> map, String key) {
+        if (key == null) {
             throw new NullPointerException("KEY CANNOT BE NULL");
         }
+        if (key.contains(".")) {
+            String part = key.split("\\.")[0];
+            String rest = key.split("\\.", 2)[1];
+            return get((Map<String, Object>) map.get(part), rest);
+        }
+        return map.get(key);
+    }
+
+    @Override
+    public String getString(String key) {
         String value = null;
-        Object val = settings.get(name).get(key);
+        Object val = get(key);
         if (val != null && val instanceof String) {
             value = (String) val;
         }
@@ -105,11 +112,8 @@ public final class Settings implements DataStorage<String> {
 
     @Override
     public int getInt(String key) {
-        if (key == null || key.isEmpty()) {
-            throw new NullPointerException("KEY CANNOT BE NULL");
-        }
         Integer value = 0;
-        Object val = settings.get(name).get(key);
+        Object val = get(key);
         if (val != null && val instanceof Integer) {
             value = (Integer) val;
         }
@@ -118,11 +122,8 @@ public final class Settings implements DataStorage<String> {
 
     @Override
     public List<String> getStringList(String key) {
-        if (key == null || key.isEmpty()) {
-            throw new NullPointerException("KEY CANNOT BE NULL");
-        }
         List<String> value = null;
-        Object val = settings.get(name).get(key);
+        Object val = get(key);
         if (val != null && val instanceof List) {
             value = (List<String>) val;
         } else if (val != null && val instanceof String[]) {
@@ -144,18 +145,27 @@ public final class Settings implements DataStorage<String> {
             throw new NullPointerException("KEY CANNOT BE NULL");
         }
         Yaml yml = new Yaml(new SafeConstructor());
-        settings.get(name).put(key, newValue);
+        set(settings.get(name), key, newValue);
         FileWriter out = new FileWriter(name);
         yml.dump(settings.get(name), out);
     }
 
-    @Override
-    public boolean getBoolean(String key) {
-        if (key == null || key.isEmpty()) {
+    private void set(Map<String, Object> map, String key, Object newValue) {
+        if (key == null) {
             throw new NullPointerException("KEY CANNOT BE NULL");
         }
+        if (key.contains(".")) {
+            String part = key.split("\\.")[0];
+            String rest = key.split("\\.", 2)[1];
+            set((Map<String, Object>) map.get(part), rest, newValue);
+        }
+        map.put(key, newValue);
+    }
+
+    @Override
+    public boolean getBoolean(String key) {
         Boolean value = Boolean.FALSE;
-        Object val = settings.get(name).get(key);
+        Object val = get(key);
         if (val != null && val instanceof Boolean) {
             value = (Boolean) val;
         }
