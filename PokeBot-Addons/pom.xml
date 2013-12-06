@@ -37,7 +37,7 @@
     <dependencies>
         <dependency>
             <groupId>org.hoenn</groupId>
-            <artifactId>PokeBot</artifactId>
+            <artifactId>Pokebot</artifactId>
             <version>4.0.0</version>
         </dependency>
     </dependencies>

@@ -15,19 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.hoenn.pokebot.api.EventType;
-import org.hoenn.pokebot.api.Listener;
-import org.hoenn.pokebot.api.Utilities;
-import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.events.JoinEvent;
+import net.ae97.aebot.api.EventType;
+import net.ae97.aebot.api.Listener;
+import net.ae97.aebot.api.Utilities;
+import net.ae97.aebot.api.events.CommandEvent;
+import net.ae97.aebot.api.events.JoinEvent;
 import java.util.HashMap;
 import java.util.Map;
-import org.hoenn.pokebot.api.CommandExecutor;
+import net.ae97.aebot.api.CommandExecutor;
 
 /**
  * @author Lord_Ralex
  */
-public class SayBackCommand implements CommandExecutor, Listener {
+public class SayBackCommand extends CommandExecutor implements  Listener {
 
     private final Map<String, String> mappings = new HashMap<>();
 
@@ -37,7 +37,10 @@ public class SayBackCommand implements CommandExecutor, Listener {
         if (message == null || message.isEmpty()) {
             return;
         }
-        event.getChannel().sendMessage(event.getUser().getNick() + ", " + message);
+        String[] parts = message.split(";;");
+        for (String part : parts) {
+            event.getChannel().sendMessage(part.replace("{user}", event.getUser().getNick()).replace("{channel}", event.getChannel().getName()));
+        }
     }
 
     @Override

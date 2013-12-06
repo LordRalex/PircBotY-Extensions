@@ -40,8 +40,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -64,12 +66,38 @@ public class FaqSystem implements CommandExecutor {
     private final int delay;
     private final ScheduledExecutorService es;
     private final Settings settings;
+    private final String messageformat;
+    private final Map<String, String> colors = new HashMap<>();
 
     public FaqSystem() {
         settings = new Settings(new File("settings", "faq.yml"));
         loadDatabases();
         delay = settings.getInt("delay");
+        messageformat = settings.getString("format");
         es = Executors.newScheduledThreadPool(10);
+        colors.put("black", Colors.BLACK);
+        colors.put("blue", Colors.BLUE);
+        colors.put("bold", Colors.BOLD);
+        colors.put("brown", Colors.BROWN);
+        colors.put("cyan", Colors.CYAN);
+        colors.put("darkblue", Colors.DARK_BLUE);
+        colors.put("darkgray", Colors.DARK_GRAY);
+        colors.put("darkgrey", Colors.DARK_GRAY);
+        colors.put("darkgreen", Colors.DARK_GREEN);
+        colors.put("green", Colors.GREEN);
+        colors.put("lightgray", Colors.LIGHT_GRAY);
+        colors.put("lightgrey", Colors.LIGHT_GRAY);
+        colors.put("magenta", Colors.MAGENTA);
+        colors.put("normal", Colors.NORMAL);
+        colors.put("reset", Colors.NORMAL);
+        colors.put("olive", Colors.OLIVE);
+        colors.put("purple", Colors.PURPLE);
+        colors.put("red", Colors.RED);
+        colors.put("reverse", Colors.REVERSE);
+        colors.put("teal", Colors.TEAL);
+        colors.put("underline", Colors.UNDERLINE);
+        colors.put("white", Colors.WHITE);
+        colors.put("yellow", Colors.YELLOW);
     }
 
     @Override
@@ -77,7 +105,6 @@ public class FaqSystem implements CommandExecutor {
         if (event.getCommand().equalsIgnoreCase("refresh")) {
             loadDatabases();
             event.getUser().sendNotice("Updated local storage of all databases");
-            return;
         } else if (event.getCommand().equalsIgnoreCase("togglefaq")) {
             Channel chan = event.getChannel();
             User user = event.getUser();
@@ -192,10 +219,17 @@ public class FaqSystem implements CommandExecutor {
                         event.getUser().sendNotice(index.getName() + " does not the factoid " + event.getArgs()[1] + " in the database");
                         return;
                     }
+                    if (lines[0].equalsIgnoreCase("@deprecated")) {
+                        event.getUser().sendNotice("The factoid " + event.getArgs()[1].toLowerCase() + " has been deprecated");
+                        for (int i = 1; i < lines.length; i++) {
+                            event.getUser().sendNotice(lines[i]);
+                        }
+                    }
                     RunLaterThread thread = new RunLaterThread(event.getArgs()[1].toLowerCase(), target, channel, lines, true);
                     thread.setFuture(es.scheduleWithFixedDelay(thread, 1, delay, TimeUnit.SECONDS));
                 }
                 break;
+
                 case "<": {
                     String target = event.getUser().getNick();
                     String channel = event.getChannel().getName();
@@ -210,6 +244,7 @@ public class FaqSystem implements CommandExecutor {
                 break;
                 case "+": {
                     if (!event.getUser().hasPermission((String) null, "faq.add." + index.getName())) {
+                        event.getUser().sendNotice("You do not have permission to use this command");
                         return;
                     }
                     if (index.isReadonly()) {
@@ -233,7 +268,8 @@ public class FaqSystem implements CommandExecutor {
                 break;
                 case "-": {
                     if (!event.getUser().hasPermission((String) null, "faq.remove." + index.getName())) {
-                        return;
+                        event.getUser().sendNotice("You do not have permission to use this command");
+                        break;
                     }
                     if (index.isReadonly()) {
                         event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
@@ -253,7 +289,8 @@ public class FaqSystem implements CommandExecutor {
                 break;
                 case "~": {
                     if (!event.getUser().hasPermission((String) null, "faq.edit." + index.getName())) {
-                        return;
+                        event.getUser().sendNotice("You do not have permission to use this command");
+                        break;
                     }
                     if (index.isReadonly()) {
                         event.getUser().sendNotice("The " + index.getName() + " FAQ database is read-only");
@@ -362,7 +399,7 @@ public class FaqSystem implements CommandExecutor {
         out.getChannel().transferFrom(rbc, 0, 1 << 24);
     }
 
-    private synchronized void loadDatabases() {
+    private void loadDatabases() {
         List<String> databasesToLoad = settings.getStringList("databases");
         for (String load : databasesToLoad) {
             String databaseType = settings.getString(load + "-type");
@@ -416,8 +453,10 @@ public class FaqSystem implements CommandExecutor {
         }
     }
 
-    private synchronized void saveDatabase(Database db) throws IOException {
-        db.save();
+    private void saveDatabase(Database db) throws IOException {
+        synchronized (db) {
+            db.save();
+        }
     }
 
     private class RunLaterThread implements Runnable {
@@ -427,14 +466,20 @@ public class FaqSystem implements CommandExecutor {
         private final String user;
         private final boolean notice;
         private final String name;
+        private final String[] args;
         private ScheduledFuture future = null;
 
         public RunLaterThread(String na, String u, String c, String[] l, boolean n) {
+            this(na, u, c, l, n, new String[0]);
+        }
+
+        public RunLaterThread(String na, String u, String c, String[] l, boolean n, String[] a) {
             lines = new ArrayList<>(Arrays.asList(l));
             channel = c;
             user = u;
             notice = n;
             name = na;
+            args = a;
         }
 
         @Override
@@ -447,10 +492,16 @@ public class FaqSystem implements CommandExecutor {
             }
             BotUser bot = BotUser.getBotUser();
             String message = lines.remove(0);
-            if (user == null) {
-                message = Colors.BOLD + name.toLowerCase() + ": " + Colors.NORMAL + message;
-            } else {
-                message = Colors.BOLD + user + ": " + Colors.NORMAL + message;
+            message = messageformat.replace("{message}", message)
+                    .replace("{target}", user == null ? "" : user)
+                    .replace("{channel}", channel)
+                    .replace("{factoid}", name.toLowerCase())
+                    .replace("{botname}", BotUser.getBotUser().getNick());
+            for (int i = 0; i < args.length; i++) {
+                message = message.replace("{" + i + "}", args[i]);
+            }
+            for (Entry<String, String> color : colors.entrySet()) {
+                message = message.replace("{" + color.getKey() + "}", color.getValue());
             }
             if (notice) {
                 bot.sendNotice(user, message);
@@ -651,7 +702,7 @@ public class FaqSystem implements CommandExecutor {
             return location;
         }
 
-        public synchronized void save() throws IOException {
+        public void save() throws IOException {
             switch (storage) {
                 case FLAT: {
                     new File(location).mkdirs();
