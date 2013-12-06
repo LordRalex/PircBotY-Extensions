@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.hoenn.pokebot.extension.Extension;
@@ -36,7 +38,7 @@ public class ExtensionPluginLoader {
     private final Map<String, Class<?>> classes = new HashMap<>();
     private final Map<String, ExtensionLoader> loaders = new LinkedHashMap<>();
 
-    public Extension loadExtension(File listener) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public Set<Extension> loadExtension(File listener) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         if (!listener.exists()) {
             throw new FileNotFoundException("File " + listener.getPath() + " not found");
         }
@@ -60,10 +62,14 @@ public class ExtensionPluginLoader {
                 }
             }
         }
-        Class<? extends Extension> mainClass = loader.findMainClass();
-        loaders.put(mainClass.getName(), loader);
-        Extension result = mainClass.newInstance();
-        return result;
+        Set<Class<? extends Extension>> mainClasses = loader.findMainClasses();
+        Set<Extension> extensionList = new HashSet<>();
+        for (Class<? extends Extension> mainClass : mainClasses) {
+            loaders.put(mainClass.getName(), loader);
+            Extension result = mainClass.newInstance();
+            extensionList.add(result);
+        }
+        return extensionList;
     }
 
     Class<?> getClassByName(String name) {

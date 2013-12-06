@@ -64,9 +64,8 @@ public class ExtensionManager {
         for (File file : extensionFolder.listFiles()) {
             try {
                 if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                    Extension extension = pluginLoader.loadExtension(file);
-                    extension.load();
-                    loadedExtensions.add(extension);
+                    Set<Extension> extensionList = pluginLoader.loadExtension(file);
+                    addExtensions(extensionList);
                 } else if (file.getName().endsWith(".zip")) {
                     ZipFile zipFile = null;
                     try {
@@ -96,9 +95,8 @@ public class ExtensionManager {
                         }
                     }
                 } else if (file.getName().endsWith(".jar")) {
-                    Extension extension = pluginLoader.loadExtension(file);
-                    extension.load();
-                    loadedExtensions.add(extension);
+                    Set<Extension> extensionList = pluginLoader.loadExtension(file);
+                    addExtensions(extensionList);
                 }
             } catch (Exception e) {
                 PokeBot.log(Level.SEVERE, "Error on loading extension: " + file.getName(), e);
@@ -108,13 +106,11 @@ public class ExtensionManager {
             for (File file : temp.listFiles()) {
                 try {
                     if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                        Extension extension = pluginLoader.loadExtension(file);
-                        extension.load();
-                        loadedExtensions.add(extension);
+                        Set<Extension> extensionList = pluginLoader.loadExtension(file);
+                        addExtensions(extensionList);
                     } else if (file.getName().endsWith(".jar")) {
-                        Extension extension = pluginLoader.loadExtension(file);
-                        extension.load();
-                        loadedExtensions.add(extension);
+                        Set<Extension> extensionList = pluginLoader.loadExtension(file);
+                        addExtensions(extensionList);
                     }
                 } catch (Exception e) {
                     PokeBot.log(Level.SEVERE, "Error on loading extension: " + file.getName(), e);
@@ -146,5 +142,16 @@ public class ExtensionManager {
 
     public void addCommandExecutor(CommandExecutor executor) {
         pokebot.getEventHandler().registerCommandExecutor(executor);
+    }
+
+    public void addExtension(Extension extension) {
+        extension.load();
+        loadedExtensions.add(extension);
+    }
+
+    public void addExtensions(Set<Extension> extensionList) {
+        for (Extension extension : extensionList) {
+            addExtension(extension);
+        }
     }
 }

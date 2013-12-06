@@ -19,7 +19,9 @@ package org.hoenn.pokebot.loader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.hoenn.pokebot.extension.Extension;
 
 /**
@@ -61,5 +63,15 @@ public class ExtensionLoader extends URLClassLoader {
             }
         }
         return null;
+    }
+
+    public Set<Class<? extends Extension>> findMainClasses() {
+        Set<Class<? extends Extension>> classList = new HashSet<>();
+        for (Class<?> cl : classes.values()) {
+            if (Extension.class.isAssignableFrom(cl)) {
+                classList.add(cl.asSubclass(Extension.class));
+            }
+        }
+        return classList;
     }
 }
