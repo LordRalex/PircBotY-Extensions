@@ -24,6 +24,7 @@ public class JoinEvent implements UserEvent, ChannelEvent, CancellableEvent {
     private final Channel channel;
     private final User sender;
     private boolean isCancelled = false;
+    private final long timestamp = System.currentTimeMillis();
 
     public JoinEvent(org.pircbotx.hooks.events.JoinEvent event) {
         channel = Channel.getChannel(event.getChannel());
@@ -52,5 +53,10 @@ public class JoinEvent implements UserEvent, ChannelEvent, CancellableEvent {
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

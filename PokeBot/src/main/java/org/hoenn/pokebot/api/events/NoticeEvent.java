@@ -23,6 +23,7 @@ public class NoticeEvent implements UserEvent, CancellableEvent {
     private final String message;
     private final User sender;
     private boolean isCancelled = false;
+    private final long timestamp = System.currentTimeMillis();
 
     public NoticeEvent(org.pircbotx.hooks.events.NoticeEvent event) {
         sender = User.getUser(event.getUser());
@@ -50,5 +51,10 @@ public class NoticeEvent implements UserEvent, CancellableEvent {
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

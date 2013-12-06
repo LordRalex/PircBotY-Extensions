@@ -24,6 +24,7 @@ public class PartEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private final User sender;
     private final Channel channel;
     private boolean isCancelled = false;
+    private final long timestamp = System.currentTimeMillis();
 
     public PartEvent(org.pircbotx.hooks.events.PartEvent event) {
         sender = User.getUser(event.getUser());
@@ -57,5 +58,10 @@ public class PartEvent implements CancellableEvent, UserEvent, ChannelEvent {
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

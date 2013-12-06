@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Laptop
+ * Copyright (C) 2013 Lord_Ralex
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,19 @@
 package org.hoenn.pokebot.api.events;
 
 /**
- * @version 1.0
- * @author Laptop
+ * @author Lord_Ralex
  */
 public class ConnectionEvent implements Event {
+
+    private final long timestamp;
+
+    public ConnectionEvent() {
+        timestamp = System.currentTimeMillis();
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
+    }
+
 }

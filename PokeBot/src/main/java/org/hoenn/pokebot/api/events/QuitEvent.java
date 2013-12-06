@@ -22,6 +22,7 @@ public class QuitEvent implements UserEvent, CancellableEvent {
 
     private final User sender;
     private boolean isCancelled = false;
+    private final long timestamp = System.currentTimeMillis();
 
     public QuitEvent(org.pircbotx.hooks.events.QuitEvent event) {
         sender = User.getUser(event.getUser());
@@ -44,5 +45,10 @@ public class QuitEvent implements UserEvent, CancellableEvent {
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

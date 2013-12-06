@@ -27,6 +27,7 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
     private final User sender;
     private final Channel channel;
     private final String[] args;
+    private final long timestamp = System.currentTimeMillis();
     private boolean isCancelled = false;
 
     public CommandEvent(org.pircbotx.hooks.events.MessageEvent event) {
@@ -102,5 +103,10 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

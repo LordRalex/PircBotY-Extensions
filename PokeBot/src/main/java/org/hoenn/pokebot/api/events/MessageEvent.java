@@ -25,6 +25,7 @@ public final class MessageEvent implements UserEvent, ChannelEvent, CancellableE
     private final User sender;
     private final Channel channel;
     private boolean isCancelled = false;
+    private final long timestamp = System.currentTimeMillis();
 
     public MessageEvent(org.pircbotx.hooks.events.MessageEvent event) {
         sender = User.getUser(event.getUser());
@@ -58,5 +59,10 @@ public final class MessageEvent implements UserEvent, ChannelEvent, CancellableE
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

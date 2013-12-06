@@ -29,6 +29,7 @@ public class ActionEvent implements UserEvent, ChannelEvent, CancellableEvent {
     private final User sender;
     private final String action;
     private boolean isCancelled = false;
+    private final long timestamp = System.currentTimeMillis();
 
     public ActionEvent(org.pircbotx.hooks.events.ActionEvent event) {
         channel = Channel.getChannel(event.getChannel());
@@ -58,5 +59,10 @@ public class ActionEvent implements UserEvent, ChannelEvent, CancellableEvent {
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

@@ -30,6 +30,7 @@ public class KickEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private final Channel channel;
     private final String message;
     private boolean isCancelled = false;
+    private final long timestamp = System.currentTimeMillis();
 
     public KickEvent(org.pircbotx.hooks.events.KickEvent event) {
         kicker = User.getUser(event.getRecipient());
@@ -64,5 +65,10 @@ public class KickEvent implements CancellableEvent, UserEvent, ChannelEvent {
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

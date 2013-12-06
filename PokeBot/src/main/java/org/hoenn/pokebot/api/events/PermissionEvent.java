@@ -16,7 +16,6 @@
  */
 package org.hoenn.pokebot.api.events;
 
-import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.User;
 
 /**
@@ -27,6 +26,7 @@ public class PermissionEvent implements UserEvent {
 
     private final User user;
     private final boolean isForced;
+    private final long timestamp = System.currentTimeMillis();
 
     public PermissionEvent(User u) {
         this(u, false);
@@ -48,5 +48,10 @@ public class PermissionEvent implements UserEvent {
 
     public boolean isForced() {
         return isForced;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }

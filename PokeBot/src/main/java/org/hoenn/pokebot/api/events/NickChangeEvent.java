@@ -23,6 +23,7 @@ public class NickChangeEvent implements UserEvent, CancellableEvent {
     private final String oldNick, newNick;
     private final User sender;
     private boolean isCancelled = false;
+    private final long timestamp = System.currentTimeMillis();
 
     public NickChangeEvent(org.pircbotx.hooks.events.NickChangeEvent event) {
         oldNick = event.getOldNick();
@@ -51,5 +52,10 @@ public class NickChangeEvent implements UserEvent, CancellableEvent {
     @Override
     public boolean isCancelled() {
         return isCancelled;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return timestamp;
     }
 }
