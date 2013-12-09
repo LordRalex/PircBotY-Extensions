@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -44,6 +45,7 @@ public class AntiSpamExtension extends Extension implements Listener {
     private int DUPE_RATE;
     private final List<String> channels = new ArrayList<>();
     private String kickMessage;
+    private CleanerTask cleaner;
 
     @Override
     public void load() {
@@ -56,6 +58,8 @@ public class AntiSpamExtension extends Extension implements Listener {
         channels.addAll(settings.getStringList("channels"));
         logs.clear();
         PokeBot.getInstance().getExtensionManager().addListener(this);
+        cleaner = new CleanerTask(this);
+        PokeBot.getInstance().getScheduler().scheduleTask(cleaner, 30, TimeUnit.MINUTES);
     }
 
     @EventExecutor(priority = Priority.LOW)
@@ -110,4 +114,16 @@ public class AntiSpamExtension extends Extension implements Listener {
         }
     }
 
+    public void clean() {
+        synchronized (logs) {
+            List<String> keys = new ArrayList<>(logs.keySet());
+            for (String key : keys) {
+                Posts log = logs.get(key);
+                log.cleanLog();
+                if (log.isEmpty()) {
+                    logs.remove(key);
+                }
+            }
+        }
+    }
 }

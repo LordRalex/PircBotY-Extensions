@@ -28,6 +28,7 @@ public class Posts {
     private final int MAX_MESSAGES;
     private final int DUPE_RATE;
     private final int SPAM_RATE;
+    private final long BUFFER = 10 * 60 * 60 * 1000;
 
     public Posts(int max, int dupe, int spam) {
         MAX_MESSAGES = max;
@@ -36,24 +37,41 @@ public class Posts {
     }
 
     public boolean addPost(String lastPost, long timestamp) {
-        posts.add(new Post(timestamp, lastPost));
-        if (posts.size() == MAX_MESSAGES) {
-            boolean areSame = true;
-            for (int i = 1; i < posts.size() && areSame; i++) {
-                if (!posts.get(i - 1).getMessage().equalsIgnoreCase(posts.get(i).getMessage())) {
-                    areSame = false;
+        synchronized (posts) {
+            posts.add(new Post(timestamp, lastPost));
+            if (posts.size() == MAX_MESSAGES) {
+                boolean areSame = true;
+                for (int i = 1; i < posts.size() && areSame; i++) {
+                    if (!posts.get(i - 1).getMessage().equalsIgnoreCase(posts.get(i).getMessage())) {
+                        areSame = false;
+                    }
                 }
-            }
-            if (areSame) {
-                if (posts.get(posts.size() - 1).getTime() - posts.get(0).getTime() < DUPE_RATE) {
+                if (areSame) {
+                    if (posts.get(posts.size() - 1).getTime() - posts.get(0).getTime() < DUPE_RATE) {
+                        return true;
+                    }
+                }
+                if (posts.get(posts.size() - 1).getTime() - posts.get(0).getTime() < SPAM_RATE) {
                     return true;
                 }
+                posts.remove(0);
             }
-            if (posts.get(posts.size() - 1).getTime() - posts.get(0).getTime() < SPAM_RATE) {
-                return true;
-            }
-            posts.remove(0);
         }
         return false;
+    }
+
+    public void cleanLog() {
+        synchronized (posts) {
+            for (int i = 0; i < posts.size(); i++) {
+                if (posts.get(i).getTime() < System.currentTimeMillis() - BUFFER) {
+                    posts.remove(i);
+                    i--;
+                }
+            }
+        }
+    }
+
+    public boolean isEmpty() {
+        return posts.isEmpty();
     }
 }
