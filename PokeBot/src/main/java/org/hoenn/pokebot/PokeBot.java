@@ -61,15 +61,6 @@ public final class PokeBot extends Thread {
     private final Scheduler scheduler;
 
     static {
-        instance = new PokeBot();
-        KeyboardListener temp;
-        try {
-            temp = new KeyboardListener(instance);
-        } catch (IOException | NickNotOnlineException ex) {
-            temp = null;
-            log(Level.SEVERE, "An error occured", ex);
-        }
-        kblistener = temp;
         if (!(new File("settings", "config.yml").exists())) {
             new File("settings").mkdirs();
             InputStream input = PokeBot.class.getResourceAsStream("/config.yml");
@@ -85,6 +76,15 @@ public final class PokeBot extends Thread {
         }
         globalSettings = Settings.loadGlobalSettings();
         driver = new PircBotX();
+        instance = new PokeBot();
+        KeyboardListener temp;
+        try {
+            temp = new KeyboardListener(instance);
+        } catch (IOException | NickNotOnlineException ex) {
+            temp = null;
+            log(Level.SEVERE, "An error occured", ex);
+        }
+        kblistener = temp;
     }
 
     public static void main(String[] startargs) throws IOException {
