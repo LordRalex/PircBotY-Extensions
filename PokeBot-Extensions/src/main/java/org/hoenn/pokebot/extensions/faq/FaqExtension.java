@@ -25,14 +25,11 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
-import org.hoenn.pokebot.EventHandler;
+import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.channels.Channel;
@@ -41,7 +38,6 @@ import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.data.DataType;
 import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.settings.Settings;
-import org.pircbotx.Colors;
 
 /**
  * @author Lord_Ralex
@@ -50,48 +46,23 @@ public class FaqExtension extends Extension implements CommandExecutor {
 
     private final Map<String, Database> databases = new ConcurrentHashMap<>();
     private int delay;
-    private ScheduledExecutorService es;
     private Settings settings;
-    private String messageFormat;
-    private final Map<String, String> colors = new HashMap<>();
+    private String messageFormat, messageFormat_nouser;
 
     @Override
     public void load() {
         settings = new Settings(new File("settings", "faq.yml"));
-        loadDatabases();
         delay = settings.getInt("delay");
         messageFormat = settings.getString("format");
-        es = Executors.newScheduledThreadPool(10);
-        colors.put("black", Colors.BLACK);
-        colors.put("blue", Colors.BLUE);
-        colors.put("bold", Colors.BOLD);
-        colors.put("brown", Colors.BROWN);
-        colors.put("cyan", Colors.CYAN);
-        colors.put("darkblue", Colors.DARK_BLUE);
-        colors.put("darkgray", Colors.DARK_GRAY);
-        colors.put("darkgrey", Colors.DARK_GRAY);
-        colors.put("darkgreen", Colors.DARK_GREEN);
-        colors.put("green", Colors.GREEN);
-        colors.put("lightgray", Colors.LIGHT_GRAY);
-        colors.put("lightgrey", Colors.LIGHT_GRAY);
-        colors.put("magenta", Colors.MAGENTA);
-        colors.put("normal", Colors.NORMAL);
-        colors.put("reset", Colors.NORMAL);
-        colors.put("olive", Colors.OLIVE);
-        colors.put("purple", Colors.PURPLE);
-        colors.put("red", Colors.RED);
-        colors.put("reverse", Colors.REVERSE);
-        colors.put("teal", Colors.TEAL);
-        colors.put("underline", Colors.UNDERLINE);
-        colors.put("white", Colors.WHITE);
-        colors.put("yellow", Colors.YELLOW);
+        messageFormat_nouser = settings.getString("format-notarget");
+        loadDatabases();
         PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
     public void runEvent(CommandEvent event) {
         if (event.getCommand().equalsIgnoreCase("refresh")) {
-            loadDatabases();
+            load();
             event.getUser().sendNotice("Updated local storage of all databases");
         } else if (event.getCommand().equalsIgnoreCase("togglefaq")) {
             Channel chan = event.getChannel();
@@ -189,7 +160,7 @@ public class FaqExtension extends Extension implements CommandExecutor {
                             event.getUser().sendNotice(lines[i]);
                         }
                     }
-                    MessageTask thread = new MessageTask(event.getArgs()[1].toLowerCase(), target, channel, lines, false, messageFormat, delay);
+                    MessageTask thread = new MessageTask(event.getArgs()[1].toLowerCase(), target, channel, lines, false, target == null ? messageFormat_nouser : messageFormat, delay);
                     thread.start();
                 }
                 break;
@@ -207,7 +178,7 @@ public class FaqExtension extends Extension implements CommandExecutor {
                             event.getUser().sendNotice(lines[i]);
                         }
                     }
-                    MessageTask thread = new MessageTask(event.getArgs()[1].toLowerCase(), target, channel, lines, true, messageFormat, delay);
+                    MessageTask thread = new MessageTask(event.getArgs()[1].toLowerCase(), target, channel, lines, true, target == null ? messageFormat_nouser : messageFormat, delay);
                     thread.start();
                 }
                 break;
@@ -225,7 +196,7 @@ public class FaqExtension extends Extension implements CommandExecutor {
                             event.getUser().sendNotice(lines[i]);
                         }
                     }
-                    MessageTask thread = new MessageTask(event.getArgs()[1].toLowerCase(), target, channel, lines, true, messageFormat, delay);
+                    MessageTask thread = new MessageTask(event.getArgs()[1].toLowerCase(), target, channel, lines, true, target == null ? messageFormat_nouser : messageFormat, delay);
                     thread.start();
                 }
                 break;
@@ -244,7 +215,7 @@ public class FaqExtension extends Extension implements CommandExecutor {
                             event.getUser().sendNotice(lines[i]);
                         }
                     }
-                    MessageTask thread = new MessageTask(event.getArgs()[0].toLowerCase(), target, channel, lines, true, messageFormat, delay);
+                    MessageTask thread = new MessageTask(event.getArgs()[0].toLowerCase(), target, channel, lines, true, target == null ? messageFormat_nouser : messageFormat, delay);
                     thread.start();
                 }
                 break;
@@ -359,7 +330,7 @@ public class FaqExtension extends Extension implements CommandExecutor {
                             event.getUser().sendNotice(lines[i]);
                         }
                     }
-                    MessageTask thread = new MessageTask(event.getArgs()[0].toLowerCase(), target, channel, lines, false, messageFormat, delay);
+                    MessageTask thread = new MessageTask(event.getArgs()[0].toLowerCase(), target, channel, lines, false, target == null ? messageFormat_nouser : messageFormat, delay);
                     thread.start();
                 }
                 break;

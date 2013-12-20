@@ -16,7 +16,7 @@
  */
 package org.hoenn.pokebot.api.events;
 
-import org.hoenn.pokebot.EventHandler;
+import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.exceptions.NickNotOnlineException;
 import org.hoenn.pokebot.api.users.User;

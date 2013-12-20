@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoenn.pokebot;
+package org.hoenn.pokebot.eventhandler;
 
 import org.hoenn.pokebot.api.events.JoinEvent;
 import org.hoenn.pokebot.api.events.ActionEvent;
@@ -45,6 +45,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.events.CancellableEvent;
@@ -116,7 +117,7 @@ public final class EventHandler extends ListenerAdapter {
         eventExecutors.put(cl, new HashSet<EventExecutorService>());
     }
 
-    void registerListener(Listener list) {
+    public void registerListener(Listener list) {
         PokeBot.log(Level.INFO, "  Added listener: " + list.getClass().getName());
         Method[] methods = list.getClass().getDeclaredMethods();
         for (Method method : methods) {
@@ -135,7 +136,7 @@ public final class EventHandler extends ListenerAdapter {
         }
     }
 
-    void registerCommandExecutor(CommandExecutor executor) {
+    public void registerCommandExecutor(CommandExecutor executor) {
         PokeBot.log(Level.INFO, "  Added command executor: " + executor.getClass().getName());
         commandExecutors.add(executor);
     }
@@ -312,6 +313,7 @@ public final class EventHandler extends ListenerAdapter {
                         }
                         PokeBot.getInstance().getExtensionManager().unload();
                         PokeBot.getInstance().getExtensionManager().load();
+                        PokeBot.getInstance().getEventHandler().load();
                         PokeBot.log(Level.INFO, "Reloaded");
                         if (sender != null) {
                             sender.sendNotice("Reloaded");

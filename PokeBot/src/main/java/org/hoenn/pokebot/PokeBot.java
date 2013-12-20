@@ -16,6 +16,8 @@
  */
 package org.hoenn.pokebot;
 
+import org.hoenn.pokebot.extension.ExtensionManager;
+import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.api.Utilities;
 import org.hoenn.pokebot.api.events.ConnectionEvent;
 import org.hoenn.pokebot.api.exceptions.NickNotOnlineException;
@@ -48,7 +50,7 @@ import org.pircbotx.exception.NickAlreadyInUseException;
 public final class PokeBot extends Thread {
 
     private static final PircBotX driver;
-    public static final String VERSION = "5.0.0";
+    public static final String VERSION = "5.0.1";
     private final EventHandler eventHandler;
     private static final PokeBot instance;
     private static final KeyboardListener kblistener;

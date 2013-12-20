@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoenn.pokebot;
+package org.hoenn.pokebot.extension;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -26,11 +26,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.Listener;
 import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.loader.ExtensionPluginLoader;
-import org.pircbotx.PircBotX;
 
 /**
  * @author Lord_Ralex
@@ -141,8 +141,12 @@ public class ExtensionManager {
     }
 
     public void addExtension(Extension extension) {
-        extension.load();
-        loadedExtensions.add(extension);
+        try {
+            extension.load();
+            loadedExtensions.add(extension);
+        } catch (Exception e) {
+            PokeBot.log(Level.SEVERE, "Error occured on loading extension " + extension.getClass().getName(), e);
+        }
     }
 
     public void addExtensions(Set<Extension> extensionList) {
