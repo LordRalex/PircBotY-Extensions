@@ -110,6 +110,8 @@ public final class EventHandler extends ListenerAdapter {
 
     public void unload() {
         eventExecutors.clear();
+        commandExecutors.clear();
+        eventClasses.clear();
     }
 
     public void registerEvent(Class<? extends Event> cl) {
@@ -312,8 +314,9 @@ public final class EventHandler extends ListenerAdapter {
                             sender.sendNotice("Reloading");
                         }
                         PokeBot.getInstance().getExtensionManager().unload();
-                        PokeBot.getInstance().getExtensionManager().load();
+                        PokeBot.getInstance().getEventHandler().unload();
                         PokeBot.getInstance().getEventHandler().load();
+                        PokeBot.getInstance().getExtensionManager().load();
                         PokeBot.log(Level.INFO, "Reloaded");
                         if (sender != null) {
                             sender.sendNotice("Reloaded");
