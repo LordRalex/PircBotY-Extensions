@@ -16,49 +16,32 @@
  */
 package org.hoenn.pokebot.settings;
 
-import org.hoenn.pokebot.PokeBot;
-import org.hoenn.pokebot.data.DataStorage;
-import org.hoenn.pokebot.data.DataType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-public final class Settings implements DataStorage<String> {
+public final class Settings {
 
-    private static final Map<File, Map<String, Object>> settings = new ConcurrentHashMap<>();
-    private final File name;
-    private static final Settings global;
+    private Map<String, Object> mapping = new HashMap<>();
 
-    static {
-        global = loadGlobalSettings();
-    }
-
-    public Settings(File aFileToLoad, boolean forceLoad) {
-        name = aFileToLoad;
-        load();
-    }
-
-    @Override
-    public void load() {
+    public void load(File file) throws IOException {
         Map<String, Object> local = new HashMap<>();
         Yaml yml = new Yaml(new SafeConstructor());
         Iterable<Object> it = null;
         try {
-            it = yml.loadAll(new FileInputStream(name));
+            it = yml.loadAll(new FileInputStream(file));
         } catch (FileNotFoundException ex) {
-            PokeBot.log(Level.SEVERE, "Cannot find " + name, ex);
+            throw ex;
         }
         if (it != null) {
             for (Object in : it) {
@@ -66,31 +49,45 @@ public final class Settings implements DataStorage<String> {
                 local.putAll(map);
             }
         }
-        settings.put(name, new HashMap<>(local));
+        mapping = new HashMap<>(local);
     }
 
-    public void save() {
+    public void load(String line) {
+        Map<String, Object> local = new HashMap<>();
+        Yaml yml = new Yaml(new SafeConstructor());
+        Iterable<Object> it = yml.loadAll(line);
+        if (it != null) {
+            for (Object in : it) {
+                LinkedHashMap map = (LinkedHashMap) in;
+                local.putAll(map);
+            }
+        }
+        mapping = new HashMap<>(local);
     }
 
-    public Settings(File aFileToLoad) {
-        this(aFileToLoad, false);
-    }
-
-    public static Settings loadGlobalSettings() {
-        return (global == null ? new Settings(new File("settings", "config.yml")) : global);
-    }
-
-    public static Settings getGlobalSettings() {
-        return (global == null ? loadGlobalSettings() : global);
+    public void load(InputStream input) {
+        Map<String, Object> local = new HashMap<>();
+        Yaml yml = new Yaml(new SafeConstructor());
+        Iterable<Object> it = yml.loadAll(input);
+        if (it != null) {
+            for (Object in : it) {
+                LinkedHashMap map = (LinkedHashMap) in;
+                local.putAll(map);
+            }
+        }
+        mapping = new HashMap<>(local);
     }
 
     public Object get(String key) {
-        return get(settings.get(name), key);
+        return get(mapping, key);
     }
 
     private Object get(Map<String, Object> map, String key) {
         if (key == null) {
             throw new NullPointerException("KEY CANNOT BE NULL");
+        }
+        if (map == null) {
+            return null;
         }
         if (key.contains(".")) {
             String part = key.split("\\.")[0];
@@ -100,7 +97,6 @@ public final class Settings implements DataStorage<String> {
         return map.get(key);
     }
 
-    @Override
     public String getString(String key) {
         String value = null;
         Object val = get(key);
@@ -110,7 +106,6 @@ public final class Settings implements DataStorage<String> {
         return value;
     }
 
-    @Override
     public int getInt(String key) {
         Integer value = 0;
         Object val = get(key);
@@ -120,7 +115,6 @@ public final class Settings implements DataStorage<String> {
         return value;
     }
 
-    @Override
     public List<String> getStringList(String key) {
         List<String> value = null;
         Object val = get(key);
@@ -140,14 +134,11 @@ public final class Settings implements DataStorage<String> {
      * @param key Key
      * @param newValue The new value, this can be lists
      */
-    public void set(String key, Object newValue) throws IOException {
+    public void set(String key, Object newValue) {
         if (key == null || key.isEmpty()) {
             throw new NullPointerException("KEY CANNOT BE NULL");
         }
-        Yaml yml = new Yaml(new SafeConstructor());
-        set(settings.get(name), key, newValue);
-        FileWriter out = new FileWriter(name);
-        yml.dump(settings.get(name), out);
+        set(mapping, key, newValue);
     }
 
     private void set(Map<String, Object> map, String key, Object newValue) {
@@ -162,7 +153,6 @@ public final class Settings implements DataStorage<String> {
         map.put(key, newValue);
     }
 
-    @Override
     public boolean getBoolean(String key) {
         Boolean value = Boolean.FALSE;
         Object val = get(key);
@@ -170,10 +160,5 @@ public final class Settings implements DataStorage<String> {
             value = (Boolean) val;
         }
         return value;
-    }
-
-    @Override
-    public DataType getType() {
-        return DataType.FLAT;
     }
 }

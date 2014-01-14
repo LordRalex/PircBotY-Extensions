@@ -16,6 +16,7 @@
  */
 package org.hoenn.pokebot.eventhandler;
 
+import java.io.IOException;
 import org.hoenn.pokebot.api.events.JoinEvent;
 import org.hoenn.pokebot.api.events.ActionEvent;
 import org.hoenn.pokebot.api.events.PermissionEvent;
@@ -31,7 +32,6 @@ import org.hoenn.pokebot.api.events.MessageEvent;
 import org.hoenn.pokebot.api.Listener;
 import org.hoenn.pokebot.api.Priority;
 import org.hoenn.pokebot.api.users.User;
-import org.hoenn.pokebot.settings.Settings;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +71,11 @@ public final class EventHandler extends ListenerAdapter {
         masterBot = bot;
         runner = new EventRunner();
         runner.setName("Event_Runner_Thread");
-        List<String> settings = Settings.getGlobalSettings().getStringList("command-prefix");
+        execServ = Executors.newFixedThreadPool(5);
+    }
+
+    public void load() {
+        List<String> settings = PokeBot.getInstance().getSettings().getStringList("command-prefix");
         commandChars.clear();
         if (settings.isEmpty()) {
             settings.add("**");
@@ -88,10 +92,6 @@ public final class EventHandler extends ListenerAdapter {
             PokeBot.log(Level.INFO, "Adding command prefix: " + prefix + (owner == null ? "" : " ( " + owner + ")"));
             commandChars.add(new CommandPrefix(prefix, owner));
         }
-        execServ = Executors.newFixedThreadPool(5);
-    }
-
-    public void load() {
         eventExecutors.clear();
         commandExecutors.clear();
         eventClasses.clear();
@@ -317,6 +317,18 @@ public final class EventHandler extends ListenerAdapter {
                         PokeBot.getInstance().getEventHandler().unload();
                         PokeBot.getInstance().getEventHandler().load();
                         PokeBot.getInstance().getExtensionManager().load();
+                        try {
+                            PokeBot.getInstance().getPermManager().reload();
+                            PokeBot.log(Level.INFO, "Reloaded permissions");
+                            if (sender != null) {
+                                sender.sendNotice("Reloaded permissions");
+                            }
+                        } catch (IOException e) {
+                            PokeBot.log(Level.SEVERE, "Error on reloading permissions", e);
+                            if (sender != null) {
+                                sender.sendNotice("Reloading permissions encountered an error: " + e.getMessage());
+                            }
+                        }
                         PokeBot.log(Level.INFO, "Reloaded");
                         if (sender != null) {
                             sender.sendNotice("Reloaded");
@@ -332,11 +344,19 @@ public final class EventHandler extends ListenerAdapter {
                         if (sender != null) {
                             sender.sendNotice("Reloading permissions");
                         }
-                        PokeBot.getInstance().getPermManager().reloadFile();
-                        PokeBot.log(Level.INFO, "Reloaded permissions");
-                        if (sender != null) {
-                            sender.sendNotice("Reloaded permissions");
+                        try {
+                            PokeBot.getInstance().getPermManager().reload();
+                            PokeBot.log(Level.INFO, "Reloaded permissions");
+                            if (sender != null) {
+                                sender.sendNotice("Reloaded permissions");
+                            }
+                        } catch (IOException e) {
+                            PokeBot.log(Level.SEVERE, "Error on reloading permissions", e);
+                            if (sender != null) {
+                                sender.sendNotice("Reloading permissions encountered an error: " + e.getMessage());
+                            }
                         }
+
                     } else if (evt.getCommand().equalsIgnoreCase("permcache")) {
                         User sender = evt.getUser();
                         if (sender != null) {

@@ -16,82 +16,44 @@
  */
 package org.hoenn.pokebot;
 
-import org.hoenn.pokebot.extension.ExtensionManager;
-import org.hoenn.pokebot.eventhandler.EventHandler;
-import org.hoenn.pokebot.api.Utilities;
-import org.hoenn.pokebot.api.events.ConnectionEvent;
-import org.hoenn.pokebot.api.exceptions.NickNotOnlineException;
-import org.hoenn.pokebot.api.users.BotUser;
-import org.hoenn.pokebot.permissions.PermissionManager;
-import org.hoenn.pokebot.settings.Settings;
-import org.hoenn.pokebot.input.KeyboardListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import jline.console.ConsoleReader;
+import org.hoenn.pokebot.api.Utilities;
+import org.hoenn.pokebot.api.events.ConnectionEvent;
+import org.hoenn.pokebot.api.users.BotUser;
+import org.hoenn.pokebot.eventhandler.EventHandler;
+import org.hoenn.pokebot.extension.ExtensionManager;
+import org.hoenn.pokebot.input.KeyboardListener;
+import org.hoenn.pokebot.permissions.PermissionManager;
 import org.hoenn.pokebot.scheduler.Scheduler;
-import org.pircbotx.Channel;
+import org.hoenn.pokebot.settings.Settings;
+import org.hoenn.pokebot.stream.SplitPrintStream;
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;
 import org.pircbotx.exception.NickAlreadyInUseException;
 
 public final class PokeBot extends Thread {
 
-    private static final PircBotX driver;
-    public static final String VERSION = "5.0.1";
-    private final EventHandler eventHandler;
-    private static final PokeBot instance;
-    private static final KeyboardListener kblistener;
-    private static final Settings globalSettings;
+    private static PircBotX driver;
+    private static PokeBot instance;
     private static boolean debugMode = false;
     private static final Map<String, String> args = new HashMap<>();
     private static boolean login = true;
-    private final PermissionManager permManager;
-    private final ExtensionManager extensionManager;
-    private final Scheduler scheduler;
-
-    static {
-        if (!(new File("settings", "config.yml").exists())) {
-            new File("settings").mkdirs();
-            InputStream input = PokeBot.class.getResourceAsStream("/config.yml");
-            try {
-                if (input == null) {
-                    throw new FileNotFoundException("Jar does not contain config.yml in root");
-                }
-                BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("settings", "config.yml")));
-                PokeBot.copyInputStream(input, output);
-            } catch (FileNotFoundException ex) {
-                log(Level.SEVERE, "Cannot find the config file", ex);
-            }
-        }
-        globalSettings = Settings.loadGlobalSettings();
-        driver = new PircBotX();
-        instance = new PokeBot();
-        KeyboardListener temp;
-        try {
-            temp = new KeyboardListener(instance);
-        } catch (IOException | NickNotOnlineException ex) {
-            temp = null;
-            log(Level.SEVERE, "An error occured", ex);
-        }
-        kblistener = temp;
-    }
+    public static final String VERSION = "5.0.3";
 
     public static void main(String[] startargs) throws IOException {
-        SplitStream out = new SplitStream(System.out);
-        SplitStream err = new SplitStream(System.err);
+        SplitPrintStream out = new SplitPrintStream(System.out);
+        SplitPrintStream err = new SplitPrintStream(System.err);
         System.setOut(out);
         System.setErr(err);
         if (startargs.length != 0) {
@@ -115,6 +77,7 @@ public final class PokeBot extends Thread {
             }
         }
         try {
+            instance = new PokeBot();
             instance.createInstance(args.get("user"), args.get("pass"));
         } catch (IOException | IrcException ex) {
             log(Level.SEVERE, "An error occurred", ex);
@@ -128,36 +91,6 @@ public final class PokeBot extends Thread {
         }
 
         instance.getEventHandler().stopRunner();
-
-        Set<Channel> chans = driver.getChannels();
-        Channel[] chanArray = chans.toArray(new Channel[0]);
-        String[] chanNames = new String[chans.size()];
-        for (int i = 0; i < chanArray.length; i++) {
-            chanNames[i] = chanArray[i].getName();
-        }
-
-        for (String chan : chanNames) {
-            try {
-                Channel c = driver.getChannel(chan);
-                if (driver.getChannels().contains(c)) {
-                    driver.partChannel(c, "Exiting channel");
-                }
-            } catch (Exception ex) {
-                log(Level.SEVERE, "An error occured on shutting down", ex);
-            }
-        }
-
-        try {
-            driver.quitServer();
-        } catch (Exception ex) {
-            log(Level.SEVERE, "An error occured on shutting down", ex);
-        }
-        try {
-            driver.disconnect();
-        } catch (Exception ex) {
-            log(Level.SEVERE, "An error occured on shutting down", ex);
-
-        }
         try {
             driver.shutdown(false);
         } catch (Exception ex) {
@@ -166,7 +99,72 @@ public final class PokeBot extends Thread {
         System.exit(0);
     }
 
+    public static PokeBot getInstance() {
+        return instance;
+    }
+
+    public static boolean getDebugMode() {
+        return debugMode;
+    }
+
+    public static Map<String, String> getStartupArgs() {
+        return args;
+    }
+
+    public static void log(String message) {
+        log(Level.INFO, message);
+    }
+
+    public static void log(Level level, String message) {
+        System.out.println("[" + level + "] " + message);
+    }
+
+    public static void log(Level level, String message, Throwable error) {
+        log(level, message);
+        error.printStackTrace(System.out);
+    }
+    private final EventHandler eventHandler;
+    private final KeyboardListener kblistener;
+    private final Settings globalSettings;
+    private final PermissionManager permManager;
+    private final ExtensionManager extensionManager;
+    private final Scheduler scheduler;
+
     private PokeBot() {
+        if (!(new File("config.yml").exists())) {
+            try (InputStream input = PokeBot.class.getResourceAsStream("/config.yml")) {
+                try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("config.yml")))) {
+                    try {
+                        byte[] buffer = new byte[1024];
+                        int len;
+                        while ((len = input.read(buffer)) >= 0) {
+                            output.write(buffer, 0, len);
+                        }
+                        input.close();
+                        output.close();
+                    } catch (IOException ex) {
+                        log(Level.SEVERE, "An error occurred on copying the streams", ex);
+                    }
+                }
+            } catch (IOException ex) {
+                log(Level.SEVERE, "Error on saving config", ex);
+            }
+        }
+        globalSettings = new Settings();
+        try {
+            globalSettings.load(new File("config.yml"));
+        } catch (IOException e) {
+            PokeBot.log(Level.SEVERE, "Could not load config.yml", e);
+        }
+        driver = new PircBotX();
+        KeyboardListener temp;
+        try {
+            temp = new KeyboardListener(instance);
+        } catch (IOException ex) {
+            temp = null;
+            log(Level.SEVERE, "An error occured", ex);
+        }
+        kblistener = temp;
         eventHandler = new EventHandler(driver);
         extensionManager = new ExtensionManager();
         permManager = new PermissionManager();
@@ -175,13 +173,13 @@ public final class PokeBot extends Thread {
 
     private void createInstance(String user, String pass) throws IOException, IrcException {
         driver.setEncoding(Charset.forName("UTF-8"));
-        String bind = Settings.getGlobalSettings().getString("bind-ip");
+        String bind = globalSettings.getString("bind-ip");
         if (bind != null && !bind.isEmpty()) {
             InetAddress addr = InetAddress.getByName(bind);
             driver.setInetAddress(addr);
         }
         driver.setVerbose(true);
-        driver.setVersion("AeBot - v" + VERSION);
+        driver.setVersion("PokeBot   - v" + VERSION);
         driver.setAutoReconnect(false);
         driver.setAutoReconnectChannels(true);
         String nick = user;
@@ -200,6 +198,11 @@ public final class PokeBot extends Thread {
 
         eventHandler.load();
         extensionManager.load();
+        try {
+            permManager.load();
+        } catch (IOException e) {
+            log(Level.SEVERE, "Error loading permissions file", e);
+        }
         boolean eventSuccess = driver.getListenerManager().addListener(eventHandler);
         if (eventSuccess) {
             log(Level.INFO, "Listener hook attached to bot");
@@ -252,10 +255,6 @@ public final class PokeBot extends Thread {
         log(Level.INFO, "All systems operational");
     }
 
-    public static PokeBot getInstance() {
-        return instance;
-    }
-
     public EventHandler getEventHandler() {
         return eventHandler;
     }
@@ -272,83 +271,11 @@ public final class PokeBot extends Thread {
         return kblistener.getJLine();
     }
 
-    public static boolean getDebugMode() {
-        return debugMode;
-    }
-
-    public static Map<String, String> getStartupArgs() {
-        return args;
-    }
-
-    public static void copyInputStream(InputStream in, OutputStream out) {
-        try {
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = in.read(buffer)) >= 0) {
-                out.write(buffer, 0, len);
-            }
-            in.close();
-            out.close();
-        } catch (IOException ex) {
-            log(Level.SEVERE, "An error occurred on copying the streams", ex);
-        }
-    }
-
-    public static void log(String message) {
-        log(Level.INFO, message);
-    }
-
-    public static void log(Level level, String message) {
-        System.out.println("[" + level + "] " + message);
-    }
-
-    public static void log(Level level, String message, Throwable error) {
-        log(level, message);
-        error.printStackTrace(System.out);
-    }
-
     public PermissionManager getPermManager() {
         return permManager;
     }
 
-    private static class SplitStream extends PrintStream {
-
-        private final PrintStream first, second;
-
-        public SplitStream(PrintStream f) throws FileNotFoundException {
-            super(f);
-            first = f;
-            second = new PrintStream(new FileOutputStream("logs.log", true));
-        }
-
-        @Override
-        public void write(byte[] b) throws IOException {
-            first.write(b);
-            second.write(b);
-        }
-
-        @Override
-        public void write(int b) {
-            first.write(b);
-            second.write(b);
-        }
-
-        @Override
-        public void write(byte[] buf, int off, int len) {
-            first.write(buf, off, len);
-            second.write(buf, off, len);
-        }
-
-        @Override
-        public void close() {
-            first.close();
-            second.close();
-        }
-
-        @Override
-        public void flush() {
-            first.flush();
-            second.flush();
-        }
+    public Settings getSettings() {
+        return globalSettings;
     }
 }

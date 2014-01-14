@@ -18,7 +18,6 @@ package org.hoenn.pokebot.input;
 
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.exceptions.NickNotOnlineException;
 import org.hoenn.pokebot.api.users.BotUser;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,13 +32,11 @@ import jline.console.ConsoleReader;
 public final class KeyboardListener extends Thread {
 
     final ConsoleReader kb;
-    final PokeBot instance;
     BotUser bot;
 
-    public KeyboardListener(PokeBot a) throws IOException, NickNotOnlineException {
+    public KeyboardListener(PokeBot a) throws IOException {
         setName("Keyboard_Listener_Thread");
         kb = new ConsoleReader();
-        instance = a;
     }
 
     @Override
@@ -98,7 +95,7 @@ public final class KeyboardListener extends Thread {
                                     bot.sendMessage("chanserv", "kick " + chan + " " + target + " " + reason);
                                 }
                             } else if (cmd.equalsIgnoreCase("reload")) {
-                                instance.getEventHandler().fireEvent(new CommandEvent(null, null, "reload", new String[0]));
+                                PokeBot.getInstance().getEventHandler().fireEvent(new CommandEvent(null, null, "reload", new String[0]));
                             }
                         } else {
                             if (currentChan == null || currentChan.isEmpty()) {
@@ -113,8 +110,9 @@ public final class KeyboardListener extends Thread {
             }
         } catch (Exception e) {
         }
-        synchronized (instance) {
-            instance.notify();
+        PokeBot pokebot = PokeBot.getInstance();
+        synchronized (pokebot) {
+            pokebot.notify();
         }
         kb.shutdown();
         PokeBot.log(Level.INFO, "Ending keyboard listener");

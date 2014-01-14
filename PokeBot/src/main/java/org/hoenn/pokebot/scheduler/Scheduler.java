@@ -29,17 +29,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class Scheduler {
 
-    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
     private final Map<Integer, ScheduledFuture<?>> index = new ConcurrentHashMap<>();
     private volatile Integer id = 0;
 
     public Scheduler() {
-        executorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        }, 5, 5, TimeUnit.MINUTES);
     }
 
     public int scheduleTask(Runnable task, int delay, TimeUnit unit) {

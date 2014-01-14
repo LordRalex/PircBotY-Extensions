@@ -20,6 +20,7 @@ import org.hoenn.pokebot.api.events.PermissionEvent;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.settings.Settings;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,13 +42,18 @@ public class PermissionManager {
     private final ScheduledExecutorService srv;
 
     public PermissionManager() {
-        permFile = new Settings(new File("permissions", "permFile.yml"));
+        permFile = new Settings();
         srv = Executors.newSingleThreadScheduledExecutor();
         srv.scheduleAtFixedRate(new CacheRunnable(), 5, 5, TimeUnit.MINUTES);
     }
 
-    public void reloadFile() {
-        permFile.load();
+    public void load() throws IOException {
+        permFile.load(new File("permissions.yml"));
+    }
+
+    public void reload() throws IOException {
+        permFile.load(new File("permissions.yml"));
+        cache.clear();
     }
 
     public void runPermissionEvent(PermissionEvent event) {

@@ -20,6 +20,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,7 +31,6 @@ import java.util.zip.ZipFile;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.Listener;
-import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.loader.ExtensionPluginLoader;
 
 /**
@@ -76,8 +77,17 @@ public class ExtensionManager {
                                 new File(temp, entry.getName()).mkdirs();
                                 continue;
                             }
-                            PokeBot.copyInputStream(zipFile.getInputStream(entry),
-                                    new BufferedOutputStream(new FileOutputStream(temp + File.separator + entry.getName())));
+                            try (InputStream input = zipFile.getInputStream(entry)) {
+                                try (OutputStream output = new BufferedOutputStream(new FileOutputStream(temp + File.separator + entry.getName()))) {
+                                    byte[] buffer = new byte[1024];
+                                    int len;
+                                    while ((len = input.read(buffer)) >= 0) {
+                                        output.write(buffer, 0, len);
+                                    }
+                                }
+                            } catch (IOException ex) {
+                                PokeBot.log(Level.SEVERE, "An error occurred on copying the streams", ex);
+                            }
                         }
                     } catch (IOException ex) {
                         PokeBot.log(Level.SEVERE, "An error occured", ex);
