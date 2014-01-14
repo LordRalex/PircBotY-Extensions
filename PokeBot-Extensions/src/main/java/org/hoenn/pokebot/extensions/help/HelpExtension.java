@@ -17,7 +17,9 @@
 package org.hoenn.pokebot.extensions.help;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
@@ -34,7 +36,15 @@ public class HelpExtension extends Extension implements CommandExecutor {
 
     @Override
     public void load() {
-        List<String> helpLines = new Settings(new File("settings", "help.yml")).getStringList("help-list");
+        List<String> helpLines;
+        try {
+            Settings settings = new Settings();
+            settings.load(new File("configs", "help.yml"));
+            helpLines = settings.getStringList("help-list");
+        } catch (IOException ex) {
+            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
+            return;
+        }
         help = helpLines.toArray(new String[0]);
         PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
     }

@@ -17,7 +17,10 @@
 package org.hoenn.pokebot.extensions.teacher;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -38,7 +41,13 @@ public class TeacherExtension extends Extension implements Listener {
 
     @Override
     public void load() {
-        settings = new Settings(new File("settings", "teacher.yml"));
+        settings = new Settings();
+        try {
+            settings.load(new File("configs", "teacher.yml"));
+        } catch (IOException ex) {
+            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
+            return;
+        }
         PokeBot.getInstance().getExtensionManager().addListener(this);
     }
 
@@ -66,7 +75,7 @@ public class TeacherExtension extends Extension implements Listener {
             chan = channel;
             chan.sendMessage("Loading " + section);
             messages = settings.getStringList(section);
-            message_delay = settings.getInt(section + "_timing");
+            message_delay = settings.getInt(section + ".timing");
         }
 
         @Override

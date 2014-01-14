@@ -18,6 +18,7 @@ package org.hoenn.pokebot.extensions.paid;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
@@ -41,7 +42,14 @@ public class PaidExecutor extends Extension implements CommandExecutor {
 
     @Override
     public void load() {
-        MAX_NAMES = new Settings(new File("settings", "paid.yml")).getInt("name-limit");
+        try {
+            Settings settings = new Settings();
+            settings.load(new File("configs", "paid.yml"));
+            MAX_NAMES = settings.getInt("name-limit");
+        } catch (IOException ex) {
+            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
+            return;
+        }
         PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
     }
 

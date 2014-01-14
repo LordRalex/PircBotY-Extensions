@@ -18,6 +18,7 @@ package org.hoenn.pokebot.extensions.welcomemessage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.EventExecutor;
@@ -41,15 +42,21 @@ public class WelcomeMesageExtension extends Extension implements Listener, Comma
     }
 
     @EventExecutor
-    public void runEvent(JoinEvent event) {
+    public void runEvent(final JoinEvent event) {
         String message = mappings.get(event.getChannel().getName().toLowerCase());
         if (message == null || message.isEmpty()) {
             return;
         }
-        String[] parts = message.split(";;");
-        for (String part : parts) {
-            event.getChannel().sendMessage(part.replace("{user}", event.getUser().getNick()).replace("{channel}", event.getChannel().getName()));
-        }
+        final String[] parts = message.split(";;");
+        PokeBot.getInstance().getScheduler().scheduleTask(new Runnable() {
+            @Override
+            public void run() {
+                for (String part : parts) {
+                    event.getUser().sendNotice(part.replace("{user}", event.getUser().getNick()).replace("{channel}", event.getChannel().getName()));
+                }
+            }
+        }, 2, TimeUnit.SECONDS);
+
     }
 
     @Override
@@ -57,10 +64,10 @@ public class WelcomeMesageExtension extends Extension implements Listener, Comma
         if (event.getUser().hasOP(event.getChannel().getName()) || event.getUser().hasPermission(event.getChannel().getName(), "saymessage.set")) {
             if (event.getArgs().length == 0) {
                 mappings.remove(event.getChannel().getName().toLowerCase());
-                event.getChannel().sendMessage("I will stop telling people when they join");
+                event.getChannel().sendMessage("I will stop messaging people when they join");
             } else {
                 mappings.put(event.getChannel().getName().toLowerCase(), Utilities.toString(event.getArgs()));
-                event.getChannel().sendMessage("I will start telling people when they join");
+                event.getChannel().sendMessage("I will start messaging people this when they join: " + Utilities.toString(event.getArgs()));
             }
         }
     }

@@ -17,10 +17,12 @@
 package org.hoenn.pokebot.extensions.ip;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.EventExecutor;
@@ -48,7 +50,14 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
 
     @Override
     public void load() {
-        channels.addAll(new Settings(new File("settings", "iplistener.yml")).getStringList("channels"));
+        try {
+            Settings settings = new Settings();
+            settings.load(new File("configs", "iplistener.yml"));
+            channels.addAll(settings.getStringList("channels"));
+        } catch (IOException ex) {
+            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
+            return;
+        }
         PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
         PokeBot.getInstance().getExtensionManager().addListener(this);
     }
@@ -82,9 +91,6 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
                     triggered.add(event.getHostname().toLowerCase());
                 } else if (triggered.contains(sender.getNick().toLowerCase())) {
                     BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
-                    if (PokeBot.getDebugMode()) {
-                        BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getUser().getNick() + " triggered the ip censor with his line: " + event.getMessage());
-                    }
                     event.setCancelled(true);
                 }
                 break;
@@ -121,9 +127,6 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
                     triggered.add(event.getUser().getIP().toLowerCase());
                 } else if (triggered.contains(sender.getNick().toLowerCase())) {
                     BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
-                    if (PokeBot.getDebugMode()) {
-                        BotUser.getBotUser().sendMessage(Settings.getGlobalSettings().getString("debug-channel"), event.getUser().getNick() + " triggered the ip censor with his line: " + event.getAction());
-                    }
                     event.setCancelled(true);
                 }
                 break;

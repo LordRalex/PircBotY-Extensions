@@ -17,9 +17,11 @@
 package org.hoenn.pokebot.extensions.names;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -44,7 +46,13 @@ public class SpecialNameExtension extends Extension implements Listener {
 
     @Override
     public void load() {
-        settings = new Settings(new File("settings", "specialnames.yml"));
+        settings = new Settings();
+        try {
+            settings.load(new File("configs", "specialnames.yml"));
+        } catch (IOException ex) {
+            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
+            return;
+        }
         List<String> temp = settings.getStringList("nicks");
         if (temp != null) {
             for (String name : temp) {

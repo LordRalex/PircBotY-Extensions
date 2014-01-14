@@ -17,11 +17,13 @@
 package org.hoenn.pokebot.extensions.antispam;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -49,7 +51,13 @@ public class AntiSpamExtension extends Extension implements Listener {
 
     @Override
     public void load() {
-        Settings settings = new Settings(new File("settings", "antispam.yml"));
+        Settings settings = new Settings();
+        try {
+            settings.load(new File("configs", "antispam.yml"));
+        } catch (IOException ex) {
+            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
+            return;
+        }
         MAX_MESSAGES = settings.getInt("message-count");
         SPAM_RATE = settings.getInt("spam-rate");
         DUPE_RATE = settings.getInt("dupe-rate");

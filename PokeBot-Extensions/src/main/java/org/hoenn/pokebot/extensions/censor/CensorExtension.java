@@ -17,10 +17,12 @@
 package org.hoenn.pokebot.extensions.censor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -45,7 +47,13 @@ public class CensorExtension extends Extension implements Listener {
 
     @Override
     public void load() {
-        settings = new Settings(new File("settings", "censor.yml"));
+        settings = new Settings();
+        try {
+            settings.load(new File("configs", "censor.yml"));
+        } catch (IOException ex) {
+            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
+            return;
+        }
         censor.clear();
         censor.addAll(settings.getStringList("words"));
         channels.clear();
