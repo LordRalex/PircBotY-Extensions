@@ -21,9 +21,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.users.BotUser;
 import org.pircbotx.Colors;
 
@@ -104,11 +101,13 @@ public class MessageTask implements Runnable {
             bot.sendMessage(channel, message);
         }
         if (!lines.isEmpty()) {
-            PokeBot.getInstance().getScheduler().scheduleTask(this, delay, TimeUnit.MILLISECONDS);
+            //PokeBot.getInstance().getScheduler().scheduleTask(this, delay, TimeUnit.MILLISECONDS);
+            new Thread(this).start();
         }
     }
 
     public void start() {
-        PokeBot.getInstance().getScheduler().scheduleTask(this, delay, TimeUnit.MILLISECONDS);
+        //PokeBot.getInstance().getScheduler().scheduleTask(this, delay, TimeUnit.MILLISECONDS);
+        new Thread(this).start();
     }
 }
