@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.hoenn</groupId>
-    <artifactId>PokeBot-Extensions</artifactId>
+    <artifactId>Pokebot-Extensions</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
-    <name>PokeBot-Extensions</name>
+    <name>Pokebot-Extensions</name>
     <url>http://maven.apache.org</url>
     <repositories>
         <repository>
