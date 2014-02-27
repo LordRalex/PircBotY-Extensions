@@ -49,7 +49,7 @@ public final class PokeBot extends Thread {
     private static boolean debugMode = false;
     private static final Map<String, String> args = new HashMap<>();
     private static boolean login = true;
-    public static final String VERSION = "5.0.3";
+    public static final String VERSION = "5.0.4";
 
     public static void main(String[] startargs) throws IOException {
         SplitPrintStream out = new SplitPrintStream(System.out);
