@@ -23,6 +23,7 @@ import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,12 +57,16 @@ public class ScrollCommand implements CommandExecutor {
         try {
             URL playerURL = new URL(url.replace("{name}", StringUtils.join(event.getArgs(), "%20")));
             List<String> lines = new LinkedList<>();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(playerURL.openStream()))) {
+            HttpURLConnection conn = (HttpURLConnection) playerURL.openConnection();
+            conn.setRequestProperty("User-Agent", "PokeBot - " + PokeBot.VERSION);
+            conn.connect();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
             }
+            
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(StringUtils.join(lines, "\n"));
             JsonObject obj = element.getAsJsonObject();
@@ -75,24 +80,24 @@ public class ScrollCommand implements CommandExecutor {
                 }
                 return;
             }
-
-            JsonObject dataObject = obj.get("data").getAsJsonObject();
+            JsonObject dataObject = obj.get("data").getAsJsonArray().get(0).getAsJsonObject();
 
             StringBuilder builder = new StringBuilder();
 
             builder.append(dataObject.get("name").getAsString()).append("' - ");
             builder.append("Cost: ");
-            if (obj.get("costgrowth").getAsInt() > 0) {
-                builder.append(obj.get("costgrowth").getAsInt()).append(" Growth");
-            } else if (obj.get("costorder").getAsInt() > 0) {
-                builder.append(obj.get("costorder").getAsInt()).append(" Order");
-            } else if (obj.get("costenergy").getAsInt() > 0) {
-                builder.append(obj.get("costenergy").getAsInt()).append(" Energy");
+            if (dataObject.get("costgrowth").getAsInt() > 0) {
+                builder.append(dataObject.get("costgrowth").getAsInt()).append(" Growth");
+            } else if (dataObject.get("costorder").getAsInt() > 0) {
+                builder.append(dataObject.get("costorder").getAsInt()).append(" Order");
+            } else if (dataObject.get("costenergy").getAsInt() > 0) {
+                builder.append(dataObject.get("costenergy").getAsInt()).append(" Energy");
             } else {
                 builder.append("0");
             }
+            builder.append(" - ");
             String kind = dataObject.get("kind").getAsString();
-            kind = Character.toUpperCase(kind.charAt(0)) + kind.substring(1);
+            kind = Character.toUpperCase(kind.charAt(0)) + kind.substring(1).toLowerCase();
             builder.append("Kind: ").append(kind).append(" - ");
             Rarity rarity = Rarity.get(dataObject.get("rarity").getAsInt());
             String rarityString = rarity.name().toLowerCase();
@@ -106,7 +111,7 @@ public class ScrollCommand implements CommandExecutor {
                 builder.append("Cooldown: ").append(dataObject.get("ac").getAsInt()).append(" - ");
                 builder.append("Health: ").append(dataObject.get("hp").getAsInt());
             }
-            
+
             builder.append("\n");
             builder.append("Description: '").append(dataObject.get("description").getAsString()).append("' - ");
             builder.append("Flavor: '").append(dataObject.get("flavor").getAsString()).append("'");
@@ -114,12 +119,13 @@ public class ScrollCommand implements CommandExecutor {
             if (event.getChannel() == null) {
                 event.getUser().sendMessage(builder.toString().split("\n"));
             } else {
-                for (String msg : builder.toString().split("\n")) {
+                String[] message = builder.toString().split("\n");
+                for (String msg : message) {
                     event.getChannel().sendMessage(event.getUser().getNick() + ", " + msg);
                 }
             }
 
-        } catch (IOException | JsonSyntaxException ex) {
+        } catch (IOException | JsonSyntaxException | IllegalStateException ex) {
             PokeBot.log(Level.SEVERE, "Error on getting scroll for Scrolls for '" + StringUtils.join(event.getArgs(), " ") + "'", ex);
             if (event.getChannel() == null) {
                 event.getUser().sendMessage("Error on getting scroll: " + ex.getLocalizedMessage());
@@ -156,4 +162,3 @@ public class ScrollCommand implements CommandExecutor {
         }
     }
 }
-

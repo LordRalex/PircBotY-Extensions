@@ -23,6 +23,7 @@ import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
@@ -48,7 +49,10 @@ public class StatCommand implements CommandExecutor {
     public void runEvent(CommandEvent event) {
         try {
             List<String> lines = new LinkedList<>();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("User-Agent", "PokeBot - " + PokeBot.VERSION);
+            conn.connect();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);

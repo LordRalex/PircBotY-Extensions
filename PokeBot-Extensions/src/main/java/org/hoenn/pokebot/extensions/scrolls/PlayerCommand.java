@@ -23,6 +23,7 @@ import com.google.gson.JsonSyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +57,10 @@ public class PlayerCommand implements CommandExecutor {
         try {
             URL playerURL = new URL(url.replace("{name}", event.getArgs()[0]));
             List<String> lines = new LinkedList<>();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(playerURL.openStream()))) {
+            HttpURLConnection conn = (HttpURLConnection) playerURL.openConnection();
+            conn.setRequestProperty("User-Agent", "PokeBot - " + PokeBot.VERSION);
+            conn.connect();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
@@ -79,7 +83,7 @@ public class PlayerCommand implements CommandExecutor {
             builder.append("%) -");
             builder.append("Judgement wins: ").append(dataObject.get("limitedwon").getAsInt()).append(" - ");
             builder.append("Ranked wins: ").append(dataObject.get("rankedwon").getAsInt()).append(" - ");
-            builder.append("Last game played: ").append(parseTime(dataObject.get("lastgame").getAsInt())).append(" - ");
+            builder.append("Last game played: ").append(parseTime(dataObject.get("lastgame").getAsInt()));
 
             if (event.getChannel() == null) {
                 event.getUser().sendMessage(builder.toString());
