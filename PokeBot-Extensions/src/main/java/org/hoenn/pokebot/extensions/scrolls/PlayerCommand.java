@@ -80,7 +80,7 @@ public class PlayerCommand implements CommandExecutor {
             builder.append("Won: ").append(dataObject.get("won").getAsInt());
             builder.append(" (");
             builder.append((int) ((dataObject.get("won").getAsDouble() / dataObject.get("played").getAsDouble()) * 100));
-            builder.append("%) -");
+            builder.append("%) - ");
             builder.append("Judgement wins: ").append(dataObject.get("limitedwon").getAsInt()).append(" - ");
             builder.append("Ranked wins: ").append(dataObject.get("rankedwon").getAsInt()).append(" - ");
             builder.append("Last game played: ").append(parseTime(dataObject.get("lastgame").getAsInt()));

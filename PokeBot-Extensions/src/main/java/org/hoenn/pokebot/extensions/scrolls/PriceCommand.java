@@ -61,7 +61,24 @@ public class PriceCommand implements CommandExecutor {
             for (int i = 2; i < event.getArgs().length; i++) {
                 name[i - 2] = event.getArgs()[i];
             }
-            days = Integer.parseInt(event.getArgs()[1]);
+            try {
+                days = Integer.parseInt(event.getArgs()[1]);
+            } catch (NumberFormatException e) {
+                if (event.getChannel() == null) {
+                    event.getUser().sendMessage("Usage: .price <-d days> [name]");
+                } else {
+                    event.getChannel().sendMessage(event.getUser().getNick() + ", usage: .price <-d days> [name]");
+                }
+                return;
+            }
+            if (days > 10 || days < 0) {
+                if (event.getChannel() == null) {
+                    event.getUser().sendMessage("The days must be between 1 and 10 (inclusive)");
+                } else {
+                    event.getChannel().sendMessage(event.getUser().getNick() + ", the days must be between 1 and 10 (inclusive)");
+                }
+                return;
+            }
         }
         try {
             URL playerURL = new URL(url.replace("{days}", Integer.toString(days)).replace("{name}", StringUtils.join(name, "%20")));
