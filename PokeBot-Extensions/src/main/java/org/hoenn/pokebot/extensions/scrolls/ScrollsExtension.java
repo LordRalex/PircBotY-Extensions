@@ -43,6 +43,7 @@ public class ScrollsExtension extends Extension {
         }
         executors.add(new ScrollCommand());
         executors.add(new PlayerCommand());
+        executors.add(new PriceCommand());
 
         for (CommandExecutor executor : executors) {
             PokeBot.getInstance().getExtensionManager().addCommandExecutor(executor);
