@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lord_Ralex
+ * Copyright (C) 2014 Lord_Ralex
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,20 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoenn.pokebot.extensions.faq.commands;
-
-import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.extensions.faq.FaqExtension;
+package org.hoenn.pokebot.api.recipients;
 
 /**
  * @author Lord_Ralex
  */
-public interface FaqSubCommand {
+public interface Hostable {
 
-    public String[] getPrefix();
-
-    public void execute(FaqExtension extension, CommandEvent event);
-
-    public String[] getHelp();
+    public String getHost();
 
 }

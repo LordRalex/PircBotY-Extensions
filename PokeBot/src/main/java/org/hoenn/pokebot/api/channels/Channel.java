@@ -16,176 +16,45 @@
  */
 package org.hoenn.pokebot.api.channels;
 
-import org.hoenn.pokebot.api.Utilities;
-import org.hoenn.pokebot.api.sender.Sender;
+import org.hoenn.pokebot.api.recipients.ActionRecipient;
+import org.hoenn.pokebot.api.recipients.MessageRecipient;
+import org.hoenn.pokebot.api.recipients.ModeRecipient;
+import org.hoenn.pokebot.api.recipients.Nameable;
+import org.hoenn.pokebot.api.recipients.NoticeRecipient;
 import org.hoenn.pokebot.permissions.Permissible;
-import org.hoenn.pokebot.permissions.Permission;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import org.pircbotx.User;
 
 /**
  *
  * @author Joshua
  */
-public class Channel extends Utilities implements Sender, Permissible {
+public abstract class Channel implements MessageRecipient, NoticeRecipient, ModeRecipient, Permissible, Nameable, ActionRecipient {
 
-    private final org.pircbotx.Channel pircbotxChannel;
-    protected final Map<String, Set<Permission>> permMap = new HashMap<>();
-    protected final static Map<org.pircbotx.Channel, org.hoenn.pokebot.api.channels.Channel> existingChannels = new ConcurrentHashMap<>();
+    public abstract boolean isSecret();
 
-    protected Channel(String name) {
-        pircbotxChannel = bot.getChannel(name);
+    public abstract String[] getOps();
+
+    public abstract String[] getVoiced();
+
+    public abstract boolean hasOp(String name);
+
+    public abstract boolean hasVoice(String name);
+
+    public abstract String[] getUserList();
+
+    public void kickUser(String name) {
+        kickUser(name, null);
     }
 
-    protected Channel(org.pircbotx.Channel chan) {
-        pircbotxChannel = chan;
-    }
+    public abstract void kickUser(String name, String reason);
 
-    public static Channel getChannel(org.pircbotx.Channel temp) {
-        org.hoenn.pokebot.api.channels.Channel chan = existingChannels.get(temp);
-        if (chan == null) {
-            chan = new Channel(temp);
-            existingChannels.put(temp, chan);
-        }
-        return chan;
-    }
+    public abstract void ban(String mask);
 
-    public static Channel getChannel(String name) {
-        org.pircbotx.Channel temp = bot.getChannel(name);
-        return getChannel(temp);
-    }
+    public abstract void opUser(String user);
 
-    @Override
-    public void sendMessage(String message) {
-        bot.sendMessage(pircbotxChannel, message);
-    }
+    public abstract void deopUser(String user);
 
-    @Override
-    public void sendNotice(String message) {
-        bot.sendNotice(pircbotxChannel, message);
-    }
+    public abstract void voiceUser(String user);
 
-    @Override
-    public void sendMessage(String[] messages) {
-        for (String message : messages) {
-            sendMessage(message);
-        }
-    }
+    public abstract void devoiceUser(String user);
 
-    @Override
-    public void sendNotice(String[] messages) {
-        for (String message : messages) {
-            sendNotice(message);
-        }
-    }
-
-    public void sendAction(String message) {
-        bot.sendAction(pircbotxChannel, message);
-    }
-
-    public void sendAction(String[] messages) {
-        for (String message : messages) {
-            sendAction(message);
-        }
-    }
-
-    public boolean isSecret() {
-        return pircbotxChannel.isSecret();
-    }
-
-    public String[] getOPs() {
-        User[] users = pircbotxChannel.getOps().toArray(new User[0]);
-        String[] names = new String[users.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = users[i].getNick();
-        }
-        return names;
-    }
-
-    public String[] getVoiced() {
-        User[] users = pircbotxChannel.getVoices().toArray(new User[0]);
-        String[] names = new String[users.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = users[i].getNick();
-        }
-        return names;
-    }
-
-    public boolean hasOP(String name) {
-        return pircbotxChannel.isOp(bot.getUser(name));
-    }
-
-    public boolean hasVoice(String name) {
-        return pircbotxChannel.hasVoice(bot.getUser(name));
-    }
-
-    public String getName() {
-        return pircbotxChannel.getName();
-    }
-
-    public List<String> getUsers() {
-        Set<User> users = pircbotxChannel.getUsers();
-        List<String> names = new ArrayList<>();
-        for (User user : users) {
-            names.add(user.getNick());
-        }
-        return names;
-    }
-
-    @Override
-    public boolean hasPermission(String channel, String perm) {
-        Set<Permission> set = permMap.get(channel == null ? null : channel.toLowerCase());
-        if (set != null) {
-            for (Permission p : set.toArray(new Permission[set.size()])) {
-                if (p.getName().equalsIgnoreCase(perm)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public void addPermission(String channel, String perm) {
-        removePermission(channel, perm);
-        Set<Permission> set = permMap.get(channel == null ? null : channel.toLowerCase());
-        if (set == null) {
-            set = new HashSet<>();
-        }
-        set.add(new Permission(perm));
-        permMap.put(channel == null ? null : channel.toLowerCase(), set);
-    }
-
-    @Override
-    public void removePermission(String channel, String perm) {
-        Set<Permission> set = permMap.get(channel == null ? null : channel.toLowerCase());
-        if (set == null) {
-            return;
-        }
-        for (Permission p : set.toArray(new Permission[set.size()])) {
-            if (p.getName().equalsIgnoreCase(perm)) {
-                set.remove(p);
-            }
-        }
-    }
-
-    @Override
-    public Map<String, Set<Permission>> getPermissions() {
-        return permMap;
-    }
-
-    public void setMode(String mode) {
-        bot.setMode(pircbotxChannel, mode);
-    }
-
-    public void setMode(char mode, boolean newState) {
-        String newMode = (newState ? "+" : "-") + mode;
-        setMode(newMode);
-    }
 }

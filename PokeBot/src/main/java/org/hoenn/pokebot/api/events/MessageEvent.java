@@ -18,6 +18,8 @@ package org.hoenn.pokebot.api.events;
 
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.User;
+import org.hoenn.pokebot.implementation.PokeBotChannel;
+import org.hoenn.pokebot.implementation.PokeBotUser;
 
 public final class MessageEvent implements UserEvent, ChannelEvent, CancellableEvent {
 
@@ -28,17 +30,13 @@ public final class MessageEvent implements UserEvent, ChannelEvent, CancellableE
     private final long timestamp = System.currentTimeMillis();
 
     public MessageEvent(org.pircbotx.hooks.events.MessageEvent event) {
-        sender = User.getUser(event.getUser());
-        channel = Channel.getChannel(event.getChannel());
+        channel = new PokeBotChannel(event.getBot(), event.getChannel());
+        sender = new PokeBotUser(event.getBot(), event.getUser());
         message = event.getMessage();
     }
 
     public String getMessage() {
         return message;
-    }
-
-    public String getHostname() {
-        return sender.getIP();
     }
 
     @Override

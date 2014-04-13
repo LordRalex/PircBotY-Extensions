@@ -39,7 +39,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -50,6 +49,8 @@ import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.events.CancellableEvent;
 import org.hoenn.pokebot.api.events.ConnectionEvent;
+import org.hoenn.pokebot.implementation.PokeBotChannel;
+import org.hoenn.pokebot.implementation.PokeBotUser;
 import org.pircbotx.Channel;
 import org.pircbotx.PircBotX;
 import org.pircbotx.UserSnapshot;
@@ -211,7 +212,7 @@ public final class EventHandler extends ListenerAdapter {
         Set<Channel> channels = user.getChannels();
         for (Channel chan : channels) {
             if (chan.getUsers().contains(masterBot.getUserBot())) {
-                PartEvent partEvent = new PartEvent(user, chan);
+                PartEvent partEvent = new PartEvent(event.getBot(), user, chan);
                 fireEvent(partEvent);
             }
         }
@@ -369,13 +370,13 @@ public final class EventHandler extends ListenerAdapter {
                         }
                         for (String arg : evt.getArgs()) {
                             PokeBot.log("Forcing cache update on " + arg);
-                            PermissionEvent p = new PermissionEvent(arg);
+                            PermissionEvent p = new PermissionEvent(new PokeBotUser(masterBot, masterBot.getUser(arg)));
                             PokeBot.getInstance().getPermManager().runPermissionEvent(p);
                         }
                     } else {
                         for (CommandExecutor exec : commandExecutors) {
                             if (Arrays.asList(exec.getAliases()).contains(evt.getCommand())) {
-                                execServ.submit(new CommandCallable(exec, evt));
+                                execServ.submit(new CommandRunnable(exec, evt));
                                 break;
                             }
                         }
@@ -421,20 +422,23 @@ public final class EventHandler extends ListenerAdapter {
         }
     }
 
-    private class CommandCallable implements Callable {
+    private class CommandRunnable implements Runnable {
 
         private final CommandExecutor listener;
         private final CommandEvent event;
 
-        public CommandCallable(CommandExecutor list, CommandEvent evt) {
+        public CommandRunnable(CommandExecutor list, CommandEvent evt) {
             listener = list;
             event = evt;
         }
 
         @Override
-        public Object call() throws Exception {
-            listener.runEvent(event);
-            return event;
+        public void run() {
+            try {
+                listener.runEvent(event);
+            } catch (Exception e) {
+                PokeBot.log(Level.SEVERE, "Error on executing command " + event.getCommand(), e);
+            }
         }
     }
 

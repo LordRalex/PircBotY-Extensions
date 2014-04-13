@@ -16,32 +16,32 @@
  */
 package org.hoenn.pokebot.input;
 
-import org.hoenn.pokebot.PokeBot;
-import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.users.BotUser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import jline.console.ConsoleReader;
+import org.hoenn.pokebot.PokeBot;
+import org.hoenn.pokebot.api.events.CommandEvent;
+import org.pircbotx.PircBotX;
 
 /**
  * @author Lord_Ralex
  */
 public final class KeyboardListener extends Thread {
 
-    final ConsoleReader kb;
-    BotUser bot;
+    private final ConsoleReader kb;
+    private final PircBotX bot;
 
-    public KeyboardListener(PokeBot a) throws IOException {
+    public KeyboardListener(PokeBot a, PircBotX b) throws IOException {
         setName("Keyboard_Listener_Thread");
         kb = new ConsoleReader();
+        bot = b;
     }
 
     @Override
     public void run() {
-        bot = BotUser.getBotUser();
         String line;
         boolean run = true;
         String currentChan = "";
@@ -62,7 +62,7 @@ public final class KeyboardListener extends Thread {
                             } else if (cmd.equalsIgnoreCase("join")) {
                                 bot.joinChannel(line.split(" ")[1]);
                             } else if (cmd.equalsIgnoreCase("leave")) {
-                                bot.leaveChannel(line.split(" ")[1]);
+                                bot.partChannel(bot.getChannel(line.split(" ")[1]));
                             } else if (cmd.equalsIgnoreCase("me")) {
                                 String action = line.substring(3).trim();
                                 if (currentChan != null && !currentChan.isEmpty()) {
@@ -89,13 +89,7 @@ public final class KeyboardListener extends Thread {
                                 } else {
                                     reason = bot.getNick() + " has kicked " + target + " from the channel";
                                 }
-                                if (bot.hasOP(chan)) {
-                                    bot.kick(target, chan, reason);
-                                } else {
-                                    bot.sendMessage("chanserv", "kick " + chan + " " + target + " " + reason);
-                                }
-                            } else if (cmd.equalsIgnoreCase("reload")) {
-                                PokeBot.getInstance().getEventHandler().fireEvent(new CommandEvent(null, null, "reload", new String[0]));
+                                bot.kick(bot.getChannel(chan), bot.getUser(target), reason);
                             }
                         } else {
                             if (currentChan == null || currentChan.isEmpty()) {

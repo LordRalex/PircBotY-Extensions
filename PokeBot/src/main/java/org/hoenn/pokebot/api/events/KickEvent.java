@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Laptop
+ * Copyright (C) 2013 Lord_Ralex
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,11 @@ package org.hoenn.pokebot.api.events;
 
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.User;
+import org.hoenn.pokebot.implementation.PokeBotChannel;
+import org.hoenn.pokebot.implementation.PokeBotUser;
 
 /**
- * @version 1.0
- * @author Laptop
+ * @author Lord_Ralex
  */
 public class KickEvent implements CancellableEvent, UserEvent, ChannelEvent {
 
@@ -33,9 +34,9 @@ public class KickEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private final long timestamp = System.currentTimeMillis();
 
     public KickEvent(org.pircbotx.hooks.events.KickEvent event) {
-        kicker = User.getUser(event.getRecipient());
-        user = User.getUser(event.getSource());
-        channel = Channel.getChannel(event.getChannel());
+        channel = new PokeBotChannel(event.getBot(), event.getChannel());
+        user = new PokeBotUser(event.getBot(), event.getSource());
+        kicker = new PokeBotUser(event.getBot(), event.getRecipient());
         message = event.getReason();
     }
 

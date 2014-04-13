@@ -17,6 +17,7 @@
 package org.hoenn.pokebot.api.events;
 
 import org.hoenn.pokebot.api.users.User;
+import org.hoenn.pokebot.implementation.PokeBotUser;
 
 public class QuitEvent implements UserEvent, CancellableEvent {
 
@@ -25,7 +26,7 @@ public class QuitEvent implements UserEvent, CancellableEvent {
     private final long timestamp = System.currentTimeMillis();
 
     public QuitEvent(org.pircbotx.hooks.events.QuitEvent event) {
-        sender = User.getUser(event.getUser());
+        sender = new PokeBotUser(event.getBot(), event.getUser());
     }
 
     public User getSender() {

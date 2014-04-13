@@ -66,7 +66,7 @@ public class PermissionManager {
             }
             cache.put(user, System.currentTimeMillis());
         }
-        String ver = user.isVerified();
+        String ver = user.getNickservName();
         if (ver == null || ver.isEmpty()) {
             return;
         }

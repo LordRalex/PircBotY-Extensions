@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lord_Ralex
+ * Copyright (C) 2014 Lord_Ralex
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,28 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoenn.pokebot.extensions.faq.database;
-
-import java.util.Map;
+package org.hoenn.pokebot.api.recipients;
 
 /**
  * @author Lord_Ralex
  */
-public abstract class Database {
+public interface NickservRecipient {
 
-    protected final String name;
-    protected final Map<String, Object> parameters;
+    public String getNickservName();
 
-    public Database(String n, Map<String, Object> params) {
-        name = n;
-        parameters = params;
-    }
-
-    public abstract void load();
-
-    public String getName() {
-        return name;
-    }
-
-    public abstract String[] getEntry(String[] key);
 }

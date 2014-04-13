@@ -28,9 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import jline.console.ConsoleReader;
-import org.hoenn.pokebot.api.Utilities;
 import org.hoenn.pokebot.api.events.ConnectionEvent;
-import org.hoenn.pokebot.api.users.BotUser;
 import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.extension.ExtensionManager;
 import org.hoenn.pokebot.input.KeyboardListener;
@@ -49,7 +47,7 @@ public final class PokeBot extends Thread {
     private static boolean debugMode = false;
     private static final Map<String, String> args = new HashMap<>();
     private static boolean login = true;
-    public static final String VERSION = "5.0.4";
+    public static final String VERSION = "6.0.0";
 
     public static void main(String[] startargs) throws IOException {
         SplitPrintStream out = new SplitPrintStream(System.out);
@@ -159,7 +157,7 @@ public final class PokeBot extends Thread {
         driver = new PircBotX();
         KeyboardListener temp;
         try {
-            temp = new KeyboardListener(instance);
+            temp = new KeyboardListener(instance, driver);
         } catch (IOException ex) {
             temp = null;
             log(Level.SEVERE, "An error occured", ex);
@@ -193,8 +191,6 @@ public final class PokeBot extends Thread {
         driver.setLogin(nick);
 
         log(Level.INFO, "Nick of bot: " + nick);
-
-        Utilities.setUtils(driver);
 
         eventHandler.load();
         extensionManager.load();
@@ -233,9 +229,8 @@ public final class PokeBot extends Thread {
                 log(Level.SEVERE, "Could not claim the nick " + nick);
             }
         }
-        BotUser bot = BotUser.getBotUser();
         if (pass != null && !pass.isEmpty() && login) {
-            bot.sendMessage("nickserv", "identify " + pass);
+            driver.sendMessage("nickserv", "identify " + pass);
             log(Level.INFO, "Logging in to nickserv");
         }
         eventHandler.fireEvent(new ConnectionEvent());
@@ -243,10 +238,8 @@ public final class PokeBot extends Thread {
         if (channels != null && !channels.isEmpty()) {
             for (String chan : channels) {
                 log(Level.INFO, "Joining " + chan);
-                bot.joinChannel(chan);
+                driver.joinChannel(chan);
             }
-        } else {
-            bot.joinChannel("#ae97");
         }
         log(Level.INFO, "Initial loading complete, engaging listeners");
         eventHandler.startQueue();

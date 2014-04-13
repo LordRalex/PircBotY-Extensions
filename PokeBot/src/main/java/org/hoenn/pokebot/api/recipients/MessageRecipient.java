@@ -14,40 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoenn.pokebot.api.events;
-
-import org.hoenn.pokebot.api.users.User;
+package org.hoenn.pokebot.api.recipients;
 
 /**
  * @author Lord_Ralex
- * @version 1.0
  */
-public class PermissionEvent implements UserEvent {
+public interface MessageRecipient {
 
-    private final User user;
-    private final boolean isForced;
-    private final long timestamp = System.currentTimeMillis();
-
-    public PermissionEvent(User u) {
-        this(u, false);
-    }
-
-    public PermissionEvent(User u, boolean isF) {
-        user = u;
-        isForced = isF;
-    }
-
-    @Override
-    public User getUser() {
-        return user;
-    }
-
-    public boolean isForced() {
-        return isForced;
-    }
-
-    @Override
-    public long getTimestamp() {
-        return timestamp;
-    }
+    public void sendMessage(String... message);
 }

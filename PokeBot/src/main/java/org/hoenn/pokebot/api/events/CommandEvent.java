@@ -20,6 +20,8 @@ import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.exceptions.NickNotOnlineException;
 import org.hoenn.pokebot.api.users.User;
+import org.hoenn.pokebot.implementation.PokeBotChannel;
+import org.hoenn.pokebot.implementation.PokeBotUser;
 
 public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
 
@@ -40,8 +42,8 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
             }
         }
         command = commandTemp;
-        sender = User.getUser(event.getUser());
-        channel = Channel.getChannel(event.getChannel());
+        channel = new PokeBotChannel(event.getBot(), event.getChannel());
+        sender = new PokeBotUser(event.getBot(), event.getUser());
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
             System.arraycopy(temp, 1, args, 0, args.length);
@@ -51,7 +53,7 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
     public CommandEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
-        sender = User.getUser(event.getUser().getNick());
+        sender = new PokeBotUser(event.getBot(), event.getUser());
         channel = null;
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
@@ -62,19 +64,12 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
     public CommandEvent(org.pircbotx.hooks.events.NoticeEvent event) throws NickNotOnlineException {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
-        sender = User.getUser(event.getUser().getNick());
+        sender = new PokeBotUser(event.getBot(), event.getUser());
         channel = null;
         args = new String[temp.length - 1];
         if (temp.length >= 2) {
             System.arraycopy(temp, 1, args, 0, args.length);
         }
-    }
-
-    public CommandEvent(User send, Channel chan, String com, String[] strings) {
-        sender = send;
-        channel = chan;
-        command = com;
-        args = strings;
     }
 
     public String getCommand() {

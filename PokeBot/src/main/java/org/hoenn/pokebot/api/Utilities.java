@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
-import org.pircbotx.PircBotX;
 
 /**
  *
@@ -31,16 +30,7 @@ import org.pircbotx.PircBotX;
  */
 public class Utilities {
 
-    protected static PircBotX bot;
-
     protected Utilities() {
-    }
-
-    public static void setUtils(PircBotX aBot) {
-        if (aBot == null || bot != null) {
-            throw new IllegalActionException("ATTEMPT MADE TO PERFORM ILLEGAL ACTION");
-        }
-        bot = aBot;
     }
 
     public static String toString(String[] args) {
