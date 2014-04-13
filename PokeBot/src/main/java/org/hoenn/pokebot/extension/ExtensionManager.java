@@ -139,15 +139,15 @@ public class ExtensionManager {
             extension.unload();
         }
         loadedExtensions.clear();
-        PokeBot.getInstance().getEventHandler().unload();
+        PokeBot.getEventHandler().unload();
     }
 
     public void addListener(Listener list) {
-        PokeBot.getInstance().getEventHandler().registerListener(list);
+        PokeBot.getEventHandler().registerListener(list);
     }
 
     public void addCommandExecutor(CommandExecutor executor) {
-        PokeBot.getInstance().getEventHandler().registerCommandExecutor(executor);
+        PokeBot.getEventHandler().registerCommandExecutor(executor);
     }
 
     public void addExtension(Extension extension) {

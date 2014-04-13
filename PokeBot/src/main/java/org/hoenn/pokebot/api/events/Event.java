@@ -17,5 +17,6 @@
 package org.hoenn.pokebot.api.events;
 
 public interface Event {
+
     public long getTimestamp();
 }

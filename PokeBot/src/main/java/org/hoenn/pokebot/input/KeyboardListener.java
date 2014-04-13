@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.logging.Level;
 import jline.console.ConsoleReader;
 import org.hoenn.pokebot.PokeBot;
-import org.hoenn.pokebot.api.events.CommandEvent;
+import org.hoenn.pokebot.PokeBotCore;
 import org.pircbotx.PircBotX;
 
 /**
@@ -33,11 +33,13 @@ public final class KeyboardListener extends Thread {
 
     private final ConsoleReader kb;
     private final PircBotX bot;
+    private final PokeBotCore core;
 
-    public KeyboardListener(PokeBot a, PircBotX b) throws IOException {
+    public KeyboardListener(PokeBotCore a, PircBotX b) throws IOException {
         setName("Keyboard_Listener_Thread");
         kb = new ConsoleReader();
         bot = b;
+        core = a;
     }
 
     @Override
@@ -104,9 +106,8 @@ public final class KeyboardListener extends Thread {
             }
         } catch (Exception e) {
         }
-        PokeBot pokebot = PokeBot.getInstance();
-        synchronized (pokebot) {
-            pokebot.notify();
+        synchronized (core) {
+            core.notify();
         }
         kb.shutdown();
         PokeBot.log(Level.INFO, "Ending keyboard listener");
