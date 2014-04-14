@@ -27,7 +27,13 @@ import org.hoenn.pokebot.permissions.Permissible;
  *
  * @author Joshua
  */
-public abstract class Channel implements MessageRecipient, NoticeRecipient, ModeRecipient, Permissible, Nameable, ActionRecipient {
+public abstract class Channel implements
+        MessageRecipient,
+        NoticeRecipient,
+        ModeRecipient,
+        Permissible,
+        Nameable,
+        ActionRecipient {
 
     public abstract boolean isSecret();
 
@@ -48,6 +54,12 @@ public abstract class Channel implements MessageRecipient, NoticeRecipient, Mode
     public abstract void kickUser(String name, String reason);
 
     public abstract void ban(String mask);
+
+    public abstract void unban(String mask);
+
+    public abstract void quiet(String mask);
+
+    public abstract void unquiet(String mask);
 
     public abstract void opUser(String user);
 

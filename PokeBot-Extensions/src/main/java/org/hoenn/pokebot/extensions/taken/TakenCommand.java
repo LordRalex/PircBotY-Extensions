@@ -35,7 +35,7 @@ public class TakenCommand extends Extension implements CommandExecutor {
 
     @Override
     public void load() {
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override

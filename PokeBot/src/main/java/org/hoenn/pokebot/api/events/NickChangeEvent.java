@@ -16,8 +16,8 @@
  */
 package org.hoenn.pokebot.api.events;
 
+import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.users.User;
-import org.hoenn.pokebot.implementation.PokeBotUser;
 
 public class NickChangeEvent implements UserEvent, CancellableEvent {
 
@@ -29,7 +29,7 @@ public class NickChangeEvent implements UserEvent, CancellableEvent {
     public NickChangeEvent(org.pircbotx.hooks.events.NickChangeEvent event) {
         oldNick = event.getOldNick();
         newNick = event.getNewNick();
-        sender = new PokeBotUser(event.getBot(), event.getUser());
+        sender = PokeBot.getUser(event.getUser().getNick());
     }
 
     public String getOldNick() {

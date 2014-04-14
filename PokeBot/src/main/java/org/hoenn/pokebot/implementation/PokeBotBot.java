@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.hoenn.pokebot.api.users.Bot;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.permissions.Permission;
 import org.pircbotx.PircBotX;
@@ -30,9 +31,10 @@ import org.pircbotx.hooks.WaitForQueue;
 import org.pircbotx.hooks.events.WhoisEvent;
 
 /**
+ *
  * @author Lord_Ralex
  */
-public class PokeBotUser extends User {
+public class PokeBotBot extends Bot {
 
     private final org.pircbotx.User pircbotxUser;
     private final PircBotX bot;
@@ -40,13 +42,9 @@ public class PokeBotUser extends User {
     private final Map<String, Set<Permission>> permMap = new HashMap<>();
     private final static Map<org.pircbotx.User, org.hoenn.pokebot.api.users.User> existingUsers = new ConcurrentHashMap<>();
 
-    public PokeBotUser(PircBotX b, String name) {
-        this(b, b.getUser(name));
-    }
-
-    public PokeBotUser(PircBotX b, org.pircbotx.User u) {
+    public PokeBotBot(PircBotX b) {
         bot = b;
-        pircbotxUser = u;
+        pircbotxUser = bot.getUserBot();
     }
 
     @Override
@@ -177,4 +175,8 @@ public class PokeBotUser extends User {
         return pircbotxUser.getRealName();
     }
 
+    @Override
+    public void changeNickname(String newName) {
+        bot.changeNick(newName);
+    }
 }

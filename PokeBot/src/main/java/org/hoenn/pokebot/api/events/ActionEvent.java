@@ -16,10 +16,9 @@
  */
 package org.hoenn.pokebot.api.events;
 
+import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.User;
-import org.hoenn.pokebot.implementation.PokeBotChannel;
-import org.hoenn.pokebot.implementation.PokeBotUser;
 
 /**
  *
@@ -34,8 +33,8 @@ public class ActionEvent implements UserEvent, ChannelEvent, CancellableEvent {
     private final long timestamp = System.currentTimeMillis();
 
     public ActionEvent(org.pircbotx.hooks.events.ActionEvent event) {
-        channel = new PokeBotChannel(event.getBot(), event.getChannel());
-        sender = new PokeBotUser(event.getBot(), event.getUser());
+        channel = PokeBot.getChannel(event.getChannel().getName());
+        sender = PokeBot.getUser(event.getUser().getNick());
         action = event.getMessage();
     }
 

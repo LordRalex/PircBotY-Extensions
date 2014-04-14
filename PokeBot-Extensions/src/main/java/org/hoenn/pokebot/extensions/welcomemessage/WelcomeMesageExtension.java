@@ -37,8 +37,8 @@ public class WelcomeMesageExtension extends Extension implements Listener, Comma
 
     @Override
     public void load() {
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
-        PokeBot.getInstance().getExtensionManager().addListener(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addListener(this);
     }
 
     @EventExecutor
@@ -48,7 +48,7 @@ public class WelcomeMesageExtension extends Extension implements Listener, Comma
             return;
         }
         final String[] parts = message.split(";;");
-        PokeBot.getInstance().getScheduler().scheduleTask(new Runnable() {
+        PokeBot.getScheduler().scheduleTask(new Runnable() {
             @Override
             public void run() {
                 for (String part : parts) {
@@ -61,13 +61,13 @@ public class WelcomeMesageExtension extends Extension implements Listener, Comma
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getUser().hasOP(event.getChannel().getName()) || event.getUser().hasPermission(event.getChannel().getName(), "saymessage.set")) {
+        if (event.getChannel().hasOp(event.getUser().getName()) || event.getUser().hasPermission(event.getChannel().getName(), "saymessage.set")) {
             if (event.getArgs().length == 0) {
                 mappings.remove(event.getChannel().getName().toLowerCase());
-                event.getChannel().sendMessage("I will stop messaging people when they join");
+                event.getUser().sendNotice("I will stop messaging people when they join");
             } else {
                 mappings.put(event.getChannel().getName().toLowerCase(), Utilities.toString(event.getArgs()));
-                event.getChannel().sendMessage("I will start messaging people this when they join: " + Utilities.toString(event.getArgs()));
+                event.getUser().sendNotice("I will start messaging people this when they join: " + Utilities.toString(event.getArgs()));
             }
         }
     }

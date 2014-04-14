@@ -16,10 +16,9 @@
  */
 package org.hoenn.pokebot.api.events;
 
+import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.User;
-import org.hoenn.pokebot.implementation.PokeBotChannel;
-import org.hoenn.pokebot.implementation.PokeBotUser;
 
 /**
  * @author Lord_Ralex
@@ -34,9 +33,9 @@ public class KickEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private final long timestamp = System.currentTimeMillis();
 
     public KickEvent(org.pircbotx.hooks.events.KickEvent event) {
-        channel = new PokeBotChannel(event.getBot(), event.getChannel());
-        user = new PokeBotUser(event.getBot(), event.getSource());
-        kicker = new PokeBotUser(event.getBot(), event.getRecipient());
+        channel = PokeBot.getChannel(event.getChannel().getName());
+        kicker = PokeBot.getUser(event.getSource().getNick());
+        user = PokeBot.getUser(event.getRecipient().getNick());
         message = event.getReason();
     }
 

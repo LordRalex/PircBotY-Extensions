@@ -29,8 +29,6 @@ import org.hoenn.pokebot.api.Listener;
 import org.hoenn.pokebot.api.events.ActionEvent;
 import org.hoenn.pokebot.api.events.JoinEvent;
 import org.hoenn.pokebot.api.events.MessageEvent;
-import org.hoenn.pokebot.api.events.NickChangeEvent;
-import org.hoenn.pokebot.api.users.BotUser;
 import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.settings.Settings;
 
@@ -42,12 +40,11 @@ public class CensorExtension extends Extension implements Listener {
     private final List<String> censor = new ArrayList<>();
     private final List<String> channels = new ArrayList<>();
     private final Set<String> warned = new HashSet<>();
-    private Settings settings;
+    private final Settings settings = new Settings();
     private String warnMessage, kickMessage;
 
     @Override
     public void load() {
-        settings = new Settings();
         try {
             settings.load(new File("configs", "censor.yml"));
         } catch (IOException ex) {
@@ -60,7 +57,7 @@ public class CensorExtension extends Extension implements Listener {
         channels.addAll(settings.getStringList("channels"));
         warnMessage = settings.getString("warnmessage");
         kickMessage = settings.getString("kickmessage");
-        PokeBot.getInstance().getExtensionManager().addListener(this);
+        PokeBot.getExtensionManager().addListener(this);
     }
 
     @EventExecutor
@@ -68,10 +65,10 @@ public class CensorExtension extends Extension implements Listener {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
-        if (event.getUser().getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
+        if (event.getUser().getNick().equalsIgnoreCase(PokeBot.getBot().getNick())) {
             return;
         }
-        if (event.getUser().hasOP(event.getChannel().getName())) {
+        if (event.getChannel().hasOp(event.getUser().getNick())) {
             return;
         }
         if (event.getUser().hasPermission(event.getChannel().getName(), "censor.ignore")) {
@@ -79,11 +76,11 @@ public class CensorExtension extends Extension implements Listener {
         }
         String message = event.getMessage().toLowerCase();
         if (scanMessage(message)) {
-            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getIP())) {
-                BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), kickMessage);
+            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHost())) {
+                event.getChannel().kickUser(event.getUser().getNick(), kickMessage);
             } else {
                 warned.add(event.getUser().getNick());
-                warned.add(event.getUser().getIP());
+                warned.add(event.getUser().getHost());
                 event.getChannel().sendMessage(warnMessage.replace("{name}", event.getUser().getNick()));
             }
         }
@@ -94,27 +91,23 @@ public class CensorExtension extends Extension implements Listener {
         if (!channels.contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
-        if (event.getUser().getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
+        if (event.getUser().getNick().equalsIgnoreCase(PokeBot.getBot().getNick())) {
+            return;
+        }
+        if (event.getChannel().hasOp(event.getUser().getNick())) {
+            return;
+        }
+        if (event.getUser().hasPermission(event.getChannel().getName(), "censor.ignore")) {
             return;
         }
         String message = event.getAction().toLowerCase();
         if (scanMessage(message)) {
-            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getIP())) {
-                BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), kickMessage);
+            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHost())) {
+                event.getChannel().kickUser(event.getUser().getNick(), kickMessage);
             } else {
                 warned.add(event.getUser().getNick());
-                warned.add(event.getUser().getIP());
+                warned.add(event.getUser().getHost());
                 event.getChannel().sendMessage(warnMessage.replace("{name}", event.getUser().getNick()));
-            }
-        }
-    }
-
-    @EventExecutor
-    public void runEvent(NickChangeEvent event) {
-        String message = event.getNewNick().toLowerCase();
-        if (scanMessage(message)) {
-            for (String chan : BotUser.getBotUser().getChannels()) {
-                BotUser.getBotUser().kick(event.getNewNick(), chan, kickMessage);
             }
         }
     }
@@ -126,7 +119,7 @@ public class CensorExtension extends Extension implements Listener {
         }
         String message = event.getUser().getNick().toLowerCase();
         if (scanMessage(message)) {
-            BotUser.getBotUser().kick(event.getUser().getNick(), event.getChannel().getName(), kickMessage);
+            event.getChannel().kickUser(event.getUser().getNick(), kickMessage);
         }
     }
 

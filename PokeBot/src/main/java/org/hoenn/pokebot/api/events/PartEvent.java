@@ -16,10 +16,9 @@
  */
 package org.hoenn.pokebot.api.events;
 
+import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.User;
-import org.hoenn.pokebot.implementation.PokeBotChannel;
-import org.hoenn.pokebot.implementation.PokeBotUser;
 import org.pircbotx.PircBotX;
 
 public class PartEvent implements CancellableEvent, UserEvent, ChannelEvent {
@@ -30,13 +29,13 @@ public class PartEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private final long timestamp = System.currentTimeMillis();
 
     public PartEvent(org.pircbotx.hooks.events.PartEvent event) {
-        channel = new PokeBotChannel(event.getBot(), event.getChannel());
-        sender = new PokeBotUser(event.getBot(), event.getUser());
+        channel = PokeBot.getChannel(event.getChannel().getName());
+        sender = PokeBot.getUser(event.getUser().getNick());
     }
 
     public PartEvent(PircBotX bot, org.pircbotx.User s, org.pircbotx.Channel c) {
-        channel = new PokeBotChannel(bot, c);
-        sender = new PokeBotUser(bot, s);
+        channel = PokeBot.getChannel(c.getName());
+        sender = PokeBot.getUser(s.getNick());
     }
 
     @Override

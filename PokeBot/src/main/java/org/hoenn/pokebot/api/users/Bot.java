@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lord_Ralex
+ * Copyright (C) 2014 Lord_Ralex
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,26 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoenn.pokebot.extensions.antispam;
-
-import java.util.concurrent.TimeUnit;
-import org.hoenn.pokebot.PokeBot;
+package org.hoenn.pokebot.api.users;
 
 /**
  * @author Lord_Ralex
  */
-public class CleanerTask implements Runnable {
+public abstract class Bot extends User {
 
-    private final AntiSpamExtension extension;
-    private final int DELAY = 10;
+    public abstract void changeNickname(String newName);
 
-    public CleanerTask(AntiSpamExtension e) {
-        extension = e;
-    }
-
-    @Override
-    public void run() {
-        extension.clean();
-        PokeBot.getScheduler().scheduleTask(this, DELAY, TimeUnit.MINUTES);
-    }
 }

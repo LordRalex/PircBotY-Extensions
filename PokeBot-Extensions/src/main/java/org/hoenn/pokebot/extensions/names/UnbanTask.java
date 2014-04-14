@@ -16,7 +16,7 @@
  */
 package org.hoenn.pokebot.extensions.names;
 
-import org.hoenn.pokebot.api.users.BotUser;
+import org.hoenn.pokebot.api.channels.Channel;
 
 /**
  * @author Lord_Ralex
@@ -24,15 +24,15 @@ import org.hoenn.pokebot.api.users.BotUser;
 public class UnbanTask implements Runnable {
 
     private final String unbanLine;
-    private final String channel;
+    private final Channel channel;
 
-    public UnbanTask(String chan, String nick, String name, String ip) {
+    public UnbanTask(Channel chan, String mask) {
         channel = chan;
-        unbanLine = nick + "!" + name + "@" + ip;
+        unbanLine = mask;
     }
 
     @Override
     public void run() {
-        BotUser.getBotUser().unban(channel, unbanLine);
+        channel.unban(unbanLine);
     }
 }

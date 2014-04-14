@@ -34,7 +34,6 @@ import org.hoenn.pokebot.api.events.CommandEvent;
 import org.hoenn.pokebot.api.events.MessageEvent;
 import org.hoenn.pokebot.api.events.PartEvent;
 import org.hoenn.pokebot.api.events.QuitEvent;
-import org.hoenn.pokebot.api.users.BotUser;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.settings.Settings;
@@ -58,8 +57,8 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
             PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
             return;
         }
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
-        PokeBot.getInstance().getExtensionManager().addListener(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addListener(this);
     }
 
     @EventExecutor(priority = Priority.HIGH)
@@ -77,7 +76,7 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
 
         if (triggered.contains(sender.getNick().toLowerCase())) {
             silence = true;
-        } else if (triggered.contains(event.getHostname().toLowerCase())) {
+        } else if (triggered.contains(event.getUser().getHost().toLowerCase())) {
             silence = true;
         }
         String[] messageParts = message.split(" ");
@@ -86,11 +85,11 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
                 if (!silence) {
                     channel.sendMessage(sender.getNick() + ", please do not advertise servers here");
                     triggered.remove(sender.getNick().toLowerCase());
-                    triggered.remove(event.getHostname().toLowerCase());
+                    triggered.remove(event.getUser().getHost().toLowerCase());
                     triggered.add(sender.getNick().toLowerCase());
-                    triggered.add(event.getHostname().toLowerCase());
+                    triggered.add(event.getUser().getHost().toLowerCase());
                 } else if (triggered.contains(sender.getNick().toLowerCase())) {
-                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
+                    event.getChannel().kickUser(sender.getNick(), "Server advertisement");
                     event.setCancelled(true);
                 }
                 break;
@@ -113,7 +112,7 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
 
         if (triggered.contains(sender.getNick().toLowerCase())) {
             silence = true;
-        } else if (triggered.contains(event.getUser().getIP().toLowerCase())) {
+        } else if (triggered.contains(event.getUser().getHost().toLowerCase())) {
             silence = true;
         }
         String[] messageParts = message.split(" ");
@@ -121,12 +120,12 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
             if (isServer(part)) {
                 if (!silence) {
                     channel.sendMessage(sender.getNick() + ", please do not advertise servers here");
-                    triggered.remove(event.getUser().getIP().toLowerCase());
-                    triggered.remove(event.getUser().getIP().toLowerCase());
+                    triggered.remove(event.getUser().getHost().toLowerCase());
+                    triggered.remove(event.getUser().getHost().toLowerCase());
                     triggered.add(sender.getNick().toLowerCase());
-                    triggered.add(event.getUser().getIP().toLowerCase());
+                    triggered.add(event.getUser().getHost().toLowerCase());
                 } else if (triggered.contains(sender.getNick().toLowerCase())) {
-                    BotUser.getBotUser().kick(sender.getNick(), channel.getName(), "Server advertisement");
+                    event.getChannel().kickUser(sender.getNick(), "Server advertisement");
                     event.setCancelled(true);
                 }
                 break;
@@ -134,19 +133,9 @@ public class ServerIPExtension extends Extension implements CommandExecutor, Lis
         }
     }
 
-    @EventExecutor
-    public void runEvent(PartEvent event) {
-        //triggered.remove(event.getUser().getNick().toLowerCase());
-    }
-
-    @EventExecutor
-    public void runEvent(QuitEvent event) {
-        //triggered.remove(event.getUser().getNick().toLowerCase());
-    }
-
     @Override
     public void runEvent(CommandEvent event) {
-        if (!event.getUser().hasOP(event.getChannel().getName())) {
+        if (!event.getChannel().hasOp(event.getUser().getNick())) {
             return;
         }
         if (event.getCommand().equalsIgnoreCase("ignoread")) {

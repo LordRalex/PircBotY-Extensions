@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.sender.Sender;
+import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
 
 /**
@@ -32,7 +32,7 @@ public class UptimeExtension extends Extension implements CommandExecutor {
 
     @Override
     public void load() {
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class UptimeExtension extends Extension implements CommandExecutor {
         uptimeString = uptimeString.replace("%H", TimeUnit.HOURS.convert(uptime, TimeUnit.MILLISECONDS) + " hours");
         uptime -= TimeUnit.MINUTES.convert(uptime, TimeUnit.MILLISECONDS) * 60 * 100;
         uptimeString = uptimeString.replace("%M", TimeUnit.MINUTES.convert(uptime, TimeUnit.MILLISECONDS) + " minutes");
-        Sender target = event.getChannel();
+        MessageRecipient target = event.getChannel();
         if (target == null) {
             target = event.getChannel();
         }

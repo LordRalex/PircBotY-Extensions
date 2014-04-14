@@ -19,8 +19,7 @@ package org.hoenn.pokebot.extensions.info;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.sender.Sender;
-import org.hoenn.pokebot.api.users.BotUser;
+import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
 import org.pircbotx.PircBotX;
 
@@ -31,22 +30,22 @@ public class InfoExtension extends Extension implements CommandExecutor {
 
     @Override
     public void load() {
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
     public void runEvent(CommandEvent event) {
-        Sender target = event.getChannel();
+        MessageRecipient target = event.getChannel();
         if (target == null) {
             target = event.getUser();
         }
-        target.sendMessage("Hello. I am " + BotUser.getBotUser().getNick() + ", PokeBot " + PokeBot.VERSION + " using PircBotX " + PircBotX.VERSION);
+        target.sendMessage("Hello. I am " + PokeBot.getBot().getNick() + ", PokeBot " + PokeBot.VERSION + " using PircBotX " + PircBotX.VERSION);
     }
 
     @Override
     public String[] getAliases() {
         return new String[]{
-            BotUser.getBotUser().getNick().toLowerCase(),
+            PokeBot.getBot().getNick().toLowerCase(),
             "version"
         };
     }

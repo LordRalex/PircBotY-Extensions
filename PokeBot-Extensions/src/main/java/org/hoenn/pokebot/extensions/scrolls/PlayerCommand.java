@@ -73,7 +73,12 @@ public class PlayerCommand implements CommandExecutor {
 
             StringBuilder builder = new StringBuilder();
 
-            builder.append(dataObject.get("name").getAsString()).append("'s stats - ");
+            if (event.getUser().getNick().equalsIgnoreCase(dataObject.get("name").getAsString())) {
+                builder.append("your");
+            } else {
+                builder.append(dataObject.get("name").getAsString()).append("'s");
+            }
+            builder.append(" stats - ");
             builder.append("Rating: ").append(dataObject.get("rating").getAsInt()).append(" - ");
             builder.append("Rank: ").append(dataObject.get("rank").getAsInt()).append(" - ");
             builder.append("Played: ").append(dataObject.get("played").getAsInt()).append(" - ");

@@ -370,7 +370,7 @@ public final class EventHandler extends ListenerAdapter {
                         }
                         for (String arg : evt.getArgs()) {
                             PokeBot.log("Forcing cache update on " + arg);
-                            PermissionEvent p = new PermissionEvent(new PokeBotUser(masterBot, masterBot.getUser(arg)));
+                            PermissionEvent p = new PermissionEvent(PokeBot.getUser(arg));
                             PokeBot.getPermManager().runPermissionEvent(p);
                         }
                     } else {

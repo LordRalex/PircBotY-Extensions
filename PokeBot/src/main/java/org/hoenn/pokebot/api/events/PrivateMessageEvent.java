@@ -16,8 +16,8 @@
  */
 package org.hoenn.pokebot.api.events;
 
+import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.users.User;
-import org.hoenn.pokebot.implementation.PokeBotUser;
 
 public class PrivateMessageEvent implements UserEvent, CancellableEvent {
 
@@ -27,7 +27,7 @@ public class PrivateMessageEvent implements UserEvent, CancellableEvent {
     private final long timestamp = System.currentTimeMillis();
 
     public PrivateMessageEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
-        sender = new PokeBotUser(event.getBot(), event.getUser());
+        sender = PokeBot.getUser(event.getUser().getNick());
         message = event.getMessage();
     }
 

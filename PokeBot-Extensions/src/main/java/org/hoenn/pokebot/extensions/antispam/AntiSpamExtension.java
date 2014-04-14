@@ -31,7 +31,6 @@ import org.hoenn.pokebot.api.Priority;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.events.ActionEvent;
 import org.hoenn.pokebot.api.events.MessageEvent;
-import org.hoenn.pokebot.api.users.BotUser;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.settings.Settings;
@@ -65,9 +64,9 @@ public class AntiSpamExtension extends Extension implements Listener {
         channels.clear();
         channels.addAll(settings.getStringList("channels"));
         logs.clear();
-        PokeBot.getInstance().getExtensionManager().addListener(this);
+        PokeBot.getExtensionManager().addListener(this);
         cleaner = new CleanerTask(this);
-        PokeBot.getInstance().getScheduler().scheduleTask(cleaner, 30, TimeUnit.MINUTES);
+        PokeBot.getScheduler().scheduleTask(cleaner, 30, TimeUnit.MINUTES);
     }
 
     @EventExecutor(priority = Priority.LOW)
@@ -79,16 +78,19 @@ public class AntiSpamExtension extends Extension implements Listener {
             }
             User sender = event.getUser();
             String message = event.getMessage();
-            if (sender.hasOP(channel.getName()) || sender.hasVoice(channel.getName()) || sender.getNick().equalsIgnoreCase(BotUser.getBotUser().getNick()) || sender.hasPermission(channel.getName(), "antispam.ignore")) {
+            if (sender.getNick().equals(PokeBot.getBot().getNick())) {
                 return;
             }
-            message = message.toString().toLowerCase();
+            if (channel.hasOp(sender.getName()) || channel.hasVoice(sender.getName()) || sender.hasPermission(channel.getName(), "antispam.ignore")) {
+                return;
+            }
+            message = message.toLowerCase();
             Posts posts = logs.remove(sender.getNick());
             if (posts == null) {
                 posts = new Posts(MAX_MESSAGES, DUPE_RATE, SPAM_RATE);
             }
             if (posts.addPost(message, event.getTimestamp())) {
-                BotUser.getBotUser().kick(sender.getNick(), channel.getName(), kickMessage.replace("{ip}", sender.getIP()));
+                event.getChannel().kickUser(sender.getNick(), kickMessage.replace("{ip}", sender.getHost()));
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);
@@ -105,16 +107,16 @@ public class AntiSpamExtension extends Extension implements Listener {
             Channel channel = event.getChannel();
             User sender = event.getUser();
             String message = event.getAction();
-            if (sender.hasOP(channel.getName()) || sender.hasVoice(channel.getName()) || sender.getNick().equalsIgnoreCase(BotUser.getBotUser().getNick())) {
+            if (channel.hasOp(sender.getName()) || channel.hasVoice(sender.getName()) || sender.hasPermission(channel.getName(), "antispam.ignore")) {
                 return;
             }
-            message = message.toString().toLowerCase();
+            message = message.toLowerCase();
             Posts posts = logs.remove(sender.getNick());
             if (posts == null) {
                 posts = new Posts(MAX_MESSAGES, DUPE_RATE, SPAM_RATE);
             }
             if (posts.addPost(message, event.getTimestamp())) {
-                BotUser.getBotUser().kick(sender.getNick(), channel.getName(), kickMessage.replace("{ip}", sender.getIP()));
+                event.getChannel().kickUser(sender.getNick(), kickMessage.replace("{ip}", sender.getHost()));
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);

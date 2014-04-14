@@ -27,7 +27,7 @@ import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.sender.Sender;
+import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.settings.Settings;
 
@@ -50,7 +50,7 @@ public class PaidExecutor extends Extension implements CommandExecutor {
             PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
             return;
         }
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class PaidExecutor extends Extension implements CommandExecutor {
             return;
         }
         for (String name : event.getArgs()) {
-            Sender target = event.getChannel();
+            MessageRecipient target = event.getChannel();
             if (target == null) {
                 target = event.getUser();
             }
@@ -84,9 +84,9 @@ public class PaidExecutor extends Extension implements CommandExecutor {
     private class Lookup implements Runnable {
 
         private final String name;
-        private final Sender target;
+        private final MessageRecipient target;
 
-        public Lookup(Sender tar, String n) {
+        public Lookup(MessageRecipient tar, String n) {
             target = tar;
             name = n;
         }
@@ -102,7 +102,7 @@ public class PaidExecutor extends Extension implements CommandExecutor {
                 } else {
                     target.sendMessage("The user '" + name + "' is NOT a premium account");
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 PokeBot.log(Level.SEVERE, "An error occured on looking up " + name, e);
                 target.sendMessage("An error occured while looking to see if '" + name + "' has paid");
             }

@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.sender.Sender;
+import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.settings.Settings;
 
@@ -46,7 +46,7 @@ public class HelpExtension extends Extension implements CommandExecutor {
             return;
         }
         help = helpLines.toArray(new String[0]);
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class HelpExtension extends Extension implements CommandExecutor {
         if (event.isCancelled()) {
             return;
         }
-        Sender target = event.getChannel();
+        MessageRecipient target = event.getChannel();
         if (target == null) {
             target = event.getUser();
         }

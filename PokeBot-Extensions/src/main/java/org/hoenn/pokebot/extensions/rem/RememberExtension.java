@@ -56,7 +56,7 @@ public class RememberExtension extends Extension implements CommandExecutor {
                 PokeBot.log(Level.SEVERE, null, ex);
             }
         }
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class RememberExtension extends Extension implements CommandExecutor {
         target = target.toLowerCase();
 
         if (command.equalsIgnoreCase("remshutup")) {
-            if (!user.hasOP(target) && !user.hasPermission(target, "rem.shutup")) {
+            if (!channel.hasOp(user.getNick()) && !user.hasPermission(target, "rem.shutup")) {
                 return;
             }
             boolean wasThere = dontReply.remove(target);
@@ -123,7 +123,7 @@ public class RememberExtension extends Extension implements CommandExecutor {
             placers.put("User", user.getNick());
             placers.put("Channel", target);
             for (int i = 0; i < args.length; i++) {
-                placers.put(new Integer(i).toString(), args[i]);
+                placers.put(Integer.toString(i), args[i]);
             }
             reply = Utilities.handleArgs(reply, placers);
             String[] entire = reply.split("\n");

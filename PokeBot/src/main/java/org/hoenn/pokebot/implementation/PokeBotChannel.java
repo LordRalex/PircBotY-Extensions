@@ -35,6 +35,10 @@ public class PokeBotChannel extends Channel {
     private final org.pircbotx.PircBotX bot;
     protected final Map<String, Set<Permission>> permMap = new HashMap<>();
 
+    public PokeBotChannel(PircBotX ab, String chan) {
+        this(ab, ab.getChannel(chan));
+    }
+
     public PokeBotChannel(PircBotX aB, org.pircbotx.Channel channel) {
         bot = aB;
         pircbotxChannel = channel;
@@ -174,6 +178,11 @@ public class PokeBotChannel extends Channel {
     }
 
     @Override
+    public void unban(String mask) {
+        bot.unBan(pircbotxChannel, mask);
+    }
+
+    @Override
     public void opUser(String user) {
         pircbotxChannel.op(bot.getUser(user));
     }
@@ -191,5 +200,13 @@ public class PokeBotChannel extends Channel {
     @Override
     public void devoiceUser(String user) {
         pircbotxChannel.deVoice(bot.getUser(user));
+    }
+
+    @Override
+    public void quiet(String mask) {
+    }
+
+    @Override
+    public void unquiet(String mask) {
     }
 }

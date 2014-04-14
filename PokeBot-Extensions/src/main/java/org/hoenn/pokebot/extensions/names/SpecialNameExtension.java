@@ -26,9 +26,9 @@ import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
 import org.hoenn.pokebot.api.Priority;
+import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.events.JoinEvent;
 import org.hoenn.pokebot.api.events.NickChangeEvent;
-import org.hoenn.pokebot.api.users.BotUser;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.extension.Extension;
 import org.hoenn.pokebot.settings.Settings;
@@ -67,7 +67,7 @@ public class SpecialNameExtension extends Extension implements Listener {
         }
         unbanDelay = settings.getInt("delay");
         kickMessage = settings.getString("kickmessage");
-        PokeBot.getInstance().getExtensionManager().addListener(this);
+        PokeBot.getExtensionManager().addListener(this);
     }
 
     @EventExecutor(priority = Priority.LOW)
@@ -77,7 +77,7 @@ public class SpecialNameExtension extends Extension implements Listener {
                 String[] chans = event.getUser().getChannels();
                 for (String chan : chans) {
                     if (channelsToAffect.contains(chan.toLowerCase())) {
-                        handleNick(chan, event.getUser(), nope);
+                        handleNick(PokeBot.getChannel(chan), event.getUser(), nope);
                     }
                 }
             }
@@ -91,22 +91,22 @@ public class SpecialNameExtension extends Extension implements Listener {
                 String[] chans = event.getUser().getChannels();
                 for (String chan : chans) {
                     if (channelsToAffect.contains(chan.toLowerCase())) {
-                        handleNick(chan, event.getUser(), nope);
+                        handleNick(PokeBot.getChannel(chan), event.getUser(), nope);
                     }
                 }
             }
         }
     }
 
-    private void handleNick(String chan, User user, String string) {
-        String name = user.isVerified();
+    private void handleNick(Channel chan, User user, String string) {
+        String name = user.getNickservName();
         if (name != null && name.equals(user.getNick())) {
             return;
         }
-        String ban = "*" + string + "*!*@" + user.getIP();
-        BotUser.getBotUser().ban(chan, ban);
-        BotUser.getBotUser().kick(user.getNick(), chan, kickMessage);
-        UnbanTask timer = new UnbanTask(chan, "*" + user.getNick() + "*", "*", user.getIP());
-        PokeBot.getInstance().getScheduler().scheduleTask(timer, unbanDelay, TimeUnit.MINUTES);
+        String ban = "*" + string + "*!*@" + user.getHost();
+        chan.ban(ban);
+        chan.kickUser(user.getNick(), kickMessage);
+        UnbanTask timer = new UnbanTask(chan, "" + user.getNick() + "!*@" + user.getHost());
+        PokeBot.getScheduler().scheduleTask(timer, unbanDelay, TimeUnit.MINUTES);
     }
 }

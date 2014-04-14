@@ -19,7 +19,7 @@ package org.hoenn.pokebot.extensions.u;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.sender.Sender;
+import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
 
 /**
@@ -29,12 +29,12 @@ public class UExtension extends Extension implements CommandExecutor {
 
     @Override
     public void load() {
-        PokeBot.getInstance().getExtensionManager().addCommandExecutor(this);
+        PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
     public void runEvent(CommandEvent event) {
-        Sender target = event.getChannel();
+        MessageRecipient target = event.getChannel();
         if (target == null) {
             target = event.getUser();
         }

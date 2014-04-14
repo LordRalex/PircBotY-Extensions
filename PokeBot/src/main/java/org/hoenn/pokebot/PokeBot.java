@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import jline.console.ConsoleReader;
+import org.hoenn.pokebot.api.channels.Channel;
+import org.hoenn.pokebot.api.users.Bot;
+import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.extension.ExtensionManager;
 import org.hoenn.pokebot.permissions.PermissionManager;
@@ -118,5 +121,17 @@ public final class PokeBot extends Thread {
     public static void log(Level level, String message, Throwable error) {
         log(level, message);
         error.printStackTrace(System.out);
+    }
+
+    public static User getUser(String name) {
+        return core.getUser(name);
+    }
+
+    public static Channel getChannel(String name) {
+        return core.getChannel(name);
+    }
+
+    public static Bot getBot() {
+        return core.getBot();
     }
 }

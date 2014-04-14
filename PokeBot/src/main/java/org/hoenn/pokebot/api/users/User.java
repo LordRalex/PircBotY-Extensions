@@ -38,4 +38,7 @@ public abstract class User implements
         Nickable,
         Hostable,
         NickservRecipient {
+
+    public abstract String[] getChannels();
+
 }

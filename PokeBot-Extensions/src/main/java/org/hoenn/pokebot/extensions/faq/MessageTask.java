@@ -21,7 +21,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.hoenn.pokebot.api.users.BotUser;
+import java.util.concurrent.TimeUnit;
+import org.hoenn.pokebot.PokeBot;
+import org.hoenn.pokebot.api.channels.Channel;
+import org.hoenn.pokebot.api.users.User;
 import org.pircbotx.Colors;
 
 /**
@@ -30,8 +33,8 @@ import org.pircbotx.Colors;
 public class MessageTask implements Runnable {
 
     private final List<String> lines;
-    private final String channel;
-    private final String user;
+    private final Channel channel;
+    private final User user;
     private final boolean notice;
     private final String name;
     private final String[] args;
@@ -45,8 +48,8 @@ public class MessageTask implements Runnable {
 
     public MessageTask(String na, String u, String c, String[] l, boolean n, String[] a, String format, int d) {
         lines = new ArrayList<>(Arrays.asList(l));
-        channel = c;
-        user = u;
+        channel = PokeBot.getChannel(c);
+        user = PokeBot.getUser(u);
         notice = n;
         name = na;
         args = a;
@@ -82,13 +85,12 @@ public class MessageTask implements Runnable {
         if (lines.isEmpty()) {
             return;
         }
-        BotUser bot = BotUser.getBotUser();
         String message = lines.remove(0);
         message = messageFormat.replace("{message}", message)
-                .replace("{target}", user == null ? "" : user)
-                .replace("{channel}", channel)
+                .replace("{target}", user == null ? "" : user.getNick())
+                .replace("{channel}", channel.getName())
                 .replace("{factoid}", name.toLowerCase())
-                .replace("{botname}", BotUser.getBotUser().getNick());
+                .replace("{botname}", PokeBot.getBot().getNick());
         for (int i = 0; i < args.length; i++) {
             message = message.replace("{" + i + "}", args[i]);
         }
@@ -96,18 +98,16 @@ public class MessageTask implements Runnable {
             message = message.replace("{" + color.getKey() + "}", color.getValue());
         }
         if (notice) {
-            bot.sendNotice(user, message);
+            user.sendNotice(message);
         } else {
-            bot.sendMessage(channel, message);
+            channel.sendMessage(message);
         }
         if (!lines.isEmpty()) {
-            //PokeBot.getInstance().getScheduler().scheduleTask(this, delay, TimeUnit.MILLISECONDS);
-            new Thread(this).start();
+            PokeBot.getScheduler().scheduleTask(this, delay, TimeUnit.MILLISECONDS);
         }
     }
 
     public void start() {
-        //PokeBot.getInstance().getScheduler().scheduleTask(this, delay, TimeUnit.MILLISECONDS);
-        new Thread(this).start();
+        PokeBot.getScheduler().scheduleTask(this, delay, TimeUnit.MILLISECONDS);
     }
 }
