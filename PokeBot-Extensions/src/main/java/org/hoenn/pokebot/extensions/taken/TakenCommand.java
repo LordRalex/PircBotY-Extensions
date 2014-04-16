@@ -34,6 +34,11 @@ public class TakenCommand extends Extension implements CommandExecutor {
     private final String takenURL = "https://account.minecraft.net/buy/frame/checkName/";
 
     @Override
+    public String getName() {
+        return "Taken Extension";
+    }
+
+    @Override
     public void load() {
         PokeBot.getExtensionManager().addCommandExecutor(this);
     }
@@ -51,7 +56,7 @@ public class TakenCommand extends Extension implements CommandExecutor {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(takenURL + event.getArgs()[0]).openStream()))) {
             event.getChannel().sendMessage(event.getUser().getNick() + ", the username " + event.getArgs()[0] + " returned: " + reader.readLine());
         } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "Error on reading taken status", ex);
+            PokeBot.getLogger().log(Level.SEVERE, "Error on reading taken status", ex);
         }
     }
 

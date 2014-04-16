@@ -16,13 +16,10 @@
  */
 package org.hoenn.pokebot.extensions.ip;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.EventExecutor;
@@ -32,33 +29,37 @@ import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.events.ActionEvent;
 import org.hoenn.pokebot.api.events.CommandEvent;
 import org.hoenn.pokebot.api.events.MessageEvent;
-import org.hoenn.pokebot.api.events.PartEvent;
-import org.hoenn.pokebot.api.events.QuitEvent;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.extension.Extension;
-import org.hoenn.pokebot.settings.Settings;
+import org.hoenn.pokebot.extension.ExtensionReloadFailedException;
 
 /**
  * @author Lord_Ralex
  */
 public class ServerIPExtension extends Extension implements CommandExecutor, Listener {
 
-    private final List<String> triggered = new ArrayList();
-    private final List<String> ignorePeople = new ArrayList();
+    private final List<String> triggered = new ArrayList<>();
+    private final List<String> ignorePeople = new ArrayList<>();
     private final Set<String> channels = new HashSet<>();
 
     @Override
+    public String getName() {
+        return "Faq Extension";
+    }
+
+    @Override
     public void load() {
-        try {
-            Settings settings = new Settings();
-            settings.load(new File("configs", "iplistener.yml"));
-            channels.addAll(settings.getStringList("channels"));
-        } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
-            return;
-        }
+        channels.clear();
+        channels.addAll(getConfig().getStringList("channels"));
         PokeBot.getExtensionManager().addCommandExecutor(this);
         PokeBot.getExtensionManager().addListener(this);
+    }
+
+    @Override
+    public void reload() throws ExtensionReloadFailedException {
+        super.reload();
+        channels.clear();
+        channels.addAll(getConfig().getStringList("channels"));
     }
 
     @EventExecutor(priority = Priority.HIGH)

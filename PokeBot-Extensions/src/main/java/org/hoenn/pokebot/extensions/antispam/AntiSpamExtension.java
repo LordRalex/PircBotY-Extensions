@@ -16,14 +16,11 @@
  */
 package org.hoenn.pokebot.extensions.antispam;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -33,7 +30,7 @@ import org.hoenn.pokebot.api.events.ActionEvent;
 import org.hoenn.pokebot.api.events.MessageEvent;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.extension.Extension;
-import org.hoenn.pokebot.settings.Settings;
+import org.hoenn.pokebot.extension.ExtensionReloadFailedException;
 
 /**
  * @author Lord_Ralex
@@ -41,32 +38,29 @@ import org.hoenn.pokebot.settings.Settings;
 public class AntiSpamExtension extends Extension implements Listener {
 
     private final Map<String, Posts> logs = new HashMap<>();
-    private int MAX_MESSAGES;
-    private int SPAM_RATE;
-    private int DUPE_RATE;
     private final List<String> channels = new ArrayList<>();
-    private String kickMessage;
-    private CleanerTask cleaner;
+    private final CleanerTask cleaner = new CleanerTask();
+
+    @Override
+    public String getName() {
+        return "Antispam Extension";
+    }
 
     @Override
     public void load() {
-        Settings settings = new Settings();
-        try {
-            settings.load(new File("configs", "antispam.yml"));
-        } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
-            return;
-        }
-        MAX_MESSAGES = settings.getInt("message-count");
-        SPAM_RATE = settings.getInt("spam-rate");
-        DUPE_RATE = settings.getInt("dupe-rate");
-        kickMessage = settings.getString("kickmessage");
         channels.clear();
-        channels.addAll(settings.getStringList("channels"));
+        channels.addAll(getConfig().getStringList("channels"));
         logs.clear();
         PokeBot.getExtensionManager().addListener(this);
-        cleaner = new CleanerTask(this);
         PokeBot.getScheduler().scheduleTask(cleaner, 30, TimeUnit.MINUTES);
+    }
+
+    @Override
+    public void reload() throws ExtensionReloadFailedException {
+        super.reload();
+        channels.clear();
+        channels.addAll(getConfig().getStringList("channels"));
+        logs.clear();
     }
 
     @EventExecutor(priority = Priority.LOW)
@@ -87,10 +81,11 @@ public class AntiSpamExtension extends Extension implements Listener {
             message = message.toLowerCase();
             Posts posts = logs.remove(sender.getNick());
             if (posts == null) {
-                posts = new Posts(MAX_MESSAGES, DUPE_RATE, SPAM_RATE);
+                posts = new Posts(getConfig().getInt("message-count"), getConfig().getInt("dupe-rate"), getConfig().getInt("spam-rate"));
             }
             if (posts.addPost(message, event.getTimestamp())) {
-                event.getChannel().kickUser(sender.getNick(), kickMessage.replace("{ip}", sender.getHost()));
+                event.getChannel().kickUser(sender.getNick(), getConfig().getString("kickmessage").replace("{ip}", sender.getHost())
+                );
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);
@@ -113,10 +108,11 @@ public class AntiSpamExtension extends Extension implements Listener {
             message = message.toLowerCase();
             Posts posts = logs.remove(sender.getNick());
             if (posts == null) {
-                posts = new Posts(MAX_MESSAGES, DUPE_RATE, SPAM_RATE);
+                posts = new Posts(getConfig().getInt("message-count"), getConfig().getInt("dupe-rate"), getConfig().getInt("spam-rate"));
             }
             if (posts.addPost(message, event.getTimestamp())) {
-                event.getChannel().kickUser(sender.getNick(), kickMessage.replace("{ip}", sender.getHost()));
+                event.getChannel().kickUser(sender.getNick(), getConfig().getString("kickmessage").replace("{ip}", sender.getHost())
+                );
                 event.setCancelled(true);
             } else {
                 logs.put(sender.getNick(), posts);
@@ -134,6 +130,17 @@ public class AntiSpamExtension extends Extension implements Listener {
                     logs.remove(key);
                 }
             }
+        }
+    }
+
+    private class CleanerTask implements Runnable {
+
+        private final int DELAY = 10;
+
+        @Override
+        public void run() {
+            clean();
+            PokeBot.getScheduler().scheduleTask(CleanerTask.this, DELAY, TimeUnit.MINUTES);
         }
     }
 }

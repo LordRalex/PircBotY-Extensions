@@ -16,36 +16,32 @@
  */
 package org.hoenn.pokebot.extensions.help;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
 import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
-import org.hoenn.pokebot.settings.Settings;
 
 /**
  * @author Lord_Ralex
  */
 public class HelpExtension extends Extension implements CommandExecutor {
 
-    private String[] help;
+    private final LinkedList<String> help = new LinkedList<>();
+
+    @Override
+    public String getName() {
+        return "Faq Extension";
+    }
 
     @Override
     public void load() {
-        List<String> helpLines;
-        try {
-            Settings settings = new Settings();
-            settings.load(new File("configs", "help.yml"));
-            helpLines = settings.getStringList("help-list");
-        } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
-            return;
+        List<String> helpLines = getConfig().getStringList("help-list");
+        if (helpLines != null) {
+            help.addAll(helpLines);
         }
-        help = helpLines.toArray(new String[0]);
         PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 

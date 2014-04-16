@@ -16,13 +16,10 @@
  */
 package org.hoenn.pokebot.extensions.censor;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -30,7 +27,7 @@ import org.hoenn.pokebot.api.events.ActionEvent;
 import org.hoenn.pokebot.api.events.JoinEvent;
 import org.hoenn.pokebot.api.events.MessageEvent;
 import org.hoenn.pokebot.extension.Extension;
-import org.hoenn.pokebot.settings.Settings;
+import org.hoenn.pokebot.extension.ExtensionReloadFailedException;
 
 /**
  * @author Lord_Ralex
@@ -40,24 +37,28 @@ public class CensorExtension extends Extension implements Listener {
     private final List<String> censor = new ArrayList<>();
     private final List<String> channels = new ArrayList<>();
     private final Set<String> warned = new HashSet<>();
-    private final Settings settings = new Settings();
-    private String warnMessage, kickMessage;
+
+    @Override
+    public String getName() {
+        return "Censor Extension";
+    }
 
     @Override
     public void load() {
-        try {
-            settings.load(new File("configs", "censor.yml"));
-        } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
-            return;
-        }
         censor.clear();
-        censor.addAll(settings.getStringList("words"));
+        censor.addAll(getConfig().getStringList("words"));
         channels.clear();
-        channels.addAll(settings.getStringList("channels"));
-        warnMessage = settings.getString("warnmessage");
-        kickMessage = settings.getString("kickmessage");
+        channels.addAll(getConfig().getStringList("channels"));
         PokeBot.getExtensionManager().addListener(this);
+    }
+
+    @Override
+    public void reload() throws ExtensionReloadFailedException {
+        super.reload();
+        censor.clear();
+        censor.addAll(getConfig().getStringList("words"));
+        channels.clear();
+        channels.addAll(getConfig().getStringList("channels"));
     }
 
     @EventExecutor
@@ -77,11 +78,11 @@ public class CensorExtension extends Extension implements Listener {
         String message = event.getMessage().toLowerCase();
         if (scanMessage(message)) {
             if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHost())) {
-                event.getChannel().kickUser(event.getUser().getNick(), kickMessage);
+                event.getChannel().kickUser(event.getUser().getNick(), getConfig().getString("kickmessage"));
             } else {
                 warned.add(event.getUser().getNick());
                 warned.add(event.getUser().getHost());
-                event.getChannel().sendMessage(warnMessage.replace("{name}", event.getUser().getNick()));
+                event.getChannel().sendMessage(getConfig().getString("warnmessage").replace("{name}", event.getUser().getNick()));
             }
         }
     }
@@ -103,11 +104,11 @@ public class CensorExtension extends Extension implements Listener {
         String message = event.getAction().toLowerCase();
         if (scanMessage(message)) {
             if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHost())) {
-                event.getChannel().kickUser(event.getUser().getNick(), kickMessage);
+                event.getChannel().kickUser(event.getUser().getNick(), getConfig().getString("kickmessage"));
             } else {
                 warned.add(event.getUser().getNick());
                 warned.add(event.getUser().getHost());
-                event.getChannel().sendMessage(warnMessage.replace("{name}", event.getUser().getNick()));
+                event.getChannel().sendMessage(getConfig().getString("warnmessage").replace("{name}", event.getUser().getNick()));
             }
         }
     }
@@ -119,7 +120,7 @@ public class CensorExtension extends Extension implements Listener {
         }
         String message = event.getUser().getNick().toLowerCase();
         if (scanMessage(message)) {
-            event.getChannel().kickUser(event.getUser().getNick(), kickMessage);
+            event.getChannel().kickUser(event.getUser().getNick(), getConfig().getString("kickmessage"));
         }
     }
 

@@ -37,6 +37,11 @@ import org.hoenn.pokebot.extension.Extension;
 public class MCFExtension extends Extension implements CommandExecutor {
 
     @Override
+    public String getName() {
+        return "MCF Extension";
+    }
+
+    @Override
     public void load() {
         PokeBot.getExtensionManager().addCommandExecutor(this);
     }
@@ -80,7 +85,7 @@ public class MCFExtension extends Extension implements CommandExecutor {
                 }
             }
         } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, null, ex);
+            PokeBot.getLogger().log(Level.SEVERE, null, ex);
             target.sendMessage("An error occured");
         } finally {
             try {
@@ -88,7 +93,7 @@ public class MCFExtension extends Extension implements CommandExecutor {
                     reader.close();
                 }
             } catch (IOException ex) {
-                PokeBot.log(Level.SEVERE, null, ex);
+                PokeBot.getLogger().log(Level.SEVERE, null, ex);
             }
         }
     }

@@ -16,12 +16,9 @@
  */
 package org.hoenn.pokebot.extensions.names;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.EventExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -31,7 +28,7 @@ import org.hoenn.pokebot.api.events.JoinEvent;
 import org.hoenn.pokebot.api.events.NickChangeEvent;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.extension.Extension;
-import org.hoenn.pokebot.settings.Settings;
+import org.hoenn.pokebot.extension.ExtensionReloadFailedException;
 
 /**
  * @author Lord_Ralex
@@ -42,32 +39,50 @@ public class SpecialNameExtension extends Extension implements Listener {
     private final List<String> notAllowed = new ArrayList<>();
     private final List<String> channelsToAffect = new ArrayList<>();
     private String kickMessage;
-    private Settings settings;
+
+    @Override
+    public String getName() {
+        return "Special Name Extension";
+    }
 
     @Override
     public void load() {
-        settings = new Settings();
-        try {
-            settings.load(new File("configs", "specialnames.yml"));
-        } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
-            return;
-        }
-        List<String> temp = settings.getStringList("nicks");
+        List<String> temp = getConfig().getStringList("nicks");
         if (temp != null) {
             for (String name : temp) {
                 notAllowed.add(name.toLowerCase());
             }
         }
-        temp = settings.getStringList("channels");
+        temp = getConfig().getStringList("channels");
         if (temp != null) {
             for (String name : temp) {
                 channelsToAffect.add(name.toLowerCase());
             }
         }
-        unbanDelay = settings.getInt("delay");
-        kickMessage = settings.getString("kickmessage");
+        unbanDelay = getConfig().getInt("delay");
+        kickMessage = getConfig().getString("kickmessage");
         PokeBot.getExtensionManager().addListener(this);
+    }
+
+    @Override
+    public void reload() throws ExtensionReloadFailedException {
+        super.reload();
+        notAllowed.clear();
+        channelsToAffect.clear();
+        List<String> temp = getConfig().getStringList("nicks");
+        if (temp != null) {
+            for (String name : temp) {
+                notAllowed.add(name.toLowerCase());
+            }
+        }
+        temp = getConfig().getStringList("channels");
+        if (temp != null) {
+            for (String name : temp) {
+                channelsToAffect.add(name.toLowerCase());
+            }
+        }
+        unbanDelay = getConfig().getInt("delay");
+        kickMessage = getConfig().getString("kickmessage");
     }
 
     @EventExecutor(priority = Priority.LOW)

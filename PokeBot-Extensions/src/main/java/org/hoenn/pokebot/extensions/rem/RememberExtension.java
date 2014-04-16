@@ -42,21 +42,43 @@ public class RememberExtension extends Extension implements CommandExecutor {
 
     private final Map<String, String> remMap = new ConcurrentHashMap<>();
     private final List<String> dontReply = new ArrayList<>();
+    private final File remData = new File(getDataFolder(), "rems");
+
+    @Override
+    public String getName() {
+        return "Remember Extension";
+    }
 
     @Override
     public void load() {
-        new File("data" + File.separator + "rem").mkdirs();
-        for (File file : new File("data" + File.separator + "rem").listFiles()) {
+        remData.mkdirs();
+        for (File file : remData.listFiles()) {
             try {
                 String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
                 Scanner reader = new Scanner(file);
                 String line = reader.nextLine().trim();
                 remMap.put(name, line);
             } catch (FileNotFoundException ex) {
-                PokeBot.log(Level.SEVERE, null, ex);
+                PokeBot.getLogger().log(Level.SEVERE, null, ex);
             }
         }
         PokeBot.getExtensionManager().addCommandExecutor(this);
+    }
+
+    @Override
+    public void reload() {
+        remMap.clear();
+        remData.mkdirs();
+        for (File file : remData.listFiles()) {
+            try {
+                String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
+                Scanner reader = new Scanner(file);
+                String line = reader.nextLine().trim();
+                remMap.put(name, line);
+            } catch (FileNotFoundException ex) {
+                PokeBot.getLogger().log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Override
@@ -99,15 +121,15 @@ public class RememberExtension extends Extension implements CommandExecutor {
 
         if (command.equalsIgnoreCase("remupdate")) {
             remMap.clear();
-            new File("data" + File.separator + "rem").mkdirs();
-            for (File file : new File("data" + File.separator + "rem").listFiles()) {
+            remData.mkdirs();
+            for (File file : remData.listFiles()) {
                 try {
                     String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
                     Scanner reader = new Scanner(file);
                     String line = reader.nextLine().trim();
                     remMap.put(name, line);
                 } catch (FileNotFoundException ex) {
-                    PokeBot.log(Level.SEVERE, null, ex);
+                    PokeBot.getLogger().log(Level.SEVERE, null, ex);
                 }
             }
             user.sendMessage("Rems updated");
@@ -207,24 +229,24 @@ public class RememberExtension extends Extension implements CommandExecutor {
     private void saveRem(String name, String line) {
         FileWriter writer = null;
         try {
-            writer = new FileWriter(new File(new File("data", "rem"), name + ".txt"));
+            writer = new FileWriter(new File(remData, name + ".txt"));
             writer.write(line);
             writer.flush();
         } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, null, ex);
+            PokeBot.getLogger().log(Level.SEVERE, null, ex);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException ex) {
-                    PokeBot.log(Level.SEVERE, null, ex);
+                    PokeBot.getLogger().log(Level.SEVERE, null, ex);
                 }
             }
         }
     }
 
     private void deleteRem(String name) {
-        new File(new File("data", "rem"), name + ".txt").delete();
+        new File(remData, name + ".txt").delete();
     }
 
 }

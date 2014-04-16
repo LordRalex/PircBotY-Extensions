@@ -97,7 +97,7 @@ public class PlayerCommand implements CommandExecutor {
             }
 
         } catch (IOException | JsonSyntaxException ex) {
-            PokeBot.log(Level.SEVERE, "Error on getting player stats for Scrolls for " + event.getArgs()[0], ex);
+            PokeBot.getLogger().log(Level.SEVERE, "Error on getting player stats for Scrolls for " + event.getArgs()[0], ex);
             if (event.getChannel() == null) {
                 event.getUser().sendMessage("Error on getting player stats: " + ex.getLocalizedMessage());
             } else {

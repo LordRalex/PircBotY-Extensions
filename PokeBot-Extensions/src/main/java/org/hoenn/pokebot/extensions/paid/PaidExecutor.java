@@ -17,7 +17,6 @@
 package org.hoenn.pokebot.extensions.paid;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -29,7 +28,6 @@ import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
 import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
-import org.hoenn.pokebot.settings.Settings;
 
 /**
  * @author Lord_Ralex
@@ -37,19 +35,15 @@ import org.hoenn.pokebot.settings.Settings;
 public class PaidExecutor extends Extension implements CommandExecutor {
 
     private final String HASPAID = "https://minecraft.net/haspaid.jsp?user={0}";
-    private int MAX_NAMES;
     private final ExecutorService es = Executors.newSingleThreadExecutor();
 
     @Override
+    public String getName() {
+        return "Paid Extension";
+    }
+
+    @Override
     public void load() {
-        try {
-            Settings settings = new Settings();
-            settings.load(new File("configs", "paid.yml"));
-            MAX_NAMES = settings.getInt("name-limit");
-        } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "Error loading settings file, disabling", ex);
-            return;
-        }
         PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
@@ -58,8 +52,8 @@ public class PaidExecutor extends Extension implements CommandExecutor {
         if (event.getArgs().length == 0) {
             return;
         }
-        if (event.getArgs().length > MAX_NAMES) {
-            event.getUser().sendNotice("I can only do " + MAX_NAMES + " lookups at once");
+        if (event.getArgs().length > getConfig().getInt("name-limit", 3)) {
+            event.getUser().sendNotice("I can only do " + getConfig().getInt("name-limit", 3) + " lookups at once");
             return;
         }
         for (String name : event.getArgs()) {
@@ -103,7 +97,7 @@ public class PaidExecutor extends Extension implements CommandExecutor {
                     target.sendMessage("The user '" + name + "' is NOT a premium account");
                 }
             } catch (IOException e) {
-                PokeBot.log(Level.SEVERE, "An error occured on looking up " + name, e);
+                PokeBot.getLogger().log(Level.SEVERE, "An error occured on looking up " + name, e);
                 target.sendMessage("An error occured while looking to see if '" + name + "' has paid");
             }
         }

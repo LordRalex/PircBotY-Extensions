@@ -29,17 +29,22 @@ import org.hoenn.pokebot.extension.Extension;
 public class ScrollsExtension extends Extension {
 
     @Override
+    public String getName() {
+        return "Scrolls Extension";
+    }
+
+    @Override
     public void load() {
         LinkedList<CommandExecutor> executors = new LinkedList<>();
         try {
             executors.add(new OnlineCommand());
         } catch (MalformedURLException ex) {
-            PokeBot.log(Level.SEVERE, "Could not add .online", ex);
+            PokeBot.getLogger().log(Level.SEVERE, "Could not add .online", ex);
         }
         try {
             executors.add(new StatCommand());
         } catch (MalformedURLException ex) {
-            PokeBot.log(Level.SEVERE, "Could not add .stats", ex);
+            PokeBot.getLogger().log(Level.SEVERE, "Could not add .stats", ex);
         }
         executors.add(new ScrollCommand());
         executors.add(new PlayerCommand());

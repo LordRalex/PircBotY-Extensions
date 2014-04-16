@@ -31,9 +31,14 @@ import org.hoenn.pokebot.extension.Extension;
 /**
  * @author Lord_Ralex
  */
-public class WelcomeMesageExtension extends Extension implements Listener, CommandExecutor {
+public class WelcomeMessageExtension extends Extension implements Listener, CommandExecutor {
 
     private final Map<String, String> mappings = new HashMap<>();
+
+    @Override
+    public String getName() {
+        return "Welcome Message Extension";
+    }
 
     @Override
     public void load() {

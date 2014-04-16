@@ -79,7 +79,7 @@ public class StatCommand implements CommandExecutor {
                 event.getChannel().sendMessage(event.getUser().getNick() + ", " + Character.toLowerCase(message.charAt(0)) + message.substring(1));
             }
         } catch (IOException | JsonSyntaxException ex) {
-            PokeBot.log(Level.SEVERE, "Error on getting stats for Scrolls", ex);
+            PokeBot.getLogger().log(Level.SEVERE, "Error on getting stats for Scrolls", ex);
             if (event.getChannel() == null) {
                 event.getUser().sendMessage("Error on getting stats: " + ex.getLocalizedMessage());
             } else {

@@ -17,12 +17,9 @@
 package org.hoenn.pokebot.extensions.uptime;
 
 import java.lang.management.ManagementFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
 
 /**
@@ -31,28 +28,23 @@ import org.hoenn.pokebot.extension.Extension;
 public class UptimeExtension extends Extension implements CommandExecutor {
 
     @Override
+    public String getName() {
+        return "Uptime Extension";
+    }
+
+    @Override
     public void load() {
         PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
     public void runEvent(CommandEvent event) {
-        long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
+        long uptime = ManagementFactory.getRuntimeMXBean().getUptime() / 1000 / 60;
         String uptimeString = "%D, %H, %M";
-        uptimeString = uptimeString.replace("%D", TimeUnit.DAYS.convert(uptime, TimeUnit.MILLISECONDS) + " days");
-        uptime -= TimeUnit.DAYS.convert(uptime, TimeUnit.MILLISECONDS) * 24 * 60 * 60 * 100;
-        uptimeString = uptimeString.replace("%H", TimeUnit.HOURS.convert(uptime, TimeUnit.MILLISECONDS) + " hours");
-        uptime -= TimeUnit.MINUTES.convert(uptime, TimeUnit.MILLISECONDS) * 60 * 100;
-        uptimeString = uptimeString.replace("%M", TimeUnit.MINUTES.convert(uptime, TimeUnit.MILLISECONDS) + " minutes");
-        MessageRecipient target = event.getChannel();
-        if (target == null) {
-            target = event.getChannel();
-        }
-        if (target == null) {
-            PokeBot.log(Level.INFO, "Uptime: " + uptimeString);
-        } else {
-            target.sendMessage("Uptime: " + uptimeString);
-        }
+        uptimeString = uptimeString.replace("%D", (uptime / 60 / 24) + " days");
+        uptimeString = uptimeString.replace("%H", (uptime / 60 % 24) + " hours");
+        uptimeString = uptimeString.replace("%M", (uptime % 60 % 60) + " minutes");
+        event.reply("Uptime: " + uptimeString);
     }
 
     @Override

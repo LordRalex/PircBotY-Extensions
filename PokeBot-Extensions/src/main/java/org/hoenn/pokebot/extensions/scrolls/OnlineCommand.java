@@ -68,7 +68,7 @@ public class OnlineCommand implements CommandExecutor {
                 event.getChannel().sendMessage(event.getUser().getNick() + ", there are " + online + " online users in Scrolls");
             }
         } catch (IOException | JsonSyntaxException ex) {
-            PokeBot.log(Level.SEVERE, "Error on getting online players for Scrolls", ex);
+            PokeBot.getLogger().log(Level.SEVERE, "Error on getting online players for Scrolls", ex);
             if (event.getChannel() == null) {
                 event.getUser().sendMessage("Error on finding online players: " + ex.getLocalizedMessage());
             } else {

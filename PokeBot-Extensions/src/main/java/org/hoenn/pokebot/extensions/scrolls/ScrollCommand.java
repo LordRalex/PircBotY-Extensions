@@ -66,7 +66,7 @@ public class ScrollCommand implements CommandExecutor {
                     lines.add(line);
                 }
             }
-            
+
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(StringUtils.join(lines, "\n"));
             JsonObject obj = element.getAsJsonObject();
@@ -126,7 +126,7 @@ public class ScrollCommand implements CommandExecutor {
             }
 
         } catch (IOException | JsonSyntaxException | IllegalStateException ex) {
-            PokeBot.log(Level.SEVERE, "Error on getting scroll for Scrolls for '" + StringUtils.join(event.getArgs(), " ") + "'", ex);
+            PokeBot.getLogger().log(Level.SEVERE, "Error on getting scroll for Scrolls for '" + StringUtils.join(event.getArgs(), " ") + "'", ex);
             if (event.getChannel() == null) {
                 event.getUser().sendMessage("Error on getting scroll: " + ex.getLocalizedMessage());
             } else {

@@ -19,7 +19,6 @@ package org.hoenn.pokebot.extensions.u;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
-import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
 
 /**
@@ -28,27 +27,25 @@ import org.hoenn.pokebot.extension.Extension;
 public class UExtension extends Extension implements CommandExecutor {
 
     @Override
+    public String getName() {
+        return "U Extension";
+    }
+
+    @Override
     public void load() {
         PokeBot.getExtensionManager().addCommandExecutor(this);
     }
 
     @Override
     public void runEvent(CommandEvent event) {
-        MessageRecipient target = event.getChannel();
-        if (target == null) {
-            target = event.getUser();
-        }
-        if (target == null) {
-            return;
-        }
         if (event.getArgs().length == 0) {
-            target.sendMessage(event.getUser().getNick() + ", " + "$u <user> [profile, posts, topics, infractions, pm, names, admin, edit, modcp, warn, ip_history]");
+            event.reply(event.getUser().getNick() + ", " + "$u <user> [profile, posts, topics, infractions, pm, names, admin, edit, modcp, warn, ip_history]");
         } else {
             String link = "http://u.mcf.li/" + event.getArgs()[0];
             if (event.getArgs().length >= 2) {
                 link += "/" + event.getArgs()[1];
             }
-            target.sendMessage(event.getUser().getNick() + ", " + link);
+            event.reply(event.getUser().getNick() + ", " + link);
         }
     }
 

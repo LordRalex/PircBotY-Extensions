@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hoenn.pokebot.extensions.faq;
+package org.hoenn.pokebot.extensions.faqlegacy;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,7 +25,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -34,20 +33,17 @@ import org.hoenn.pokebot.PokeBot;
 /**
  * @author Lord_Ralex
  */
-public class Database {
+public class FileDatabase extends Database {
 
     private final String location;
-    private final Map<String, String[]> factoids = new ConcurrentHashMap<>();
-    private String master = null;
-    private boolean readOnly = false;
-    private final String name;
-    private boolean override = false;
+    private final ConcurrentHashMap<String, String[]> factoids = new ConcurrentHashMap<>();
 
-    public Database(String n, String path) {
+    public FileDatabase(String n, String path) {
+        super(n);
         location = path;
-        name = n;
     }
 
+    @Override
     public void load() {
         BufferedReader filereader = null;
         try {
@@ -57,19 +53,19 @@ public class Database {
                 if (line.contains("|")) {
                     String key = line.split("\\|")[0];
                     String value = line.split("\\|", 2)[1];
-                    setEntry(key.toLowerCase(), value.split(";;"));
+                    factoids.put(key.toLowerCase(), value.split(";;"));
                 }
             }
         } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "There was an error", ex);
-            PokeBot.log(Level.INFO, "Location: " + location);
+            PokeBot.getLogger().log(Level.SEVERE, "There was an error", ex);
+            PokeBot.getLogger().log(Level.INFO, "Location: " + location);
         } finally {
             try {
                 if (filereader != null) {
                     filereader.close();
                 }
             } catch (IOException ex) {
-                PokeBot.log(Level.SEVERE, "There was an error", ex);
+                PokeBot.getLogger().log(Level.SEVERE, "There was an error", ex);
             }
         }
         filereader = null;
@@ -80,79 +76,24 @@ public class Database {
                 if (line.contains("|")) {
                     String key = line.split("\\|")[0];
                     String value = line.split("\\|", 2)[1];
-                    PokeBot.log(Level.INFO, "  Inserting " + line);
-                    setEntry(key.toLowerCase(), value.split(";;"));
+                    PokeBot.getLogger().log(Level.INFO, "  Inserting " + line);
+                    factoids.put(key.toLowerCase(), value.split(";;"));
                 }
             }
         } catch (FileNotFoundException ex) {
         } catch (IOException ex) {
-            PokeBot.log(Level.SEVERE, "There was an error", ex);
-            PokeBot.log(Level.INFO, "Location: " + location + "-override");
+            PokeBot.getLogger().log(Level.SEVERE, "There was an error", ex);
+            PokeBot.getLogger().log(Level.INFO, "Location: " + location + "-override");
         } finally {
             try {
                 if (filereader != null) {
                     filereader.close();
                 }
             } catch (IOException ex) {
-                PokeBot.log(Level.SEVERE, "There was an error", ex);
+                PokeBot.getLogger().log(Level.SEVERE, "There was an error", ex);
             }
         }
 
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setMaster(String m) {
-        master = m;
-    }
-
-    public String getMaster() {
-        if (override) {
-            return null;
-        }
-        return master;
-    }
-
-    public void setOverride(boolean newState) {
-        override = newState;
-    }
-
-    public boolean getOverride() {
-        return override;
-    }
-
-    public void setReadonly(boolean newBool) {
-        readOnly = newBool;
-    }
-
-    public boolean isReadonly() {
-        return readOnly;
-    }
-
-    public String[] getEntry(String key) {
-        String[] entry;
-        key = key.toLowerCase().trim();
-        synchronized (factoids) {
-            entry = factoids.get(key);
-        }
-        return entry;
-    }
-
-    public boolean setEntry(String key, String[] newEntry) {
-        synchronized (factoids) {
-            factoids.put(key, newEntry);
-        }
-        return true;
-    }
-
-    public boolean removeEntry(String key) {
-        boolean removed;
-        synchronized (factoids) {
-            removed = factoids.remove(key) != null;
-        }
-        return removed;
     }
 
     public String getFile() {
@@ -179,5 +120,15 @@ public class Database {
                 }
             }
         }
+    }
+
+    @Override
+    public String[] getEntry(String key) {
+        String[] entry;
+        key = key.toLowerCase().trim();
+        synchronized (factoids) {
+            entry = factoids.get(key);
+        }
+        return entry;
     }
 }

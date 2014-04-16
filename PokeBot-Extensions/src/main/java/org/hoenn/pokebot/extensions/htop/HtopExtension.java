@@ -28,6 +28,11 @@ import org.hoenn.pokebot.extension.Extension;
 public class HtopExtension extends Extension implements CommandExecutor {
 
     @Override
+    public String getName() {
+        return "Htop Extension";
+    }
+
+    @Override
     public void load() {
         PokeBot.getExtensionManager().addCommandExecutor(this);
     }

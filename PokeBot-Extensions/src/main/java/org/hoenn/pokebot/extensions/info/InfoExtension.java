@@ -29,6 +29,11 @@ import org.pircbotx.PircBotX;
 public class InfoExtension extends Extension implements CommandExecutor {
 
     @Override
+    public String getName() {
+        return "Info Extension";
+    }
+
+    @Override
     public void load() {
         PokeBot.getExtensionManager().addCommandExecutor(this);
     }
