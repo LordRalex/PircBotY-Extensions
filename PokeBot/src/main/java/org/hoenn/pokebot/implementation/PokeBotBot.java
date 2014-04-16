@@ -50,14 +50,14 @@ public class PokeBotBot extends Bot {
     @Override
     public void sendMessage(String... messages) {
         for (String message : messages) {
-            pircbotxUser.sendMessage(message);
+            pircbotxUser.send().message(message);
         }
     }
 
     @Override
     public void sendNotice(String... messages) {
         for (String message : messages) {
-            bot.sendNotice(pircbotxUser, message);
+            pircbotxUser.send().notice(message);
         }
     }
 
@@ -65,15 +65,14 @@ public class PokeBotBot extends Bot {
     public String getNickservName() {
         if (verifiedName == null) {
             try (WaitForQueue queue = new WaitForQueue(pircbotxUser.getBot())) {
-                WhoisEvent evt;
+                WhoisEvent<?> evt;
                 try {
-                    pircbotxUser.getBot().sendRawLineNow("whois " + pircbotxUser.getNick());
-                    while (true) {
+                    boolean done = false;
+                    while (!done) {
                         evt = queue.waitFor(WhoisEvent.class);
-                        if (evt.getNick()
-                                .equals(this.pircbotxUser.getNick())) {
+                        if (evt.getNick().equals(this.pircbotxUser.getNick())) {
                             verifiedName = evt.getRegisteredAs();
-                            break;
+                            done = true;
                         }
                     }
                 } catch (InterruptedException ex) {
@@ -177,6 +176,6 @@ public class PokeBotBot extends Bot {
 
     @Override
     public void changeNickname(String newName) {
-        bot.changeNick(newName);
+        bot.sendIRC().changeNick(newName);
     }
 }

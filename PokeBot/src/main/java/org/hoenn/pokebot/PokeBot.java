@@ -19,17 +19,21 @@ package org.hoenn.pokebot;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import jline.console.ConsoleReader;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.Bot;
 import org.hoenn.pokebot.api.users.User;
+import org.hoenn.pokebot.configuration.file.YamlConfiguration;
 import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.extension.ExtensionManager;
+import org.hoenn.pokebot.handler.ExtensionLogHandler;
 import org.hoenn.pokebot.permissions.PermissionManager;
 import org.hoenn.pokebot.scheduler.Scheduler;
-import org.hoenn.pokebot.settings.Settings;
-import org.hoenn.pokebot.stream.SplitPrintStream;
+import org.hoenn.pokebot.stream.LoggerStream;
 import org.pircbotx.exception.IrcException;
 
 public final class PokeBot extends Thread {
@@ -41,14 +45,18 @@ public final class PokeBot extends Thread {
     public static final String VERSION = "6.0.0";
 
     public static void main(String[] startargs) throws IOException, IrcException {
-        SplitPrintStream out = new SplitPrintStream(System.out);
-        SplitPrintStream err = new SplitPrintStream(System.err);
+        Logger logger = Logger.getLogger("Pokebot");
+        logger.addHandler(new ExtensionLogHandler("Pokebot"));
+        logger.addHandler(new FileHandler("output.log"));
+        logger.addHandler(new ConsoleHandler());
+        LoggerStream out = new LoggerStream(System.out, logger, Level.INFO);
+        LoggerStream err = new LoggerStream(System.err, logger, Level.SEVERE);
         System.setOut(out);
         System.setErr(err);
         if (startargs.length != 0) {
             for (String arg : startargs) {
                 if (arg.equalsIgnoreCase("-debugmode")) {
-                    log(Level.INFO, "Starting with DEBUG MODE ENABLED");
+                    getLogger().log(Level.INFO, "Starting with DEBUG MODE ENABLED");
                     debugMode = true;
                 } else if (arg.equalsIgnoreCase("-nologin")) {
                     login = false;
@@ -66,12 +74,11 @@ public final class PokeBot extends Thread {
             }
         }
         core = new PokeBotCore();
-        core.createInstance(args.get("user"), args.get("pass"));
         synchronized (core) {
             try {
                 core.wait();
             } catch (InterruptedException ex) {
-                log(Level.SEVERE, "The instance was interrupted", ex);
+                getLogger().log(Level.SEVERE, "The instance was interrupted", ex);
             }
         }
         core.shutdown();
@@ -98,7 +105,7 @@ public final class PokeBot extends Thread {
         return core.getPermManager();
     }
 
-    public static Settings getSettings() {
+    public static YamlConfiguration getSettings() {
         return core.getSettings();
     }
 
@@ -108,19 +115,6 @@ public final class PokeBot extends Thread {
 
     public static Map<String, String> getStartupArgs() {
         return args;
-    }
-
-    public static void log(String message) {
-        log(Level.INFO, message);
-    }
-
-    public static void log(Level level, String message) {
-        System.out.println("[" + level + "] " + message);
-    }
-
-    public static void log(Level level, String message, Throwable error) {
-        log(level, message);
-        error.printStackTrace(System.out);
     }
 
     public static User getUser(String name) {
@@ -133,5 +127,9 @@ public final class PokeBot extends Thread {
 
     public static Bot getBot() {
         return core.getBot();
+    }
+
+    public static Logger getLogger() {
+        return PokeBotCore.getLogger();
     }
 }

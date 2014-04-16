@@ -16,51 +16,27 @@
  */
 package org.hoenn.pokebot.stream;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Lord_Ralex
  */
-public class SplitPrintStream extends PrintStream {
+public class LoggerStream extends PrintStream {
 
-    private final PrintStream first, second;
+    private final Logger logger;
+    private final Level level;
 
-    public SplitPrintStream(PrintStream f) throws FileNotFoundException {
+    public LoggerStream(PrintStream f, Logger l, Level le) {
         super(f);
-        first = f;
-        second = new PrintStream(new FileOutputStream("logs.log", true));
+        logger = l;
+        level = le;
     }
 
     @Override
     public void write(byte[] b) throws IOException {
-        first.write(b);
-        second.write(b);
-    }
-
-    @Override
-    public void write(int b) {
-        first.write(b);
-        second.write(b);
-    }
-
-    @Override
-    public void write(byte[] buf, int off, int len) {
-        first.write(buf, off, len);
-        second.write(buf, off, len);
-    }
-
-    @Override
-    public void close() {
-        first.close();
-        second.close();
-    }
-
-    @Override
-    public void flush() {
-        first.flush();
-        second.flush();
+        logger.log(level, new String(b));
     }
 }

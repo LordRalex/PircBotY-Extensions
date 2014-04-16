@@ -38,7 +38,7 @@ public class ExtensionPluginLoader {
     private final Map<String, Class<?>> classes = new HashMap<>();
     private final Map<String, ExtensionLoader> loaders = new LinkedHashMap<>();
 
-    public Set<Extension> loadExtension(File listener) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public Set<Extension> findExtensions(File listener) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         if (!listener.exists()) {
             throw new FileNotFoundException("File " + listener.getPath() + " not found");
         }
@@ -72,7 +72,7 @@ public class ExtensionPluginLoader {
         return extensionList;
     }
 
-    Class<?> getClassByName(String name) {
+    protected Class<?> getClassByName(String name) {
         if (name == null) {
             return null;
         }
@@ -92,7 +92,7 @@ public class ExtensionPluginLoader {
         return null;
     }
 
-    void setClass(String name, Class<?> cl) {
+    protected void setClass(String name, Class<?> cl) {
         classes.put(name, cl);
     }
 }

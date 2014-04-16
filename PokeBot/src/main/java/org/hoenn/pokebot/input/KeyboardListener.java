@@ -62,13 +62,13 @@ public final class KeyboardListener extends Thread {
                             } else if (cmd.equalsIgnoreCase("stop")) {
                                 run = false;
                             } else if (cmd.equalsIgnoreCase("join")) {
-                                bot.joinChannel(line.split(" ")[1]);
+                                bot.sendIRC().joinChannel(line.split(" ")[1]);
                             } else if (cmd.equalsIgnoreCase("leave")) {
-                                bot.partChannel(bot.getChannel(line.split(" ")[1]));
+                                //bot.sendIRC().(line.split(" ")[1]);
                             } else if (cmd.equalsIgnoreCase("me")) {
                                 String action = line.substring(3).trim();
                                 if (currentChan != null && !currentChan.isEmpty()) {
-                                    bot.sendAction(currentChan, action);
+                                    bot.sendIRC().action(currentChan, action);
                                 }
                             } else if (cmd.equalsIgnoreCase("kick")) {
                                 List<String> args = new ArrayList<>();
@@ -91,17 +91,17 @@ public final class KeyboardListener extends Thread {
                                 } else {
                                     reason = bot.getNick() + " has kicked " + target + " from the channel";
                                 }
-                                bot.kick(bot.getChannel(chan), bot.getUser(target), reason);
+                                bot.getUserChannelDao().getChannel(chan).send().kick(bot.getUserChannelDao().getUser(target), reason);
                             }
                         } else {
                             if (currentChan == null || currentChan.isEmpty()) {
                             } else {
-                                bot.sendMessage(currentChan, line);
+                                bot.sendIRC().message(currentChan, line);
                             }
                         }
                     }
                 } catch (IOException ex) {
-                    PokeBot.log(Level.SEVERE, "An error occurred", ex);
+                    PokeBot.getLogger().log(Level.SEVERE, "An error occurred", ex);
                 }
             }
         } catch (Exception e) {
@@ -110,7 +110,7 @@ public final class KeyboardListener extends Thread {
             core.notify();
         }
         kb.shutdown();
-        PokeBot.log(Level.INFO, "Ending keyboard listener");
+        PokeBot.getLogger().log(Level.INFO, "Ending keyboard listener");
     }
 
     public ConsoleReader getJLine() {

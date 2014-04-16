@@ -18,9 +18,10 @@ package org.hoenn.pokebot.api.events;
 
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.channels.Channel;
+import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.api.users.User;
 
-public final class MessageEvent implements UserEvent, ChannelEvent, CancellableEvent {
+public final class MessageEvent implements UserEvent, ChannelEvent, CancellableEvent, ReplyableEvent {
 
     private final String message;
     private final User sender;
@@ -61,5 +62,14 @@ public final class MessageEvent implements UserEvent, ChannelEvent, CancellableE
     @Override
     public long getTimestamp() {
         return timestamp;
+    }
+
+    @Override
+    public void reply(String... messages) {
+        MessageRecipient rec = channel == null ? sender : channel;
+        if (rec == null) {
+            return;
+        }
+        rec.sendMessage(messages);
     }
 }

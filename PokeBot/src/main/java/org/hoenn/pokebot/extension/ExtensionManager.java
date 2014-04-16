@@ -25,9 +25,11 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.apache.commons.lang3.StringUtils;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.Listener;
@@ -38,12 +40,8 @@ import org.hoenn.pokebot.loader.ExtensionPluginLoader;
  */
 public class ExtensionManager {
 
-    private final ExtensionPluginLoader pluginLoader;
+    private final ExtensionPluginLoader pluginLoader = new ExtensionPluginLoader();
     private final Set<Extension> loadedExtensions = new HashSet<>();
-
-    public ExtensionManager() {
-        pluginLoader = new ExtensionPluginLoader();
-    }
 
     public void load() {
         File extensionFolder = new File("extensions");
@@ -61,13 +59,13 @@ public class ExtensionManager {
         for (File file : extensionFolder.listFiles()) {
             try {
                 if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                    Set<Extension> extensionList = pluginLoader.loadExtension(file);
+                    Set<Extension> extensionList = pluginLoader.findExtensions(file);
                     addExtensions(extensionList);
                 } else if (file.getName().endsWith(".zip")) {
                     ZipFile zipFile = null;
                     try {
                         zipFile = new ZipFile(file);
-                        Enumeration entries = zipFile.entries();
+                        Enumeration<? extends ZipEntry> entries = zipFile.entries();
                         while (entries.hasMoreElements()) {
                             ZipEntry entry = (ZipEntry) entries.nextElement();
                             if (entry.getName().contains("/")) {
@@ -86,60 +84,92 @@ public class ExtensionManager {
                                     }
                                 }
                             } catch (IOException ex) {
-                                PokeBot.log(Level.SEVERE, "An error occurred on copying the streams", ex);
+                                PokeBot.getLogger().log(Level.SEVERE, "An error occurred on copying the streams", ex);
                             }
                         }
                     } catch (IOException ex) {
-                        PokeBot.log(Level.SEVERE, "An error occured", ex);
+                        PokeBot.getLogger().log(Level.SEVERE, "An error occured", ex);
                     } finally {
                         if (zipFile != null) {
                             try {
                                 zipFile.close();
                             } catch (IOException ex) {
-                                PokeBot.log(Level.SEVERE, "An error occured", ex);
+                                PokeBot.getLogger().log(Level.SEVERE, "An error occured", ex);
                             }
                         }
                     }
                 } else if (file.getName().endsWith(".jar")) {
-                    Set<Extension> extensionList = pluginLoader.loadExtension(file);
+                    Set<Extension> extensionList = pluginLoader.findExtensions(file);
                     addExtensions(extensionList);
                 }
-            } catch (Exception e) {
-                PokeBot.log(Level.SEVERE, "Error on loading extension: " + file.getName(), e);
+            } catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+                PokeBot.getLogger().log(Level.SEVERE, "Error on loading extension: " + file.getName(), e);
             }
         }
         if (temp.listFiles() != null) {
             for (File file : temp.listFiles()) {
                 try {
-                    if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
-                        Set<Extension> extensionList = pluginLoader.loadExtension(file);
-                        addExtensions(extensionList);
-                    } else if (file.getName().endsWith(".jar")) {
-                        Set<Extension> extensionList = pluginLoader.loadExtension(file);
+                    if ((file.getName().endsWith(".class") && !file.getName().contains("$")) || file.getName().endsWith(".jar")) {
+                        Set<Extension> extensionList = pluginLoader.findExtensions(file);
                         addExtensions(extensionList);
                     }
-                } catch (Exception e) {
-                    PokeBot.log(Level.SEVERE, "Error on loading extension: " + file.getName(), e);
+                } catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+                    PokeBot.getLogger().log(Level.SEVERE, "Error on loading extension: " + file.getName(), e);
                 }
             }
         }
-        String names = "";
+        Stack<String> nameList = new Stack<>();
         for (Extension extension : loadedExtensions) {
-            names += extension.getClass().getName() + "|";
+            nameList.add(extension.getName());
         }
-        if (names.endsWith("|")) {
-            names = names.substring(0, names.length() - 2);
-        }
-        names = names.replace("|", ", ");
-        PokeBot.log("Loaded extensions: " + names);
+        PokeBot.getLogger().info("Loaded extensions: " + StringUtils.join(nameList, ", "));
     }
 
     public void unload() {
         for (Extension extension : loadedExtensions) {
-            extension.unload();
+            try {
+                extension.unload();
+            } catch (Exception e) {
+                PokeBot.getLogger().log(Level.SEVERE, "Error on unloading " + extension.getName(), e);
+            }
         }
         loadedExtensions.clear();
         PokeBot.getEventHandler().unload();
+    }
+
+    public void reload() throws ExtensionReloadFailedException {
+        for (Extension extension : loadedExtensions) {
+            try {
+                extension.reload();
+            } catch (Exception e) {
+                PokeBot.getLogger().log(Level.SEVERE, "Error on reloading " + extension.getName(), e);
+            }
+        }
+    }
+
+    public void reload(String extension) throws ExtensionReloadFailedException {
+        for (Extension e : loadedExtensions) {
+            if (e.getName().replace(" ", "_").equalsIgnoreCase(extension)) {
+                try {
+                    e.reload();
+                } catch (Exception ex) {
+                    if (ex instanceof ExtensionReloadFailedException) {
+                        throw (ExtensionReloadFailedException) ex;
+                    } else {
+                        throw new ExtensionReloadFailedException(ex);
+                    }
+                }
+            }
+        }
+    }
+
+    public Extension getExtension(String name) {
+        for (Extension e : loadedExtensions) {
+            if (e.getName().equalsIgnoreCase(name) || e.getName().replace("-", " ").equalsIgnoreCase(name) || e.getName().replace("_", " ").equalsIgnoreCase(name)) {
+                return e;
+            }
+        }
+        return null;
     }
 
     public void addListener(Listener list) {
@@ -150,18 +180,27 @@ public class ExtensionManager {
         PokeBot.getEventHandler().registerCommandExecutor(executor);
     }
 
-    public void addExtension(Extension extension) {
+    public void addExtension(Extension extension) throws ExtensionUnloadFailedException {
         try {
+            extension.initialize();
             extension.load();
             loadedExtensions.add(extension);
         } catch (Exception e) {
-            PokeBot.log(Level.SEVERE, "Error occured on loading extension " + extension.getClass().getName(), e);
+            if (e instanceof ExtensionUnloadFailedException) {
+                throw (ExtensionUnloadFailedException) e;
+            } else {
+                throw new ExtensionUnloadFailedException(e);
+            }
         }
     }
 
     public void addExtensions(Set<Extension> extensionList) {
         for (Extension extension : extensionList) {
-            addExtension(extension);
+            try {
+                addExtension(extension);
+            } catch (ExtensionUnloadFailedException ex) {
+                PokeBot.getLogger().log(Level.SEVERE, "Error on loading " + extension.getName(), ex);
+            }
         }
     }
 }

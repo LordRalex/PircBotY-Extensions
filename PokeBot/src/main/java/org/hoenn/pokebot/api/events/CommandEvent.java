@@ -17,12 +17,12 @@
 package org.hoenn.pokebot.api.events;
 
 import org.hoenn.pokebot.PokeBot;
-import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.api.channels.Channel;
-import org.hoenn.pokebot.api.exceptions.NickNotOnlineException;
+import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.api.users.User;
+import org.hoenn.pokebot.eventhandler.EventHandler;
 
-public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
+public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent, ReplyableEvent {
 
     private final String command;
     private final User sender;
@@ -60,7 +60,7 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
         }
     }
 
-    public CommandEvent(org.pircbotx.hooks.events.NoticeEvent event) throws NickNotOnlineException {
+    public CommandEvent(org.pircbotx.hooks.events.NoticeEvent event) {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
         sender = PokeBot.getUser(event.getUser().getNick());
@@ -102,5 +102,14 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent {
     @Override
     public long getTimestamp() {
         return timestamp;
+    }
+
+    @Override
+    public void reply(String... messages) {
+        MessageRecipient rec = channel == null ? sender : channel;
+        if (rec == null) {
+            return;
+        }
+        rec.sendMessage(messages);
     }
 }

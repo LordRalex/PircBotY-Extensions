@@ -25,7 +25,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.permissions.Permission;
-import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.WaitForQueue;
 import org.pircbotx.hooks.events.WhoisEvent;
 
@@ -35,45 +34,40 @@ import org.pircbotx.hooks.events.WhoisEvent;
 public class PokeBotUser extends User {
 
     private final org.pircbotx.User pircbotxUser;
-    private final PircBotX bot;
+    private final PokeIrcBot bot;
     private String verifiedName = null;
     private final Map<String, Set<Permission>> permMap = new HashMap<>();
     private final static Map<org.pircbotx.User, org.hoenn.pokebot.api.users.User> existingUsers = new ConcurrentHashMap<>();
 
-    public PokeBotUser(PircBotX b, String name) {
+    public PokeBotUser(PokeIrcBot b, String name) {
         this(b, b.getUser(name));
     }
 
-    public PokeBotUser(PircBotX b, org.pircbotx.User u) {
+    public PokeBotUser(PokeIrcBot b, org.pircbotx.User u) {
         bot = b;
         pircbotxUser = u;
     }
 
     @Override
     public void sendMessage(String... messages) {
-        for (String message : messages) {
-            pircbotxUser.sendMessage(message);
-        }
+        bot.sendMessage(pircbotxUser, messages);
     }
 
     @Override
     public void sendNotice(String... messages) {
-        for (String message : messages) {
-            bot.sendNotice(pircbotxUser, message);
-        }
+        bot.sendNotice(pircbotxUser, messages);
     }
 
     @Override
     public String getNickservName() {
         if (verifiedName == null) {
             try (WaitForQueue queue = new WaitForQueue(pircbotxUser.getBot())) {
-                WhoisEvent evt;
+                WhoisEvent<?> evt;
                 try {
-                    pircbotxUser.getBot().sendRawLineNow("whois " + pircbotxUser.getNick());
+                    pircbotxUser.getBot().sendRaw().rawLine("whois " + pircbotxUser.getNick());
                     while (true) {
                         evt = queue.waitFor(WhoisEvent.class);
-                        if (evt.getNick()
-                                .equals(this.pircbotxUser.getNick())) {
+                        if (evt.getNick().equals(pircbotxUser.getNick())) {
                             verifiedName = evt.getRegisteredAs();
                             break;
                         }

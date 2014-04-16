@@ -22,27 +22,30 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.net.ssl.SSLSocketFactory;
 import jline.console.ConsoleReader;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.events.ConnectionEvent;
 import org.hoenn.pokebot.api.users.Bot;
 import org.hoenn.pokebot.api.users.User;
+import org.hoenn.pokebot.configuration.InvalidConfigurationException;
+import org.hoenn.pokebot.configuration.file.YamlConfiguration;
 import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.extension.ExtensionManager;
 import org.hoenn.pokebot.implementation.PokeBotBot;
 import org.hoenn.pokebot.implementation.PokeBotChannel;
 import org.hoenn.pokebot.implementation.PokeBotUser;
+import org.hoenn.pokebot.implementation.PokeIrcBot;
 import org.hoenn.pokebot.input.KeyboardListener;
 import org.hoenn.pokebot.permissions.PermissionManager;
 import org.hoenn.pokebot.scheduler.Scheduler;
-import org.hoenn.pokebot.settings.Settings;
-import org.pircbotx.PircBotX;
-import org.pircbotx.exception.IrcException;
-import org.pircbotx.exception.NickAlreadyInUseException;
+import org.pircbotx.Configuration.Builder;
+import org.pircbotx.IdentServer;
 
 /**
  *
@@ -52,16 +55,17 @@ public class PokeBotCore {
 
     private final EventHandler eventHandler;
     private final KeyboardListener kblistener;
-    private final Settings globalSettings;
+    private final YamlConfiguration globalSettings;
     private final PermissionManager permManager;
     private final ExtensionManager extensionManager;
     private final Scheduler scheduler;
-    private final PircBotX driver;
+    private final PokeIrcBot driver;
     private final ConcurrentHashMap<String, Channel> channelCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<org.pircbotx.User, User> userCache = new ConcurrentHashMap<>();
+    private final static Logger logger = Logger.getLogger("Pokebot");
     private Bot botUser;
 
-    protected PokeBotCore() {
+    protected PokeBotCore() throws UnknownHostException {
         if (!(new File("config.yml").exists())) {
             try (InputStream input = PokeBot.class.getResourceAsStream("/config.yml")) {
                 try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("config.yml")))) {
@@ -74,111 +78,79 @@ public class PokeBotCore {
                         input.close();
                         output.close();
                     } catch (IOException ex) {
-                        PokeBot.log(Level.SEVERE, "An error occurred on copying the streams", ex);
+                        getLogger().log(Level.SEVERE, "An error occurred on copying the streams", ex);
                     }
                 }
             } catch (IOException ex) {
-                PokeBot.log(Level.SEVERE, "Error on saving config", ex);
+                logger.log(Level.SEVERE, "Error on saving config", ex);
             }
         }
-        globalSettings = new Settings();
+        globalSettings = new YamlConfiguration();
         try {
             globalSettings.load(new File("config.yml"));
-        } catch (IOException e) {
-            PokeBot.log(Level.SEVERE, "Could not load config.yml", e);
+        } catch (IOException | InvalidConfigurationException ex) {
+            logger.log(Level.SEVERE, "Failed to load config.yml", ex);
         }
-        driver = new PircBotX();
+        IdentServer.startServer();
+        Builder<PokeIrcBot> botConfigBuilder = new Builder<PokeIrcBot>()
+                .setEncoding(Charset.forName("UTF-8"))
+                .setVersion("PokeBot - v" + PokeBot.VERSION)
+                .setAutoReconnect(true)
+                .setAutoNickChange(true)
+                .setIdentServerEnabled(true)
+                .setName(globalSettings.getString("nick", "DebugBot"))
+                .setLogin(globalSettings.getString("nick", "DebugBot"))
+                .setRealName(globalSettings.getString("nick", "DebugBot"))
+                .setNickservPassword(globalSettings.getString("nick-pw", ""))
+                .setServerHostname(globalSettings.getString("network"))
+                .setServerPort(globalSettings.getInt("port", 6667));
+        if (globalSettings.getBoolean("ssl")) {
+            botConfigBuilder.setSocketFactory(SSLSocketFactory.getDefault());
+        }
+
+        if (globalSettings.isString("bind-ip")) {
+            botConfigBuilder.setLocalAddress(InetAddress.getByName(globalSettings.getString("bind-ip")));
+        }
+        if (globalSettings.isList("channels")) {
+            for (String chan : globalSettings.getStringList("channels")) {
+                botConfigBuilder.addAutoJoinChannel(chan);
+            }
+        }
+
+        driver = new PokeIrcBot(botConfigBuilder.buildConfiguration());
         KeyboardListener temp;
         try {
             temp = new KeyboardListener(this, driver);
         } catch (IOException ex) {
             temp = null;
-            PokeBot.log(Level.SEVERE, "An error occured", ex);
+            logger.log(Level.SEVERE, "An error occured", ex);
         }
         kblistener = temp;
         eventHandler = new EventHandler(driver);
         extensionManager = new ExtensionManager();
         permManager = new PermissionManager();
         scheduler = new Scheduler();
-    }
-
-    protected void createInstance(String user, String pass) throws IOException, IrcException {
-        driver.setEncoding(Charset.forName("UTF-8"));
-        String bind = globalSettings.getString("bind-ip");
-        if (bind != null && !bind.isEmpty()) {
-            InetAddress addr = InetAddress.getByName(bind);
-            driver.setInetAddress(addr);
-        }
-        driver.setVerbose(true);
-        driver.setVersion("PokeBot   - v" + PokeBot.VERSION);
-        driver.setAutoReconnect(false);
-        driver.setAutoReconnectChannels(true);
-        String nick = user;
-        if (nick == null || nick.isEmpty()) {
-            nick = globalSettings.getString("nick");
-        }
-        if (nick == null || nick.isEmpty()) {
-            nick = "DebugBot";
-        }
-        driver.setName(nick);
-        driver.setLogin(nick);
-
-        PokeBot.log(Level.INFO, "Nick of bot: " + nick);
 
         eventHandler.load();
         extensionManager.load();
         try {
             permManager.load();
         } catch (IOException e) {
-            PokeBot.log(Level.SEVERE, "Error loading permissions file", e);
+            logger.log(Level.SEVERE, "Error loading permissions file", e);
         }
-        boolean eventSuccess = driver.getListenerManager().addListener(eventHandler);
+        boolean eventSuccess = botConfigBuilder.getListenerManager().addListener(eventHandler);
         if (eventSuccess) {
-            PokeBot.log(Level.INFO, "Listener hook attached to bot");
+            logger.log(Level.INFO, "Listener hook attached to bot");
         } else {
-            PokeBot.log(Level.INFO, "Listener hook was unable to attach to the bot");
-        }
-        String network = globalSettings.getString("network");
-        int port = globalSettings.getInt("port");
-        if (network == null || network.isEmpty()) {
-            network = "irc.esper.net";
-        }
-        if (port == 0 || port < 0) {
-            port = 6667;
-        }
-        if (pass == null || pass.isEmpty()) {
-            pass = globalSettings.getString("nick-pw");
-        }
-        PokeBot.log(Level.INFO, "Connecting to: " + network + ":" + port);
-        try {
-            driver.connect(network, port);
-        } catch (NickAlreadyInUseException ex) {
-            PokeBot.log(Level.SEVERE, "The nick is already taken");
-            driver.changeNick(nick + "_");
-            driver.connect(network, port);
-            driver.sendMessage("chanserv", "ghost " + nick + " " + pass);
-            driver.changeNick(nick);
-            if (!globalSettings.getString("nick").equalsIgnoreCase(driver.getNick())) {
-                PokeBot.log(Level.SEVERE, "Could not claim the nick " + nick);
-            }
-        }
-        if (pass != null && !pass.isEmpty()) {
-            driver.sendMessage("nickserv", "identify " + pass);
-            PokeBot.log(Level.INFO, "Logging in to nickserv");
+            logger.log(Level.INFO, "Listener hook was unable to attach to the bot");
         }
         eventHandler.fireEvent(new ConnectionEvent());
-        List<String> channels = globalSettings.getStringList("channels");
-        if (channels != null && !channels.isEmpty()) {
-            for (String chan : channels) {
-                PokeBot.log(Level.INFO, "Joining " + chan);
-                driver.joinChannel(chan);
-            }
-        }
-        PokeBot.log(Level.INFO, "Initial loading complete, engaging listeners");
+
+        logger.log(Level.INFO, "Initial loading complete, engaging listeners");
         eventHandler.startQueue();
-        PokeBot.log(Level.INFO, "Starting keyboard listener");
+        logger.log(Level.INFO, "Starting keyboard listener");
         kblistener.start();
-        PokeBot.log(Level.INFO, "All systems operational");
+        logger.log(Level.INFO, "All systems operational");
     }
 
     public EventHandler getEventHandler() {
@@ -201,13 +173,12 @@ public class PokeBotCore {
         return permManager;
     }
 
-    public Settings getSettings() {
+    public YamlConfiguration getSettings() {
         return globalSettings;
     }
 
     public void shutdown() {
         eventHandler.stopRunner();
-        driver.shutdown(true);
     }
 
     public Channel getChannel(String name) {
@@ -220,7 +191,7 @@ public class PokeBotCore {
     }
 
     public User getUser(String name) {
-        org.pircbotx.User pircbotxUser = driver.getUser(name);
+        org.pircbotx.User pircbotxUser = driver.getUserChannelDao().getUser(name);
         if (userCache.contains(pircbotxUser)) {
             return userCache.get(pircbotxUser);
         }
@@ -236,4 +207,7 @@ public class PokeBotCore {
         return botUser;
     }
 
+    public static Logger getLogger() {
+        return logger;
+    }
 }

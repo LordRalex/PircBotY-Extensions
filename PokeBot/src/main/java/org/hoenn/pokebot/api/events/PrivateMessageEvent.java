@@ -19,7 +19,7 @@ package org.hoenn.pokebot.api.events;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.users.User;
 
-public class PrivateMessageEvent implements UserEvent, CancellableEvent {
+public class PrivateMessageEvent implements UserEvent, CancellableEvent, ReplyableEvent {
 
     private final String message;
     private final User sender;
@@ -53,5 +53,10 @@ public class PrivateMessageEvent implements UserEvent, CancellableEvent {
     @Override
     public long getTimestamp() {
         return timestamp;
+    }
+
+    @Override
+    public void reply(String... messages) {
+        sender.sendMessage(messages);
     }
 }
