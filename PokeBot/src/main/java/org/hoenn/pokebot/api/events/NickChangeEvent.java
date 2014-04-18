@@ -26,7 +26,7 @@ public class NickChangeEvent implements UserEvent, CancellableEvent {
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public NickChangeEvent(org.pircbotx.hooks.events.NickChangeEvent event) {
+    public NickChangeEvent(net.ae97.pircboty.hooks.events.NickChangeEvent event) {
         oldNick = event.getOldNick();
         newNick = event.getNewNick();
         sender = PokeBot.getUser(event.getUser().getNick());

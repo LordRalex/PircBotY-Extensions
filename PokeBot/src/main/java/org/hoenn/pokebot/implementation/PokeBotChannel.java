@@ -21,39 +21,40 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import net.ae97.pircboty.PircBotY;
+import net.ae97.pircboty.User;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.permissions.Permission;
-import org.pircbotx.User;
 
 /**
  * @author Lord_Ralex
  */
 public class PokeBotChannel extends Channel {
 
-    private final org.pircbotx.Channel pircbotxChannel;
-    private final PokeIrcBot bot;
+    private final net.ae97.pircboty.Channel PircBotYChannel;
+    private final PircBotY bot;
     protected final Map<String, Set<Permission>> permMap = new HashMap<>();
 
-    public PokeBotChannel(PokeIrcBot ab, String chan) {
+    public PokeBotChannel(PircBotY ab, String chan) {
         this(ab, ab.getUserChannelDao().getChannel(chan));
     }
 
-    public PokeBotChannel(PokeIrcBot aB, org.pircbotx.Channel channel) {
+    public PokeBotChannel(PircBotY aB, net.ae97.pircboty.Channel channel) {
         bot = aB;
-        pircbotxChannel = channel;
+        PircBotYChannel = channel;
     }
 
     @Override
     public void sendMessage(String... messages) {
         for (String message : messages) {
-            bot.sendIRC().message(pircbotxChannel.getName(), message);
+            bot.sendIRC().message(PircBotYChannel.getName(), message);
         }
     }
 
     @Override
     public void sendNotice(String... messages) {
         for (String message : messages) {
-            bot.sendIRC().notice(pircbotxChannel.getName(), message);
+            bot.sendIRC().notice(PircBotYChannel.getName(), message);
         }
     }
 
@@ -66,12 +67,12 @@ public class PokeBotChannel extends Channel {
 
     @Override
     public boolean isSecret() {
-        return pircbotxChannel.isSecret();
+        return PircBotYChannel.isSecret();
     }
 
     @Override
     public String[] getOps() {
-        User[] users = pircbotxChannel.getOps().toArray(new User[0]);
+        User[] users = PircBotYChannel.getOps().toArray(new User[0]);
         String[] names = new String[users.length];
         for (int i = 0; i < names.length; i++) {
             names[i] = users[i].getNick();
@@ -81,7 +82,7 @@ public class PokeBotChannel extends Channel {
 
     @Override
     public String[] getVoiced() {
-        User[] users = pircbotxChannel.getVoices().toArray(new User[0]);
+        User[] users = PircBotYChannel.getVoices().toArray(new User[0]);
         String[] names = new String[users.length];
         for (int i = 0; i < names.length; i++) {
             names[i] = users[i].getNick();
@@ -91,22 +92,22 @@ public class PokeBotChannel extends Channel {
 
     @Override
     public boolean hasOp(String name) {
-        return pircbotxChannel.isOp(bot.getUser(name));
+        return PircBotYChannel.isOp(bot.getUserChannelDao().getUser(name));
     }
 
     @Override
     public boolean hasVoice(String name) {
-        return pircbotxChannel.hasVoice(bot.getUser(name));
+        return PircBotYChannel.hasVoice(bot.getUserChannelDao().getUser(name));
     }
 
     @Override
     public String getName() {
-        return pircbotxChannel.getName();
+        return PircBotYChannel.getName();
     }
 
     @Override
     public String[] getUserList() {
-        Set<User> users = pircbotxChannel.getUsers();
+        Set<User> users = PircBotYChannel.getUsers();
         LinkedList<String> names = new LinkedList<>();
         for (User user : users) {
             names.add(user.getNick());
@@ -159,46 +160,46 @@ public class PokeBotChannel extends Channel {
     @Override
     public void setMode(char mode, boolean newState) {
         String newMode = (newState ? "+" : "-") + mode;
-        bot.sendIRC().mode(pircbotxChannel.getName(), newMode);
+        bot.sendIRC().mode(PircBotYChannel.getName(), newMode);
     }
 
     @Override
     public void kickUser(String name, String reason) {
         if (reason != null) {
-            pircbotxChannel.send().kick(bot.getUser(name), reason);
+            PircBotYChannel.send().kick(bot.getUserChannelDao().getUser(name), reason);
         } else {
-            pircbotxChannel.send().kick(bot.getUser(name));
+            PircBotYChannel.send().kick(bot.getUserChannelDao().getUser(name));
         }
     }
 
     @Override
     public void ban(String mask) {
-        pircbotxChannel.send().ban(mask);
+        PircBotYChannel.send().ban(mask);
     }
 
     @Override
     public void unban(String mask) {
-        pircbotxChannel.send().unBan(mask);
+        PircBotYChannel.send().unBan(mask);
     }
 
     @Override
     public void opUser(String user) {
-        pircbotxChannel.send().op(bot.getUser(user));
+        PircBotYChannel.send().op(bot.getUserChannelDao().getUser(user));
     }
 
     @Override
     public void deopUser(String user) {
-        pircbotxChannel.send().deOp(bot.getUser(user));
+        PircBotYChannel.send().deOp(bot.getUserChannelDao().getUser(user));
     }
 
     @Override
     public void voiceUser(String user) {
-        pircbotxChannel.send().voice(bot.getUser(user));
+        PircBotYChannel.send().voice(bot.getUserChannelDao().getUser(user));
     }
 
     @Override
     public void devoiceUser(String user) {
-        pircbotxChannel.send().deVoice(bot.getUser(user));
+        PircBotYChannel.send().deVoice(bot.getUserChannelDao().getUser(user));
     }
 
     @Override

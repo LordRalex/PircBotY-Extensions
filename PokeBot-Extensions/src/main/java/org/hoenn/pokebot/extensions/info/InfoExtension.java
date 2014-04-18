@@ -16,12 +16,12 @@
  */
 package org.hoenn.pokebot.extensions.info;
 
+import net.ae97.pircboty.PircBotY;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.events.CommandEvent;
 import org.hoenn.pokebot.api.recipients.MessageRecipient;
 import org.hoenn.pokebot.extension.Extension;
-import org.pircbotx.PircBotX;
 
 /**
  * @author Lord_Ralex
@@ -44,7 +44,7 @@ public class InfoExtension extends Extension implements CommandExecutor {
         if (target == null) {
             target = event.getUser();
         }
-        target.sendMessage("Hello. I am " + PokeBot.getBot().getNick() + ", PokeBot " + PokeBot.VERSION + " using PircBotX " + PircBotX.VERSION);
+        target.sendMessage("Hello. I am " + PokeBot.getBot().getNick() + ", PokeBot " + PokeBot.VERSION + " using PircBotY " + PircBotY.VERSION);
     }
 
     @Override

@@ -29,7 +29,7 @@ public final class MessageEvent implements UserEvent, ChannelEvent, CancellableE
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public MessageEvent(org.pircbotx.hooks.events.MessageEvent event) {
+    public MessageEvent(net.ae97.pircboty.hooks.events.MessageEvent event) {
         channel = PokeBot.getChannel(event.getChannel().getName());
         sender = PokeBot.getUser(event.getUser().getNick());
         message = event.getMessage();

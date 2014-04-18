@@ -25,7 +25,7 @@ public class QuitEvent implements UserEvent, CancellableEvent {
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public QuitEvent(org.pircbotx.hooks.events.QuitEvent event) {
+    public QuitEvent(net.ae97.pircboty.hooks.events.QuitEvent event) {
         sender = PokeBot.getUser(event.getUser().getNick());
     }
 

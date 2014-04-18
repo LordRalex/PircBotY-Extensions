@@ -17,63 +17,54 @@
 package org.hoenn.pokebot;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jline.console.ConsoleReader;
+import net.ae97.pircboty.ConsoleLogHandler;
+import net.ae97.pircboty.FileLogHandler;
+import net.ae97.pircboty.LoggerStream;
+import net.ae97.pircboty.PircBotY;
+import net.ae97.pircboty.PrefixLogger;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.Bot;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.configuration.file.YamlConfiguration;
 import org.hoenn.pokebot.eventhandler.EventHandler;
 import org.hoenn.pokebot.extension.ExtensionManager;
-import org.hoenn.pokebot.handler.ExtensionLogHandler;
 import org.hoenn.pokebot.permissions.PermissionManager;
 import org.hoenn.pokebot.scheduler.Scheduler;
-import org.hoenn.pokebot.stream.LoggerStream;
-import org.pircbotx.exception.IrcException;
 
 public final class PokeBot extends Thread {
 
-    private static PokeBotCore core;
-    private static boolean debugMode = false;
-    private static final Map<String, String> args = new HashMap<>();
-    private static boolean login = true;
+    private static final PokeBotCore core;
     public static final String VERSION = "6.0.0";
 
-    public static void main(String[] startargs) throws IOException, IrcException {
-        Logger logger = Logger.getLogger("Pokebot");
-        logger.addHandler(new ExtensionLogHandler("Pokebot"));
-        logger.addHandler(new FileHandler("output.log"));
-        logger.addHandler(new ConsoleHandler());
-        LoggerStream out = new LoggerStream(System.out, logger, Level.INFO);
-        LoggerStream err = new LoggerStream(System.err, logger, Level.SEVERE);
-        System.setOut(out);
-        System.setErr(err);
-        if (startargs.length != 0) {
-            for (String arg : startargs) {
-                if (arg.equalsIgnoreCase("-debugmode")) {
-                    getLogger().log(Level.INFO, "Starting with DEBUG MODE ENABLED");
-                    debugMode = true;
-                } else if (arg.equalsIgnoreCase("-nologin")) {
-                    login = false;
-                } else {
-                    String[] argument = arg.split("=");
-                    String key, value;
-                    key = argument[0];
-                    if (argument.length == 1) {
-                        value = "true";
-                    } else {
-                        value = argument[1];
-                    }
-                    args.put(key, value);
-                }
+    static {
+        Logger logger = new PrefixLogger("Pokebot");
+        PokeBotCore tempCore = null;
+        try {
+            for (Handler h : logger.getHandlers()) {
+                logger.removeHandler(h);
             }
+            logger.addHandler(new FileLogHandler("output.log"));
+            logger.addHandler(new ConsoleLogHandler());
+            PircBotY.getLogger().setParent(logger);
+            LoggerStream out = new LoggerStream(System.out, logger, Level.INFO);
+            LoggerStream err = new LoggerStream(System.err, logger, Level.SEVERE);
+            System.setOut(out);
+            System.setErr(err);
+            tempCore = new PokeBotCore(logger);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error on creating core bot, cannot continue", e);
+            System.exit(1);
         }
-        core = new PokeBotCore();
+        core = tempCore;
+    }
+
+    public static void main(String[] startargs) {
+        //IdentServer.startServer();
+        core.start();
         synchronized (core) {
             try {
                 core.wait();
@@ -109,14 +100,6 @@ public final class PokeBot extends Thread {
         return core.getSettings();
     }
 
-    public static boolean getDebugMode() {
-        return debugMode;
-    }
-
-    public static Map<String, String> getStartupArgs() {
-        return args;
-    }
-
     public static User getUser(String name) {
         return core.getUser(name);
     }
@@ -130,6 +113,6 @@ public final class PokeBot extends Thread {
     }
 
     public static Logger getLogger() {
-        return PokeBotCore.getLogger();
+        return core.getLogger();
     }
 }

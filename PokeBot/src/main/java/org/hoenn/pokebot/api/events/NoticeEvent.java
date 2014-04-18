@@ -26,7 +26,7 @@ public class NoticeEvent implements UserEvent, CancellableEvent {
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public NoticeEvent(org.pircbotx.hooks.events.NoticeEvent event) {
+    public NoticeEvent(net.ae97.pircboty.hooks.events.NoticeEvent event) {
         sender = PokeBot.getUser(event.getUser().getNick());
         message = event.getMessage();
     }

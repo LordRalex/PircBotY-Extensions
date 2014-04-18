@@ -29,8 +29,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLSocketFactory;
 import jline.console.ConsoleReader;
+import net.ae97.pircboty.Configuration.Builder;
+import net.ae97.pircboty.PircBotY;
+import net.ae97.pircboty.exception.IrcException;
 import org.hoenn.pokebot.api.channels.Channel;
-import org.hoenn.pokebot.api.events.ConnectionEvent;
 import org.hoenn.pokebot.api.users.Bot;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.configuration.InvalidConfigurationException;
@@ -40,12 +42,9 @@ import org.hoenn.pokebot.extension.ExtensionManager;
 import org.hoenn.pokebot.implementation.PokeBotBot;
 import org.hoenn.pokebot.implementation.PokeBotChannel;
 import org.hoenn.pokebot.implementation.PokeBotUser;
-import org.hoenn.pokebot.implementation.PokeIrcBot;
 import org.hoenn.pokebot.input.KeyboardListener;
 import org.hoenn.pokebot.permissions.PermissionManager;
 import org.hoenn.pokebot.scheduler.Scheduler;
-import org.pircbotx.Configuration.Builder;
-import org.pircbotx.IdentServer;
 
 /**
  *
@@ -59,13 +58,14 @@ public class PokeBotCore {
     private final PermissionManager permManager;
     private final ExtensionManager extensionManager;
     private final Scheduler scheduler;
-    private final PokeIrcBot driver;
+    private final PircBotY driver;
     private final ConcurrentHashMap<String, Channel> channelCache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<org.pircbotx.User, User> userCache = new ConcurrentHashMap<>();
-    private final static Logger logger = Logger.getLogger("Pokebot");
+    private final ConcurrentHashMap<net.ae97.pircboty.User, User> userCache = new ConcurrentHashMap<>();
+    private final Logger logger;
     private Bot botUser;
 
-    protected PokeBotCore() throws UnknownHostException {
+    protected PokeBotCore(Logger logger) throws UnknownHostException {
+        this.logger = logger;
         if (!(new File("config.yml").exists())) {
             try (InputStream input = PokeBot.class.getResourceAsStream("/config.yml")) {
                 try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(new File("config.yml")))) {
@@ -91,8 +91,7 @@ public class PokeBotCore {
         } catch (IOException | InvalidConfigurationException ex) {
             logger.log(Level.SEVERE, "Failed to load config.yml", ex);
         }
-        IdentServer.startServer();
-        Builder<PokeIrcBot> botConfigBuilder = new Builder<PokeIrcBot>()
+        Builder<PircBotY> botConfigBuilder = new Builder<>()
                 .setEncoding(Charset.forName("UTF-8"))
                 .setVersion("PokeBot - v" + PokeBot.VERSION)
                 .setAutoReconnect(true)
@@ -101,9 +100,11 @@ public class PokeBotCore {
                 .setName(globalSettings.getString("nick", "DebugBot"))
                 .setLogin(globalSettings.getString("nick", "DebugBot"))
                 .setRealName(globalSettings.getString("nick", "DebugBot"))
-                .setNickservPassword(globalSettings.getString("nick-pw", ""))
-                .setServerHostname(globalSettings.getString("network"))
-                .setServerPort(globalSettings.getInt("port", 6667));
+                .setNickservPassword(globalSettings.getString("nick-pw", null))
+                .setServerHostname(globalSettings.getString("server.ip"))
+                .setServerPort(globalSettings.getInt("server.port", 6667))
+                .setIdentServerIP(globalSettings.getString("ident.ip", "localhost"))
+                .setIdentServerPort(globalSettings.getInt("ident.port", 113));
         if (globalSettings.getBoolean("ssl")) {
             botConfigBuilder.setSocketFactory(SSLSocketFactory.getDefault());
         }
@@ -117,7 +118,7 @@ public class PokeBotCore {
             }
         }
 
-        driver = new PokeIrcBot(botConfigBuilder.buildConfiguration());
+        driver = new PircBotY(botConfigBuilder.buildConfiguration());
         KeyboardListener temp;
         try {
             temp = new KeyboardListener(this, driver);
@@ -130,7 +131,9 @@ public class PokeBotCore {
         extensionManager = new ExtensionManager();
         permManager = new PermissionManager();
         scheduler = new Scheduler();
+    }
 
+    public void start() {
         eventHandler.load();
         extensionManager.load();
         try {
@@ -138,19 +141,23 @@ public class PokeBotCore {
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error loading permissions file", e);
         }
-        boolean eventSuccess = botConfigBuilder.getListenerManager().addListener(eventHandler);
+        boolean eventSuccess = driver.getConfiguration().getListenerManager().addListener(eventHandler);
         if (eventSuccess) {
             logger.log(Level.INFO, "Listener hook attached to bot");
         } else {
             logger.log(Level.INFO, "Listener hook was unable to attach to the bot");
         }
-        eventHandler.fireEvent(new ConnectionEvent());
 
         logger.log(Level.INFO, "Initial loading complete, engaging listeners");
         eventHandler.startQueue();
         logger.log(Level.INFO, "Starting keyboard listener");
         kblistener.start();
-        logger.log(Level.INFO, "All systems operational");
+        logger.log(Level.INFO, "All systems operational, starting IRC bot");
+        try {
+            driver.startBot();
+        } catch (IOException | IrcException e) {
+            logger.log(Level.SEVERE, "Error starting bot", e);
+        }
     }
 
     public EventHandler getEventHandler() {
@@ -191,12 +198,12 @@ public class PokeBotCore {
     }
 
     public User getUser(String name) {
-        org.pircbotx.User pircbotxUser = driver.getUserChannelDao().getUser(name);
-        if (userCache.contains(pircbotxUser)) {
-            return userCache.get(pircbotxUser);
+        net.ae97.pircboty.User PircBotYUser = driver.getUserChannelDao().getUser(name);
+        if (userCache.contains(PircBotYUser)) {
+            return userCache.get(PircBotYUser);
         }
         User newUser = new PokeBotUser(driver, name);
-        userCache.put(pircbotxUser, newUser);
+        userCache.put(PircBotYUser, newUser);
         return newUser;
     }
 
@@ -207,7 +214,7 @@ public class PokeBotCore {
         return botUser;
     }
 
-    public static Logger getLogger() {
+    public final Logger getLogger() {
         return logger;
     }
 }

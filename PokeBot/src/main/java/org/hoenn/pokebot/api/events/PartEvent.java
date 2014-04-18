@@ -19,7 +19,7 @@ package org.hoenn.pokebot.api.events;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.User;
-import org.pircbotx.PircBotX;
+import net.ae97.pircboty.PircBotY;
 
 public class PartEvent implements CancellableEvent, UserEvent, ChannelEvent {
 
@@ -28,12 +28,12 @@ public class PartEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public PartEvent(org.pircbotx.hooks.events.PartEvent event) {
+    public PartEvent(net.ae97.pircboty.hooks.events.PartEvent event) {
         channel = PokeBot.getChannel(event.getChannel().getName());
         sender = PokeBot.getUser(event.getUser().getNick());
     }
 
-    public PartEvent(PircBotX bot, org.pircbotx.User s, org.pircbotx.Channel c) {
+    public PartEvent(PircBotY bot, net.ae97.pircboty.User s, net.ae97.pircboty.Channel c) {
         channel = PokeBot.getChannel(c.getName());
         sender = PokeBot.getUser(s.getNick());
     }

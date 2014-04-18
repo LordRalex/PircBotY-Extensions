@@ -20,10 +20,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
+import net.ae97.pircboty.PrefixLogger;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.configuration.InvalidConfigurationException;
 import org.hoenn.pokebot.configuration.file.YamlConfiguration;
-import org.hoenn.pokebot.handler.ExtensionLogHandler;
 
 /**
  * @author Lord_Ralex
@@ -32,11 +32,9 @@ public abstract class Extension {
 
     private final File dataFolder = new File("config", getName().replace(" ", "_"));
     private final YamlConfiguration configuration = new YamlConfiguration();
-    private final Logger logger = Logger.getLogger(getName());
+    private final Logger logger = new PrefixLogger(getName(), PokeBot.getLogger());
 
     public final void initialize() throws ExtensionLoadFailedException {
-        logger.setParent(PokeBot.getLogger());
-        logger.addHandler(new ExtensionLogHandler(getName()));
         try {
             configuration.load(new File(dataFolder, "config.yml"));
         } catch (FileNotFoundException e) {

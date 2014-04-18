@@ -27,7 +27,7 @@ public class JoinEvent implements UserEvent, ChannelEvent, CancellableEvent {
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public JoinEvent(org.pircbotx.hooks.events.JoinEvent event) {
+    public JoinEvent(net.ae97.pircboty.hooks.events.JoinEvent event) {
         channel = PokeBot.getChannel(event.getChannel().getName());
         sender = PokeBot.getUser(event.getUser().getNick());
     }

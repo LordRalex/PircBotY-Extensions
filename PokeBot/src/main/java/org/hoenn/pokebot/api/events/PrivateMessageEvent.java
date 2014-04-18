@@ -26,7 +26,7 @@ public class PrivateMessageEvent implements UserEvent, CancellableEvent, Replyab
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public PrivateMessageEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
+    public PrivateMessageEvent(net.ae97.pircboty.hooks.events.PrivateMessageEvent event) {
         sender = PokeBot.getUser(event.getUser().getNick());
         message = event.getMessage();
     }

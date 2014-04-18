@@ -23,51 +23,56 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.ae97.pircboty.PircBotY;
+import net.ae97.pircboty.hooks.WaitForQueue;
+import net.ae97.pircboty.hooks.events.WhoisEvent;
 import org.hoenn.pokebot.api.users.User;
 import org.hoenn.pokebot.permissions.Permission;
-import org.pircbotx.hooks.WaitForQueue;
-import org.pircbotx.hooks.events.WhoisEvent;
 
 /**
  * @author Lord_Ralex
  */
 public class PokeBotUser extends User {
 
-    private final org.pircbotx.User pircbotxUser;
-    private final PokeIrcBot bot;
+    private final net.ae97.pircboty.User PircBotYUser;
+    private final PircBotY bot;
     private String verifiedName = null;
     private final Map<String, Set<Permission>> permMap = new HashMap<>();
-    private final static Map<org.pircbotx.User, org.hoenn.pokebot.api.users.User> existingUsers = new ConcurrentHashMap<>();
+    private final static Map<net.ae97.pircboty.User, org.hoenn.pokebot.api.users.User> existingUsers = new ConcurrentHashMap<>();
 
-    public PokeBotUser(PokeIrcBot b, String name) {
-        this(b, b.getUser(name));
+    public PokeBotUser(PircBotY b, String name) {
+        this(b, b.getUserChannelDao().getUser(name));
     }
 
-    public PokeBotUser(PokeIrcBot b, org.pircbotx.User u) {
+    public PokeBotUser(PircBotY b, net.ae97.pircboty.User u) {
         bot = b;
-        pircbotxUser = u;
+        PircBotYUser = u;
     }
 
     @Override
     public void sendMessage(String... messages) {
-        bot.sendMessage(pircbotxUser, messages);
+        for (String message : messages) {
+            bot.sendIRC().message(PircBotYUser.getNick(), message);
+        }
     }
 
     @Override
     public void sendNotice(String... messages) {
-        bot.sendNotice(pircbotxUser, messages);
+        for (String message : messages) {
+            bot.sendIRC().notice(PircBotYUser.getNick(), message);
+        }
     }
 
     @Override
     public String getNickservName() {
         if (verifiedName == null) {
-            try (WaitForQueue queue = new WaitForQueue(pircbotxUser.getBot())) {
+            try (WaitForQueue queue = new WaitForQueue(PircBotYUser.getBot())) {
                 WhoisEvent<?> evt;
                 try {
-                    pircbotxUser.getBot().sendRaw().rawLine("whois " + pircbotxUser.getNick());
+                    PircBotYUser.getBot().sendRaw().rawLine("whois " + PircBotYUser.getNick());
                     while (true) {
                         evt = queue.waitFor(WhoisEvent.class);
-                        if (evt.getNick().equals(pircbotxUser.getNick())) {
+                        if (evt.getNick().equals(PircBotYUser.getNick())) {
                             verifiedName = evt.getRegisteredAs();
                             break;
                         }
@@ -87,10 +92,10 @@ public class PokeBotUser extends User {
 
     @Override
     public String[] getChannels() {
-        Set<org.pircbotx.Channel> chans = pircbotxUser.getChannels();
+        Set<net.ae97.pircboty.Channel> chans = PircBotYUser.getChannels();
         String[] channelList = new String[chans.size()];
         int i = 0;
-        for (org.pircbotx.Channel ch : chans) {
+        for (net.ae97.pircboty.Channel ch : chans) {
             channelList[i] = ch.getName();
             i++;
         }
@@ -99,12 +104,12 @@ public class PokeBotUser extends User {
 
     @Override
     public String getHost() {
-        return pircbotxUser.getHostmask();
+        return PircBotYUser.getHostmask();
     }
 
     @Override
     public String getNick() {
-        return pircbotxUser.getNick();
+        return PircBotYUser.getNick();
     }
 
     @Override
@@ -168,7 +173,7 @@ public class PokeBotUser extends User {
 
     @Override
     public String getName() {
-        return pircbotxUser.getRealName();
+        return PircBotYUser.getRealName();
     }
 
 }

@@ -30,6 +30,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
+import net.ae97.pircboty.Channel;
+import net.ae97.pircboty.PircBotY;
+import net.ae97.pircboty.hooks.ListenerAdapter;
+import net.ae97.pircboty.snapshot.UserSnapshot;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.CommandExecutor;
 import org.hoenn.pokebot.api.EventExecutor;
@@ -50,24 +54,19 @@ import org.hoenn.pokebot.api.events.PermissionEvent;
 import org.hoenn.pokebot.api.events.PrivateMessageEvent;
 import org.hoenn.pokebot.api.events.QuitEvent;
 import org.hoenn.pokebot.api.users.User;
-import org.hoenn.pokebot.implementation.PokeIrcBot;
-import org.pircbotx.Channel;
-import org.pircbotx.PircBotX;
-import org.pircbotx.hooks.ListenerAdapter;
-import org.pircbotx.snapshot.UserSnapshot;
 
-public final class EventHandler extends ListenerAdapter<PokeIrcBot> {
+public final class EventHandler extends ListenerAdapter<PircBotY> {
 
     private final ConcurrentLinkedQueue<Event> queue = new ConcurrentLinkedQueue<>();
     private final EventRunner runner;
     private static final List<CommandPrefix> commandChars = new ArrayList<>();
-    private final PircBotX masterBot;
+    private final PircBotY masterBot;
     private final ExecutorService execServ;
     private final Set<Class<? extends Event>> eventClasses = new HashSet<>();
     private final Map<Class<? extends Event>, Set<EventHandler.EventExecutorService>> eventExecutors = new ConcurrentHashMap<>();
     private final Set<CommandExecutor> commandExecutors = new HashSet<>();
 
-    public EventHandler(PircBotX bot) {
+    public EventHandler(PircBotY bot) {
         super();
         masterBot = bot;
         runner = new EventRunner();
@@ -155,13 +154,13 @@ public final class EventHandler extends ListenerAdapter<PokeIrcBot> {
     }
 
     @Override
-    public void onMessage(org.pircbotx.hooks.events.MessageEvent<PokeIrcBot> event) {
+    public void onMessage(net.ae97.pircboty.hooks.events.MessageEvent<PircBotY> event) {
         Event nextEvt;
         if (isCommand(event.getMessage())) {
             for (CommandPrefix commandchar : commandChars) {
                 if (event.getMessage().startsWith(commandchar.getPrefix())) {
                     if (commandchar.getOwner() != null) {
-                        for (org.pircbotx.User u : event.getChannel().getUsers()) {
+                        for (net.ae97.pircboty.User u : event.getChannel().getUsers()) {
                             if (u.getNick().equalsIgnoreCase(commandchar.getOwner())) {
                                 return;
                             }
@@ -177,7 +176,7 @@ public final class EventHandler extends ListenerAdapter<PokeIrcBot> {
     }
 
     @Override
-    public void onPrivateMessage(org.pircbotx.hooks.events.PrivateMessageEvent<PokeIrcBot> event) throws Exception {
+    public void onPrivateMessage(net.ae97.pircboty.hooks.events.PrivateMessageEvent<PircBotY> event) throws Exception {
         Event nextEvt;
         if (isCommand(event.getMessage())) {
             nextEvt = new CommandEvent(event);
@@ -188,7 +187,7 @@ public final class EventHandler extends ListenerAdapter<PokeIrcBot> {
     }
 
     @Override
-    public void onNotice(org.pircbotx.hooks.events.NoticeEvent<PokeIrcBot> event) throws Exception {
+    public void onNotice(net.ae97.pircboty.hooks.events.NoticeEvent<PircBotY> event) throws Exception {
         Event nextEvt;
         if (isCommand(event.getMessage())) {
             nextEvt = new CommandEvent(event);
@@ -199,19 +198,19 @@ public final class EventHandler extends ListenerAdapter<PokeIrcBot> {
     }
 
     @Override
-    public void onJoin(org.pircbotx.hooks.events.JoinEvent<PokeIrcBot> event) throws Exception {
+    public void onJoin(net.ae97.pircboty.hooks.events.JoinEvent<PircBotY> event) throws Exception {
         JoinEvent nextEvt = new JoinEvent(event);
         fireEvent(nextEvt);
     }
 
     @Override
-    public void onNickChange(org.pircbotx.hooks.events.NickChangeEvent<PokeIrcBot> event) throws Exception {
+    public void onNickChange(net.ae97.pircboty.hooks.events.NickChangeEvent<PircBotY> event) throws Exception {
         NickChangeEvent nextEvt = new NickChangeEvent(event);
         fireEvent(nextEvt);
     }
 
     @Override
-    public void onQuit(org.pircbotx.hooks.events.QuitEvent<PokeIrcBot> event) throws Exception {
+    public void onQuit(net.ae97.pircboty.hooks.events.QuitEvent<PircBotY> event) throws Exception {
         UserSnapshot user = event.getUser();
         Set<Channel> channels = user.getChannels();
         for (Channel chan : channels) {
@@ -225,19 +224,19 @@ public final class EventHandler extends ListenerAdapter<PokeIrcBot> {
     }
 
     @Override
-    public void onPart(org.pircbotx.hooks.events.PartEvent<PokeIrcBot> event) throws Exception {
+    public void onPart(net.ae97.pircboty.hooks.events.PartEvent<PircBotY> event) throws Exception {
         PartEvent nextEvt = new PartEvent(event);
         fireEvent(nextEvt);
     }
 
     @Override
-    public void onAction(org.pircbotx.hooks.events.ActionEvent<PokeIrcBot> event) throws Exception {
+    public void onAction(net.ae97.pircboty.hooks.events.ActionEvent<PircBotY> event) throws Exception {
         ActionEvent nextEvt = new ActionEvent(event);
         fireEvent(nextEvt);
     }
 
     @Override
-    public void onKick(org.pircbotx.hooks.events.KickEvent<PokeIrcBot> event) throws Exception {
+    public void onKick(net.ae97.pircboty.hooks.events.KickEvent<PircBotY> event) throws Exception {
         KickEvent nextEvt = new KickEvent(event);
         fireEvent(nextEvt);
     }

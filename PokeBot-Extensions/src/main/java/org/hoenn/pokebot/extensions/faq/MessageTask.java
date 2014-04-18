@@ -18,14 +18,12 @@ package org.hoenn.pokebot.extensions.faq;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import net.ae97.pircboty.ChatFormat;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.api.channels.Channel;
 import org.hoenn.pokebot.api.users.User;
-import org.pircbotx.Colors;
 
 /**
  * @author Lord_Ralex
@@ -40,7 +38,6 @@ public class MessageTask implements Runnable {
     private final String[] args;
     private final String messageFormat;
     private final int delay;
-    private final Map<String, String> colors = new HashMap<>();
 
     public MessageTask(String na, String u, String c, String[] l, boolean n, String format, int d) {
         this(na, u, c, l, n, new String[0], format, d);
@@ -55,29 +52,6 @@ public class MessageTask implements Runnable {
         args = a;
         messageFormat = format;
         delay = d;
-        colors.put("black", Colors.BLACK);
-        colors.put("blue", Colors.BLUE);
-        colors.put("bold", Colors.BOLD);
-        colors.put("brown", Colors.BROWN);
-        colors.put("cyan", Colors.CYAN);
-        colors.put("darkblue", Colors.DARK_BLUE);
-        colors.put("darkgray", Colors.DARK_GRAY);
-        colors.put("darkgrey", Colors.DARK_GRAY);
-        colors.put("darkgreen", Colors.DARK_GREEN);
-        colors.put("green", Colors.GREEN);
-        colors.put("lightgray", Colors.LIGHT_GRAY);
-        colors.put("lightgrey", Colors.LIGHT_GRAY);
-        colors.put("magenta", Colors.MAGENTA);
-        colors.put("normal", Colors.NORMAL);
-        colors.put("reset", Colors.NORMAL);
-        colors.put("olive", Colors.OLIVE);
-        colors.put("purple", Colors.PURPLE);
-        colors.put("red", Colors.RED);
-        colors.put("reverse", Colors.REVERSE);
-        colors.put("teal", Colors.TEAL);
-        colors.put("underline", Colors.UNDERLINE);
-        colors.put("white", Colors.WHITE);
-        colors.put("yellow", Colors.YELLOW);
     }
 
     @Override
@@ -94,8 +68,8 @@ public class MessageTask implements Runnable {
         for (int i = 0; i < args.length; i++) {
             message = message.replace("{" + i + "}", args[i]);
         }
-        for (Map.Entry<String, String> color : colors.entrySet()) {
-            message = message.replace("{" + color.getKey() + "}", color.getValue());
+        for (ChatFormat color : ChatFormat.values()) {
+            message = message.replace("{" + color.name().toLowerCase() + "}", color.toString());
         }
         if (notice) {
             user.sendNotice(message);

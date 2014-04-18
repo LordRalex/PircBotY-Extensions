@@ -32,7 +32,7 @@ public class KickEvent implements CancellableEvent, UserEvent, ChannelEvent {
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public KickEvent(org.pircbotx.hooks.events.KickEvent event) {
+    public KickEvent(net.ae97.pircboty.hooks.events.KickEvent event) {
         channel = PokeBot.getChannel(event.getChannel().getName());
         kicker = PokeBot.getUser(event.getUser().getNick());
         user = PokeBot.getUser(event.getRecipient().getNick());

@@ -31,7 +31,7 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent, 
     private final long timestamp = System.currentTimeMillis();
     private boolean isCancelled = false;
 
-    public CommandEvent(org.pircbotx.hooks.events.MessageEvent event) {
+    public CommandEvent(net.ae97.pircboty.hooks.events.MessageEvent event) {
         String[] temp = event.getMessage().split(" ");
         String commandTemp = temp[0].toLowerCase();
         for (String cmd : EventHandler.getCommandPrefixes()) {
@@ -49,7 +49,7 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent, 
         }
     }
 
-    public CommandEvent(org.pircbotx.hooks.events.PrivateMessageEvent event) {
+    public CommandEvent(net.ae97.pircboty.hooks.events.PrivateMessageEvent event) {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
         sender = PokeBot.getUser(event.getUser().getNick());
@@ -60,7 +60,7 @@ public class CommandEvent implements UserEvent, ChannelEvent, CancellableEvent, 
         }
     }
 
-    public CommandEvent(org.pircbotx.hooks.events.NoticeEvent event) {
+    public CommandEvent(net.ae97.pircboty.hooks.events.NoticeEvent event) {
         String[] temp = event.getMessage().split(" ");
         command = temp[0].substring(1).toLowerCase();
         sender = PokeBot.getUser(event.getUser().getNick());

@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import jline.console.ConsoleReader;
 import org.hoenn.pokebot.PokeBot;
 import org.hoenn.pokebot.PokeBotCore;
-import org.pircbotx.PircBotX;
+import net.ae97.pircboty.PircBotY;
 
 /**
  * @author Lord_Ralex
@@ -32,10 +32,10 @@ import org.pircbotx.PircBotX;
 public final class KeyboardListener extends Thread {
 
     private final ConsoleReader kb;
-    private final PircBotX bot;
+    private final PircBotY bot;
     private final PokeBotCore core;
 
-    public KeyboardListener(PokeBotCore a, PircBotX b) throws IOException {
+    public KeyboardListener(PokeBotCore a, PircBotY b) throws IOException {
         setName("Keyboard_Listener_Thread");
         kb = new ConsoleReader();
         bot = b;

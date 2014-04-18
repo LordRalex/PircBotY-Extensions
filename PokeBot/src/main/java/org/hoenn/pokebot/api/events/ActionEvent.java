@@ -32,7 +32,7 @@ public class ActionEvent implements UserEvent, ChannelEvent, CancellableEvent {
     private boolean isCancelled = false;
     private final long timestamp = System.currentTimeMillis();
 
-    public ActionEvent(org.pircbotx.hooks.events.ActionEvent event) {
+    public ActionEvent(net.ae97.pircboty.hooks.events.ActionEvent event) {
         channel = PokeBot.getChannel(event.getChannel().getName());
         sender = PokeBot.getUser(event.getUser().getNick());
         action = event.getMessage();
