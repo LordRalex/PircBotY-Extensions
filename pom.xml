@@ -1,0 +1,104 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>net.ae97</groupId>
+  <artifactId>pokebot-extensions</artifactId>
+  <version>${pokebot.version}</version>
+  <packaging>jar</packaging>
+
+  <name>PokeBot-Extensions</name>
+  <url>http://maven.apache.org</url>
+  
+  <licenses>
+    <license>
+      <name>General Public License, Version 3.0</name>
+      <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>  
+  
+  <repositories>
+    <repository>
+      <id>ae97-repo</id>
+      <url>http://repo.ae97.net/artifactory/ae97-repo/</url>
+    </repository>
+  </repositories>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <pokebot.version>1.0.0</pokebot.version>
+  </properties>
+    
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.5.1</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>    
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <id>all</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <classifier>all</classifier>
+              <includes>
+                <include>**/*</include>
+              </includes>              
+            </configuration>
+          </execution>
+          <execution>
+            <id>faq</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <classifier>faq</classifier>
+              <includes>
+                <include>**/faq/**</include>
+              </includes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>core</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <classifier>core</classifier>
+              <includes>
+                <include>**/extensions/htop/**</include>
+                <include>**/extensions/help/**</include>
+                <include>**/extensions/info/**</include>
+                <include>**/extensions/reload/**</include>
+                <include>**/extensions/uptime/**</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>net.ae97</groupId>
+      <artifactId>pircboty</artifactId>
+      <version>${pokebot.version}</version>
+    </dependency>
+  </dependencies>
+</project>
