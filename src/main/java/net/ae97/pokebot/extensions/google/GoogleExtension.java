@@ -49,7 +49,7 @@ public class GoogleExtension extends Extension implements CommandExecutor {
     public void runEvent(CommandEvent event) {
         final String[] args = event.getArgs();
         BufferedReader reader = null;
-        String total = StringUtils.join(args, "+").replace(" ", "%20");
+        String total = StringUtils.join(args, "+").replace(" ", "+");
         if (args.length == 0 || total.isEmpty()) {
             event.respond("http://www.google.com");
             return;
