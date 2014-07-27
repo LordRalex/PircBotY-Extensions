@@ -49,13 +49,13 @@ public class GoogleExtension extends Extension implements CommandExecutor {
     public void runEvent(CommandEvent event) {
         final String[] args = event.getArgs();
         BufferedReader reader = null;
-        String total = StringUtils.join(args, " ");
+        String total = StringUtils.join(args, "+").replace(" ", "+");
         if (args.length == 0 || total.isEmpty()) {
             event.respond("http://www.google.com");
             return;
         }
         try {
-            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=" + total.replace(" ", "%20");
+            String url = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=" + total;
             URL path = new URL(url);
             reader = new BufferedReader(new InputStreamReader(path.openStream()));
             List<String> parts = new ArrayList<>();
