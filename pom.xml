@@ -4,7 +4,7 @@
 
   <groupId>net.ae97</groupId>
   <artifactId>pokebot-extensions</artifactId>
-  <version>${pokebot.version}</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
 
   <name>PokeBot-Extensions</name>
@@ -16,18 +16,10 @@
       <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
       <distribution>repo</distribution>
     </license>
-  </licenses>  
-  
-  <repositories>
-    <repository>
-      <id>ae97-repo</id>
-      <url>http://repo.ae97.net/artifactory/ae97-repo/</url>
-    </repository>
-  </repositories>
-  
+  </licenses>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <pokebot.version>1.0.0</pokebot.version>
   </properties>
     
   <build>
@@ -93,12 +85,11 @@
       </plugin>
     </plugins>
   </build>
-
   <dependencies>
-    <dependency>
-      <groupId>net.ae97</groupId>
-      <artifactId>pircboty</artifactId>
-      <version>${pokebot.version}</version>
-    </dependency>
+      <dependency>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>pircboty</artifactId>
+          <version>1.0.2</version>
+      </dependency>
   </dependencies>
 </project>

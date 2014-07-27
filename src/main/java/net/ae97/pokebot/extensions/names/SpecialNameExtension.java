@@ -115,7 +115,7 @@ public class SpecialNameExtension extends Extension implements Listener {
     }
 
     private void handleNick(Channel chan, User user, String string) {
-        String name = user.getLogin();
+        String name = user.getAccountName();
         if (name != null && name.equals(user.getNick())) {
             return;
         }
