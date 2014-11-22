@@ -37,7 +37,7 @@ public class HelpExtension extends Extension implements CommandExecutor {
 
     @Override
     public void load() {
-        List<String> helpLines = getConfig().getStringList("help-list");
+        List<String> helpLines = getConfig().getStringList("help");
         if (helpLines != null) {
             help.addAll(helpLines);
         }
@@ -46,7 +46,7 @@ public class HelpExtension extends Extension implements CommandExecutor {
 
     @Override
     public void runEvent(CommandEvent event) {
-        String helpLine = "My commands you can know about: ";
+        String helpLine = "Commands: ";
         for (String name : help) {
             helpLine += name + ", ";
         }

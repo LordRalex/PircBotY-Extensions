@@ -64,7 +64,7 @@ public class MessageChannelCommand implements FaqSubCommand {
             return;
         }
         Channel channel = event.getChannel();
-        String[] lines = index.getEntry(new String[]{factoid});
+        String[] lines = index.getEntry(factoid);
         if (lines == null || lines.length == 0) {
             event.getUser().send().notice("The database " + index.getName() + " does not contain a factoid in the categories: " + factoid);
         } else if (lines[0].equalsIgnoreCase("@deprecated")) {

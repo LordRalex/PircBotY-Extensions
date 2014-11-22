@@ -47,5 +47,5 @@ public abstract class Database {
         return owner;
     }
 
-    public abstract String[] getEntry(String[] key);
+    public abstract String[] getEntry(String key);
 }

@@ -24,26 +24,22 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.logging.Level;
 import net.ae97.pokebot.PokeBot;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Lord_Ralex
  */
 public class MySQLDatabase extends Database {
 
-    private final Connection connection;
-    private final String GET, SEARCH;
+    private final String host, user, pass, database;
+    private final int port;
 
     public MySQLDatabase(String n, Map<String, String> params) throws SQLException {
         super(n, params);
-        String host = params.get("host");
-        int port = Integer.parseInt(params.get("port"));
-        String user = params.get("user");
-        String pass = params.get("pass");
-        String database = params.get("database");
-        connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, user, pass);
-        GET = params.get("get");
-        SEARCH = params.get("search");
+        host = params.get("host");
+        port = Integer.parseInt(params.get("port"));
+        user = params.get("user");
+        pass = params.get("pass");
+        database = params.get("database");
     }
 
     @Override
@@ -51,51 +47,23 @@ public class MySQLDatabase extends Database {
     }
 
     @Override
-    public String[] getEntry(String[] key) {
-        String[] marks = new String[key.length];
-        for (int i = 0; i < marks.length; i++) {
-            marks[i] = "?";
-        }
-        synchronized (GET) {
-            String stmt = GET.replace("{categories}", StringUtils.join(marks, ", "));
-            try (PreparedStatement statement = connection.prepareStatement(stmt)) {
-                statement.setString(1, getName());
-                for (int i = 0; i < marks.length; i++) {
-                    statement.setString(i + 2, key[i]);
+    public String[] getEntry(String key) {
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, user, pass)) {
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT content FROM factoids "
+                    + "INNER JOIN games ON games.id = factoids.game "
+                    + "WHERE name = ? AND games.idname IN (?, 'global') "
+                    + "ORDER BY games.id DESC "
+                    + "LIMIT 1")) {
+                statement.setString(1, key);
+                statement.setString(2, getName().toLowerCase());
+                ResultSet result = statement.executeQuery();
+                if (result.next()) {
+                    return result.getString("content").split(";;");
                 }
-                statement.setInt(marks.length + 2, marks.length);
-                statement.setInt(marks.length + 3, marks.length);
-                stmt = statement.toString().split(":", 2)[1];
-                try (ResultSet set = statement.executeQuery()) {
-                    if (set.first()) {
-                        String result = set.getObject("content", String.class);
-                        if (result == null || result.isEmpty()) {
-                            return null;
-                        }
-                        return result.split(";;");
-                    } else {
-                        String searchStm = SEARCH.replace("{categories}", StringUtils.join(marks, ", "));
-                        try (PreparedStatement searchStatement = connection.prepareStatement(searchStm)) {
-                            searchStatement.setString(1, getName());
-                            for (int i = 0; i < marks.length; i++) {
-                                searchStatement.setString(i + 2, key[i]);
-                            }
-                            System.out.println("Statement: " + searchStatement.toString().split(":", 2)[1]);
-                            try (ResultSet searchSet = searchStatement.executeQuery()) {
-                                if (searchSet.first()) {
-                                    String result = searchSet.getObject("content", String.class);
-                                    if (result == null || result.isEmpty()) {
-                                        return null;
-                                    }
-                                    return result.split(";;");
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (SQLException ex) {
-                PokeBot.getLogger().log(Level.SEVERE, "Error on SQL call: " + stmt, ex);
             }
+        } catch (SQLException ex) {
+            PokeBot.getLogger().log(Level.SEVERE, "Error on SQL call", ex);
         }
         return null;
     }

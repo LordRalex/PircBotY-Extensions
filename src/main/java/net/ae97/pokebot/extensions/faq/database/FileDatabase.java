@@ -104,12 +104,9 @@ public class FileDatabase extends Database {
     }
 
     @Override
-    public String[] getEntry(String[] key) {
-        if (key.length != 1) {
-            throw new UnsupportedOperationException("File database cannot support multiple/no keys");
-        }
+    public String[] getEntry(String key) {
         synchronized (indexMapping) {
-            return indexMapping.get(key[0].toLowerCase());
+            return indexMapping.get(key.toLowerCase());
         }
     }
 

@@ -176,14 +176,12 @@ public class FaqExtension extends Extension implements CommandExecutor {
                 HashMap<String, String> details = new HashMap<>();
                 details.put("owner", getConfig().getString(name + ".owner"));
                 switch (databaseType.toUpperCase()) {
-                    case "MYSQL_SEARCH": {
+                    case "MYSQL": {
                         details.put("host", getConfig().getString(name + ".host", "localhost"));
                         details.put("port", getConfig().getString(name + ".port", "3306"));
                         details.put("user", getConfig().getString(name + ".user", "root"));
                         details.put("pass", getConfig().getString(name + ".pass", ""));
                         details.put("database", getConfig().getString(name + ".database", "database"));
-                        details.put("get", getConfig().getString(name + ".get"));
-                        details.put("search", getConfig().getString(name + ".search"));
                         newDatabase = new MySQLDatabase(name, details);
                     }
                     break;
