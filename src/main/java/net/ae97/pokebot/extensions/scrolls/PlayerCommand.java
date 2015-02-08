@@ -50,12 +50,9 @@ public class PlayerCommand implements CommandExecutor {
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getArgs().length != 1) {
-            event.respond("Usage: .player [name]");
-            return;
-        }
+        String name = event.getArgs().length > 0 ? event.getArgs()[0] : event.getUser().getNick();
         try {
-            URL playerURL = new URL(url.replace("{name}", event.getArgs()[0]));
+            URL playerURL = new URL(url.replace("{name}", name));
             List<String> lines = new LinkedList<>();
             HttpURLConnection conn = (HttpURLConnection) playerURL.openConnection();
             conn.setRequestProperty("User-Agent", "PokeBot - " + PokeBot.VERSION);
@@ -72,7 +69,7 @@ public class PlayerCommand implements CommandExecutor {
 
             String result = obj.get("msg").getAsString();
             if (!result.equalsIgnoreCase("success")) {
-                event.respond("No data could be retrieved for " + event.getArgs()[0]);
+                event.respond("No data could be retrieved for " + name);
                 return;
             }
 
@@ -100,7 +97,7 @@ public class PlayerCommand implements CommandExecutor {
 
             event.respond(builder.toString());
         } catch (IOException | JsonSyntaxException ex) {
-            extension.getLogger().log(Level.SEVERE, "Error on getting player stats for Scrolls for " + event.getArgs()[0], ex);
+            extension.getLogger().log(Level.SEVERE, "Error on getting player stats for Scrolls for " + name, ex);
             event.respond("Error on getting player stats: " + ex.getLocalizedMessage());
         }
     }

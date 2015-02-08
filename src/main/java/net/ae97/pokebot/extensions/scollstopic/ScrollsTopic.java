@@ -59,15 +59,29 @@ public class ScrollsTopic extends Extension implements CommandExecutor {
                 json.nextName();
                 json.beginObject();
                 json.nextName();
-                String prod = json.nextString().replace("version-", "").replace("-production", "");
+                char[] prodVersion = json.nextString().replace("version-", "").replace("-production", "").toCharArray();
+                String prodVersionCompiled = new String(new char[]{
+                    prodVersion[0],
+                    '.',
+                    prodVersion[2],
+                    '.',
+                    prodVersion[3]
+                });
                 json.nextName();
-                String test = json.nextString().replace("version-", "").replace("-test", "");
+                char[] testVersion = json.nextString().replace("version-", "").replace("-test", "").toCharArray();
+                String testVersionCompiled = new String(new char[]{
+                    testVersion[0],
+                    '.',
+                    testVersion[2],
+                    '.',
+                    testVersion[3]
+                });
                 switch (event.getCommand()) {
                     case "versions":
-                        event.getChannel().send().message("Latest versions - Prod: 0." + prod + ", Test: 0." + test);
+                        event.getChannel().send().message("Latest versions - Prod: " + prodVersionCompiled + ", Test: " + testVersionCompiled);
                         break;
                     case "updatetopic":
-                        String topic = getConfig().getString("topic").replace("{prod}", prod).replace("{test}", test);
+                        String topic = getConfig().getString("topic").replace("{prod}", prodVersionCompiled).replace("{test}", testVersionCompiled);
                         if (!event.getChannel().getTopic().equals(topic) && event.getUser().isVerified()) {
                             event.getChannel().send().setTopic(topic);
                         }
