@@ -55,7 +55,7 @@ public class BanSystemListener implements Listener {
                     + " INNER JOIN banchannels ON bans.id = banchannels.banId"
                     + " WHERE channel IN (?, \"all\") AND (expireDate > CURRENT_TIMESTAMP OR expireDate IS NULL) AND ? LIKE content")) {
                 statement.setString(1, event.getChannel().getName());
-                statement.setString(2, event.getUser().getHostmask());
+                statement.setString(2, event.getUser().getNick() + "!" + event.getUser().getRealName() + "@" + event.getUser().getHostmask());
                 ResultSet set = statement.executeQuery();
                 if (set.first()) {
                     String content = set.getString("content").replace("%", "*");
