@@ -18,8 +18,6 @@
  */
 package net.ae97.pokebot.extensions.bans;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.extension.Extension;
 
@@ -27,8 +25,6 @@ import net.ae97.pokebot.extension.Extension;
  * @author Joshua
  */
 public class BanSystem extends Extension {
-
-    private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
     @Override
     public String getName() {
@@ -38,10 +34,6 @@ public class BanSystem extends Extension {
     @Override
     public void load() {
         PokeBot.getEventHandler().registerListener(new BanSystemListener(this));
-    }
-
-    protected ScheduledExecutorService getExecutorService() {
-        return service;
     }
 
 }

@@ -23,10 +23,13 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.ae97.pircboty.api.events.JoinEvent;
 import net.ae97.pircboty.api.events.SetChannelBanEvent;
+import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.EventExecutor;
 import net.ae97.pokebot.api.Listener;
 
@@ -38,6 +41,7 @@ public class BanSystemListener implements Listener {
     private final BanSystem core;
     private final String host, user, pass, database;
     private final int port;
+    private final List<String> channels = new LinkedList<>();
 
     public BanSystemListener(BanSystem system) {
         core = system;
@@ -46,10 +50,14 @@ public class BanSystemListener implements Listener {
         user = system.getConfig().getString("user");
         pass = system.getConfig().getString("pass");
         database = system.getConfig().getString("database");
+        channels.addAll(system.getConfig().getStringList("channels"));
     }
 
     @EventExecutor
     public void onJoin(JoinEvent event) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+            return;
+        }
         try (Connection connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, user, pass)) {
             try (PreparedStatement statement = connection.prepareStatement("SELECT id,content,kickMessage FROM bans"
                     + " INNER JOIN banchannels ON bans.id = banchannels.banId"
@@ -70,8 +78,11 @@ public class BanSystemListener implements Listener {
     }
 
     @EventExecutor
-    public void unBan(SetChannelBanEvent event) {
-        core.getExecutorService().schedule(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
+    public void onBan(SetChannelBanEvent event) {
+        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+            return;
+        }
+        PokeBot.getScheduler().scheduleTask(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
     }
 
 }
