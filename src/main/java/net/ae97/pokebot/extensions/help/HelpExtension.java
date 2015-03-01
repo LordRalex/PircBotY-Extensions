@@ -22,6 +22,7 @@ import net.ae97.pircboty.api.events.CommandEvent;
 import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.CommandExecutor;
 import net.ae97.pokebot.extension.Extension;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Lord_Ralex
@@ -32,7 +33,7 @@ public class HelpExtension extends Extension implements CommandExecutor {
 
     @Override
     public String getName() {
-        return "Faq";
+        return "Help";
     }
 
     @Override
@@ -47,14 +48,9 @@ public class HelpExtension extends Extension implements CommandExecutor {
     @Override
     public void runEvent(CommandEvent event) {
         String helpLine = "Commands: ";
-        for (String name : help) {
-            helpLine += name + ", ";
-        }
+        helpLine += StringUtils.join(help, ", ");
         helpLine = helpLine.trim();
-        if (helpLine.endsWith(",")) {
-            helpLine = helpLine.substring(0, helpLine.length() - 2);
-        }
-        event.respond("" + helpLine);
+        event.respond(helpLine);
     }
 
     @Override
