@@ -54,7 +54,7 @@ public class HappyNewDay extends Extension {
             public void run() {
                 PokeBot.getChannel("#scrollsguide").send().message("Happy New Day!");
             }
-        }, TimeUnit.SECONDS.toSeconds(newDay.getTime().getTime() - currentTime.getTime()), 24 * 60 * 60, TimeUnit.SECONDS
+        }, TimeUnit.MILLISECONDS.toSeconds(newDay.getTime().getTime() - currentTime.getTime()), 24 * 60 * 60, TimeUnit.SECONDS
         );
 
     }
