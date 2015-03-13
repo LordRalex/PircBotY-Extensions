@@ -41,35 +41,19 @@ public class PriceCommand implements CommandExecutor {
     private final String url;
 
     public PriceCommand() {
-        url = "http://a.scrollsguide.com/prices?name={name}&days={days}";
+        url = "http://a.scrollsguide.com/experimentalprices?name={name}";
     }
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getArgs().length == 0 || (event.getArgs()[0].equals("-d") && event.getArgs().length < 3)) {
-            event.respond("Usage: .price <-d days> [name]");
+        if (event.getArgs().length == 0) {
+            event.respond("Usage: .price [name]");
             return;
         }
         int days = 2;
         String[] name = event.getArgs();
-        if (event.getArgs()[0].equals("-d")) {
-            name = new String[event.getArgs().length - 2];
-            for (int i = 2; i < event.getArgs().length; i++) {
-                name[i - 2] = event.getArgs()[i];
-            }
-            try {
-                days = Integer.parseInt(event.getArgs()[1]);
-            } catch (NumberFormatException e) {
-                event.respond("Usage: .price <-d days> [name]");
-                return;
-            }
-            if (days > 10 || days < 0) {
-                event.respond("The days must be between 1 and 10 (inclusive)");
-                return;
-            }
-        }
         try {
-            URL playerURL = new URL(url.replace("{days}", Integer.toString(days)).replace("{name}", StringUtils.join(name, "%20")));
+            URL playerURL = new URL(url.replace("{name}", StringUtils.join(name, "%20")));
             List<String> lines = new LinkedList<>();
             HttpURLConnection conn = (HttpURLConnection) playerURL.openConnection();
             conn.setRequestProperty("User-Agent", "PokeBot - " + PokeBot.VERSION);
@@ -94,9 +78,13 @@ public class PriceCommand implements CommandExecutor {
 
             StringBuilder builder = new StringBuilder();
 
-            builder.append("Buy: ").append(dataObject.get("buy").getAsInt()).append(" Gold - ");
-            builder.append("Sell: ").append(dataObject.get("sell").getAsInt()).append(" Gold - ");
-            builder.append("Last seen: ").append(parseTime(dataObject.get("lastseen").getAsInt()));
+            JsonObject buyObj = dataObject.getAsJsonObject("buy");
+            JsonObject sellObj = dataObject.getAsJsonObject("sell");
+            JsonObject bmObj = dataObject.getAsJsonObject("bm");
+
+            builder.append("Buy: ").append(buyObj.get("price").getAsInt()).append(" Gold - ");
+            builder.append("Sell: ").append(sellObj.get("price").getAsInt()).append(" Gold - ");
+            builder.append("Black Market: ").append(bmObj.get("price").getAsInt()).append(" Gold");
             String[] message = builder.toString().split("\n");
             for (String msg : message) {
                 event.respond("" + msg);
