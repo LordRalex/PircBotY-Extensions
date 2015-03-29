@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import net.ae97.pircboty.User;
 import net.ae97.pircboty.api.events.CommandEvent;
 import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.CommandExecutor;
@@ -94,37 +93,25 @@ public class FaqExtension extends Extension implements CommandExecutor {
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getCommand().equalsIgnoreCase("faqreload")) {
-            load();
-            event.getUser().send().notice("Updated local storage of all databases");
-        } else {
-            Database index = getDatabase(event);
-            if (index.getOwner() != null) {
-                for (User user : event.getChannel().getUsers()) {
-                    if (user.getNick().equalsIgnoreCase(index.getOwner())) {
-                        return;
-                    }
-                }
+        Database index = getDatabase(event);
+        Iterator<TimeKeeper> keeper = timeTracker.iterator();
+        long startTime = System.currentTimeMillis() - floodDelay;
+        while (keeper.hasNext()) {
+            if (keeper.next().getTime() < startTime) {
+                keeper.remove();
             }
-            Iterator<TimeKeeper> keeper = timeTracker.iterator();
-            long startTime = System.currentTimeMillis() - floodDelay;
-            while (keeper.hasNext()) {
-                if (keeper.next().getTime() < startTime) {
-                    keeper.remove();
-                }
+        }
+        for (TimeKeeper time : timeTracker) {
+            if (time.getCommand().equalsIgnoreCase(StringUtils.join(event.getArgs(), " "))) {
+                event.getUser().send().notice("I already used this command within 10 seconds");
+                return;
             }
-            for (TimeKeeper time : timeTracker) {
-                if (time.getCommand().equalsIgnoreCase(StringUtils.join(event.getArgs(), " "))) {
-                    event.getUser().send().notice("I already used this command within 10 seconds");
-                    return;
-                }
-            }
-            timeTracker.add(new TimeKeeper(StringUtils.join(event.getArgs(), " ")));
-            for (Entry<String, FaqSubCommand> entry : subCommands.entrySet()) {
-                if (event.getCommand().equalsIgnoreCase(entry.getKey())) {
-                    entry.getValue().execute(this, event, index);
-                    return;
-                }
+        }
+        timeTracker.add(new TimeKeeper(StringUtils.join(event.getArgs(), " ")));
+        for (Entry<String, FaqSubCommand> entry : subCommands.entrySet()) {
+            if (event.getCommand().equalsIgnoreCase(entry.getKey())) {
+                entry.getValue().execute(this, event, index);
+                return;
             }
         }
     }
@@ -142,7 +129,6 @@ public class FaqExtension extends Extension implements CommandExecutor {
                 aliases.add(key + sub);
             }
         }
-        aliases.add("faqreload");
         return aliases.toArray(new String[aliases.size()]);
     }
 
@@ -174,7 +160,6 @@ public class FaqExtension extends Extension implements CommandExecutor {
                 Database newDatabase = null;
                 String name = load;
                 HashMap<String, String> details = new HashMap<>();
-                details.put("owner", getConfig().getString(name + ".owner"));
                 switch (databaseType.toUpperCase()) {
                     case "MYSQL": {
                         details.put("host", getConfig().getString(name + ".host", "localhost"));

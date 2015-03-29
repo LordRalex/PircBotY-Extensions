@@ -73,7 +73,6 @@ public class MessageChannelCommand implements FaqSubCommand {
                 event.getUser().send().notice(lines[i]);
             }
         } else {
-            extension.getLogger().info("Channel command was used");
             MessageTask thread = new MessageTask(factoid, target, channel, lines, false, target == null ? extension.getMessageFormatNoUser() : extension.getMessageFormat(), extension.getDelay());
             thread.start();
         }
