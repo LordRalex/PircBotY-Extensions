@@ -23,6 +23,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
+import net.ae97.pircboty.ChatFormat;
 import net.ae97.pokebot.PokeBot;
 
 /**
@@ -32,6 +34,8 @@ public class MySQLDatabase extends Database {
 
     private final String host, user, pass, database;
     private final int port;
+    private final Pattern BOLD = Pattern.compile("\\[\\/?b\\]/ig");
+    private final Pattern UNDERLINE = Pattern.compile("\\[\\/?u\\]/ig");
 
     public MySQLDatabase(String n, Map<String, String> params) throws SQLException {
         super(n, params);
@@ -59,12 +63,20 @@ public class MySQLDatabase extends Database {
                 statement.setString(2, getName().toLowerCase());
                 ResultSet result = statement.executeQuery();
                 if (result.next()) {
-                    return result.getString("content").split(";;");
+                    return formatToIrc(result.getString("content").split(";;"));
                 }
             }
         } catch (SQLException ex) {
             PokeBot.getLogger().log(Level.SEVERE, "Error on SQL call", ex);
         }
         return null;
+    }
+
+    private String[] formatToIrc(String[] lines) {
+        for(int i=0; i < lines.length; i++) {
+            lines[i] = BOLD.matcher(lines[i]).replaceAll(ChatFormat.BOLD.getCode());
+            lines[i] = UNDERLINE.matcher(lines[i]).replaceAll(ChatFormat.UNDERLINE.getCode());
+        }
+        return lines;
     }
 }
