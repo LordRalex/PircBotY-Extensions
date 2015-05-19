@@ -52,7 +52,7 @@ public class MySQLDatabase extends Database {
 
     @Override
     public String[] getEntry(String key) {
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, user, pass)) {
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?useUnicode=yes&characterEncoding=UTF-8", user, pass)) {
             try (PreparedStatement statement = connection.prepareStatement(
                     "SELECT content FROM factoids "
                     + "INNER JOIN games ON games.id = factoids.game "

@@ -23,8 +23,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.ae97.pircboty.api.events.JoinEvent;
@@ -41,7 +42,7 @@ public class BanSystemListener implements Listener {
     private final BanSystem core;
     private final String host, user, pass, database;
     private final int port;
-    private final List<String> channels = new LinkedList<>();
+    private final Map<String, String> channels = new HashMap<>();
 
     public BanSystemListener(BanSystem system) {
         core = system;
@@ -50,13 +51,24 @@ public class BanSystemListener implements Listener {
         user = system.getConfig().getString("user");
         pass = system.getConfig().getString("pass");
         database = system.getConfig().getString("database");
-        channels.addAll(system.getConfig().getStringList("channels"));
+        List<String> chans = system.getConfig().getStringList("channels");
+        for (String c : chans) {
+            String owner = system.getConfig().getString("owners." + c);
+            system.getLogger().info("Applying bans for " + c + " (owner: " + owner + ")");
+            channels.put(c.toLowerCase(), owner);
+        }
     }
 
     @EventExecutor
     public void onJoin(JoinEvent event) {
-        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+        if (!channels.containsKey(event.getChannel().getName().toLowerCase())) {
             return;
+        }
+        String owner = channels.get(event.getChannel().getName().toLowerCase());
+        if (owner != null) {
+            if (event.getChannel().getOps().contains(PokeBot.getUser(owner))) {
+                return;
+            }
         }
         try (Connection connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, user, pass)) {
             try (PreparedStatement statement = connection.prepareStatement("SELECT id,content,kickMessage FROM bans"
@@ -79,7 +91,7 @@ public class BanSystemListener implements Listener {
 
     @EventExecutor
     public void onBan(SetChannelBanEvent event) {
-        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+        if (!channels.containsKey(event.getChannel().getName().toLowerCase())) {
             return;
         }
         PokeBot.getScheduler().scheduleTask(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
