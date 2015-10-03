@@ -69,12 +69,6 @@ public class CensorExtension extends Extension implements Listener {
         if (event.getUser().getNick().equalsIgnoreCase(PokeBot.getBot().getNick())) {
             return;
         }
-        if (event.getChannel().getOps().contains(event.getUser())) {
-            return;
-        }
-        if (event.getUser().hasPermission(event.getChannel().getName(), "censor.ignore")) {
-            return;
-        }
         String message = event.getMessage().toLowerCase();
         if (scanMessage(message)) {
             if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHostmask())) {
@@ -125,12 +119,10 @@ public class CensorExtension extends Extension implements Listener {
     }
 
     private boolean scanMessage(String message) {
+        String test = message.toLowerCase();
         for (String word : censor) {
-            String[] parts = message.split(" ");
-            for (String p : parts) {
-                if (p.equalsIgnoreCase(word)) {
-                    return true;
-                }
+            if (test.contains(word)) {
+                return true;
             }
         }
         return false;
