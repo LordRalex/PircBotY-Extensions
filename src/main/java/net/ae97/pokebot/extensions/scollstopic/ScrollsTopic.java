@@ -72,7 +72,7 @@ public class ScrollsTopic extends Extension implements CommandExecutor {
                 String testVersionCompiled = new String(new char[]{
                     testVersion[0],
                     '.',
-                    testVersion[2],
+                    testVersion[1],
                     '.',
                     testVersion[3]
                 });
