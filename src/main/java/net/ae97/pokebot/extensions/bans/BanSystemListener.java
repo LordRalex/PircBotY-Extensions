@@ -23,9 +23,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.ae97.pircboty.api.events.JoinEvent;
@@ -42,7 +40,6 @@ public class BanSystemListener implements Listener {
     private final BanSystem core;
     private final String host, user, pass, database;
     private final int port;
-    private final Map<String, String> channels = new HashMap<>();
 
     public BanSystemListener(BanSystem system) {
         core = system;
@@ -51,23 +48,12 @@ public class BanSystemListener implements Listener {
         user = system.getConfig().getString("user");
         pass = system.getConfig().getString("pass");
         database = system.getConfig().getString("database");
-        List<String> chans = system.getConfig().getStringList("channels");
-        for (String c : chans) {
-            String owner = system.getConfig().getString("owners." + c);
-            channels.put(c.toLowerCase(), owner);
-        }
     }
 
     @EventExecutor
     public void onJoin(JoinEvent event) {
-        if (!channels.containsKey(event.getChannel().getName().toLowerCase())) {
+        if (!getChannels().contains(event.getChannel().getName().toLowerCase())) {
             return;
-        }
-        String owner = channels.get(event.getChannel().getName().toLowerCase());
-        if (owner != null) {
-            if (event.getChannel().getOps().contains(PokeBot.getUser(owner))) {
-                return;
-            }
         }
         if (event.getBot().getUserBot().getNick().equals(event.getUser().getNick())) {
         } else {
@@ -82,7 +68,7 @@ public class BanSystemListener implements Listener {
                         String content = set.getString("content").replace("%", "*");
                         String message = set.getString("kickMessage");
                         event.getChannel().send().ban(content);
-                        event.getChannel().send().kick(event.getUser(), message);
+                        event.getChannel().send().kick(event.getUser(), message + " (#" + set.getInt("id") + ")");
                     }
                 }
             } catch (SQLException e) {
@@ -93,10 +79,14 @@ public class BanSystemListener implements Listener {
 
     @EventExecutor
     public void onBan(SetChannelBanEvent event) {
-        if (!channels.containsKey(event.getChannel().getName().toLowerCase())) {
+        if (!getChannels().contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
         PokeBot.getScheduler().scheduleTask(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
+    }
+
+    private List<String> getChannels() {
+        return core.getConfig().getStringList("channels");
     }
 
 }

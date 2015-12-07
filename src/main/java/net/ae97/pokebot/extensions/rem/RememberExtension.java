@@ -99,7 +99,7 @@ public class RememberExtension extends Extension implements CommandExecutor {
         target = target.toLowerCase();
 
         if (command.equalsIgnoreCase("remshutup")) {
-            if (!channel.getOps().contains(user) && !user.hasPermission(target, "rem.shutup")) {
+            if (!channel.getOps().contains(user)) {
                 return;
             }
             boolean wasThere = dontReply.remove(target);

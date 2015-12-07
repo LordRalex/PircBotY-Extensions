@@ -16,7 +16,6 @@
  */
 package net.ae97.pokebot.extensions.censor;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,8 +33,6 @@ import net.ae97.pokebot.extension.ExtensionReloadFailedException;
  */
 public class CensorExtension extends Extension implements Listener {
 
-    private final List<String> censor = new ArrayList<>();
-    private final List<String> channels = new ArrayList<>();
     private final Set<String> warned = new HashSet<>();
 
     @Override
@@ -45,25 +42,16 @@ public class CensorExtension extends Extension implements Listener {
 
     @Override
     public void load() {
-        censor.clear();
-        censor.addAll(getConfig().getStringList("words"));
-        channels.clear();
-        channels.addAll(getConfig().getStringList("channels"));
         PokeBot.getExtensionManager().addListener(this);
     }
 
     @Override
     public void reload() throws ExtensionReloadFailedException {
-        super.reload();
-        censor.clear();
-        censor.addAll(getConfig().getStringList("words"));
-        channels.clear();
-        channels.addAll(getConfig().getStringList("channels"));
     }
 
     @EventExecutor
     public void runEvent(MessageEvent event) {
-        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+        if (!getChannels().contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
         if (event.getUser().getNick().equalsIgnoreCase(PokeBot.getBot().getNick())) {
@@ -83,16 +71,13 @@ public class CensorExtension extends Extension implements Listener {
 
     @EventExecutor
     public void runEvent(ActionEvent event) {
-        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+        if (!getChannels().contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
         if (event.getUser().getNick().equalsIgnoreCase(PokeBot.getBot().getNick())) {
             return;
         }
         if (event.getChannel().getOps().contains(event.getUser())) {
-            return;
-        }
-        if (event.getUser().hasPermission(event.getChannel().getName(), "censor.ignore")) {
             return;
         }
         String message = event.getMessage().toLowerCase();
@@ -109,22 +94,32 @@ public class CensorExtension extends Extension implements Listener {
 
     @EventExecutor
     public void runEvent(JoinEvent event) {
-        if (!channels.contains(event.getChannel().getName().toLowerCase())) {
+        if (!getChannels().contains(event.getChannel().getName().toLowerCase())) {
             return;
         }
         String message = event.getUser().getNick().toLowerCase();
-        if (scanMessage(message)) {
+        String trigger = getTrigger(message);
+        if (trigger != null) {
+            event.getChannel().send().ban("*" + trigger + "*!*@*");
             event.getChannel().send().kick(event.getUser(), getConfig().getString("kickmessage", "Please get a different nickname"));
         }
     }
 
-    private boolean scanMessage(String message) {
+    private List<String> getChannels() {
+        return getConfig().getStringList("words");
+    }
+
+    private String getTrigger(String message) {
         String test = message.toLowerCase();
-        for (String word : censor) {
+        for (String word : getConfig().getStringList("censor")) {
             if (test.contains(word)) {
-                return true;
+                return word;
             }
         }
-        return false;
+        return null;
+    }
+
+    private boolean scanMessage(String message) {
+        return getTrigger(message) != null;
     }
 }

@@ -66,7 +66,7 @@ public class WelcomeMessageExtension extends Extension implements Listener, Comm
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getChannel().getOps().contains(event.getUser()) || event.getUser().hasPermission(event.getChannel().getName(), "saymessage.set")) {
+        if (event.getChannel().getOps().contains(event.getUser())) {
             if (event.getArgs().length == 0) {
                 mappings.remove(event.getChannel().getName().toLowerCase());
                 event.getUser().send().notice("I will stop messaging people when they join");

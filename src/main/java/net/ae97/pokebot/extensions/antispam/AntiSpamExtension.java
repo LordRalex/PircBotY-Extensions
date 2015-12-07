@@ -17,7 +17,6 @@
 package net.ae97.pokebot.extensions.antispam;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +40,6 @@ import net.ae97.pokebot.extension.ExtensionReloadFailedException;
 public class AntiSpamExtension extends Extension implements Listener {
 
     private final Map<String, Posts> logs = new ConcurrentHashMap<>();
-    private final List<String> channels = new LinkedList<>();
     private final CleanerTask cleaner = new CleanerTask();
 
     @Override
@@ -51,8 +49,6 @@ public class AntiSpamExtension extends Extension implements Listener {
 
     @Override
     public void load() {
-        channels.clear();
-        channels.addAll(getConfig().getStringList("channels"));
         logs.clear();
         PokeBot.getExtensionManager().addListener(this);
         PokeBot.getScheduler().scheduleTask(cleaner, 30, TimeUnit.MINUTES);
@@ -61,8 +57,6 @@ public class AntiSpamExtension extends Extension implements Listener {
     @Override
     public void reload() throws ExtensionReloadFailedException {
         super.reload();
-        channels.clear();
-        channels.addAll(getConfig().getStringList("channels"));
         logs.clear();
     }
 
@@ -79,11 +73,11 @@ public class AntiSpamExtension extends Extension implements Listener {
     private void handle(GenericChannelUserEvent event) {
         synchronized (logs) {
             Channel channel = event.getChannel();
-            if (!channels.contains(channel.getName().toLowerCase())) {
+            if (!getChannels().contains(channel.getName().toLowerCase())) {
                 return;
             }
             User sender = event.getUser();
-            if (channel.getOps().contains(sender) || channel.getVoices().contains(sender) || sender.hasPermission(channel.getName(), "antispam.ignore")) {
+            if (channel.getOps().contains(sender) || channel.getVoices().contains(sender)) {
                 return;
             }
             String message;
@@ -103,6 +97,10 @@ public class AntiSpamExtension extends Extension implements Listener {
                 logs.put(sender.getNick(), posts);
             }
         }
+    }
+
+    private List<String> getChannels() {
+        return getConfig().getStringList("channels");
     }
 
     private class CleanerTask implements Runnable {

@@ -16,7 +16,6 @@
  */
 package net.ae97.pokebot.extensions.faq;
 
-import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +36,6 @@ import net.ae97.pokebot.extensions.faq.commands.MessageChannelCommand;
 import net.ae97.pokebot.extensions.faq.commands.MessageSelfCommand;
 import net.ae97.pokebot.extensions.faq.commands.MessageUserCommand;
 import net.ae97.pokebot.extensions.faq.database.Database;
-import net.ae97.pokebot.extensions.faq.database.FileDatabase;
 import net.ae97.pokebot.extensions.faq.database.MySQLDatabase;
 import org.apache.commons.lang3.StringUtils;
 
@@ -155,36 +153,18 @@ public class FaqExtension extends Extension implements CommandExecutor {
     public void loadDatabases() {
         List<String> databasesToLoad = getConfig().getStringList("databases");
         for (String load : databasesToLoad) {
-            String databaseType = getConfig().getString(load + ".type");
             try {
-                Database newDatabase = null;
                 String name = load;
                 HashMap<String, String> details = new HashMap<>();
-                switch (databaseType.toUpperCase()) {
-                    case "MYSQL": {
-                        details.put("host", getConfig().getString(name + ".host", "localhost"));
-                        details.put("port", getConfig().getString(name + ".port", "3306"));
-                        details.put("user", getConfig().getString(name + ".user", "root"));
-                        details.put("pass", getConfig().getString(name + ".pass", ""));
-                        details.put("database", getConfig().getString(name + ".database", "database"));
-                        newDatabase = new MySQLDatabase(name, details);
-                    }
-                    break;
-                    case "FLAT": {
-                        details.put("load", getConfig().getString(name + ".load", new File("database", name + ".db").getPath()));
-                        details.put("save", getConfig().getString(name + ".save", new File("database", name + ".db").getPath()));
-                        details.put("update", getConfig().getString(name + ".update", "0"));
-                        newDatabase = new FileDatabase(name, details);
-                    }
-                    break;
-                }
-                if (newDatabase != null) {
-                    PokeBot.getLogger().log(Level.INFO, "[FAQ] Loading database: " + newDatabase.getName());
-                    newDatabase.load();
-                    databases.put(newDatabase.getName().toLowerCase(), newDatabase);
-                } else {
-                    PokeBot.getLogger().log(Level.WARNING, name + " could not be created into a database, no " + databaseType.toUpperCase() + " found");
-                }
+                details.put("host", getConfig().getString(name + ".host", "localhost"));
+                details.put("port", getConfig().getString(name + ".port", "3306"));
+                details.put("user", getConfig().getString(name + ".user", "root"));
+                details.put("pass", getConfig().getString(name + ".pass", ""));
+                details.put("database", getConfig().getString(name + ".database", "database"));
+                Database newDatabase = new MySQLDatabase(name, details);
+                PokeBot.getLogger().log(Level.INFO, "[FAQ] Loading database: " + newDatabase.getName());
+                newDatabase.load();
+                databases.put(newDatabase.getName().toLowerCase(), newDatabase);
             } catch (SQLException ex) {
                 PokeBot.getLogger().log(Level.SEVERE, "    There was an error with this setting: " + load, ex);
             }
