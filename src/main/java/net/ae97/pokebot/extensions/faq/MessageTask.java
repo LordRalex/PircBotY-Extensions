@@ -77,6 +77,10 @@ public class MessageTask implements Runnable {
             for (ChatFormat color : ChatFormat.values()) {
                 message = message.replace("{" + color.name().toLowerCase() + "}", color.toString());
             }
+            message = message.replace("[b]", ChatFormat.BOLD.toString());
+            message = message.replace("[u]", ChatFormat.UNDERLINE.toString());
+            message = message.replace("[/b]", ChatFormat.NORMAL.toString());
+            message = message.replace("[/u]", ChatFormat.NORMAL.toString());
             if (notice) {
                 user.send().notice(message);
             } else {
