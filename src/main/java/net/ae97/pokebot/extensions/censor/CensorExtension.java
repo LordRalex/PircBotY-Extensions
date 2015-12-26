@@ -106,13 +106,14 @@ public class CensorExtension extends Extension implements Listener {
     }
 
     private List<String> getChannels() {
-        return getConfig().getStringList("words");
+        return getConfig().getStringList("channels");
     }
 
     private String getTrigger(String message) {
         String test = message.toLowerCase();
-        for (String word : getConfig().getStringList("censor")) {
+        for (String word : getConfig().getStringList("words")) {
             if (test.contains(word)) {
+                getLogger().info(word + " was found in '" + test + "'");
                 return word;
             }
         }
