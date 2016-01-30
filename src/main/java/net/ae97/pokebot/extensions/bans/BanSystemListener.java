@@ -24,10 +24,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import net.ae97.pircboty.Channel;
+import net.ae97.pircboty.User;
 import net.ae97.pircboty.api.events.JoinEvent;
 import net.ae97.pircboty.api.events.SetChannelBanEvent;
+import net.ae97.pircboty.api.events.UserAuthEvent;
 import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.EventExecutor;
 import net.ae97.pokebot.api.Listener;
@@ -38,42 +42,28 @@ import net.ae97.pokebot.api.Listener;
 public class BanSystemListener implements Listener {
 
     private final BanSystem core;
-    private final String host, user, pass, database;
+    private final String host, mysqlUser, pass, database;
     private final int port;
 
     public BanSystemListener(BanSystem system) {
         core = system;
         host = system.getConfig().getString("host");
         port = system.getConfig().getInt("port");
-        user = system.getConfig().getString("user");
+        mysqlUser = system.getConfig().getString("user");
         pass = system.getConfig().getString("pass");
         database = system.getConfig().getString("database");
     }
 
     @EventExecutor
     public void onJoin(JoinEvent event) {
-        if (!getChannels().contains(event.getChannel().getName().toLowerCase())) {
-            return;
-        }
-        if (event.getBot().getUserBot().getNick().equals(event.getUser().getNick())) {
-        } else {
-            try (Connection connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, user, pass)) {
-                try (PreparedStatement statement = connection.prepareStatement("SELECT id,content,kickMessage FROM bans"
-                        + " INNER JOIN banchannels ON bans.id = banchannels.banId"
-                        + " WHERE channel IN (?, \"all\") AND (expireDate > CURRENT_TIMESTAMP OR expireDate IS NULL) AND ? LIKE content")) {
-                    statement.setString(1, event.getChannel().getName());
-                    statement.setString(2, event.getUser().getNick() + "!" + event.getUser().getLogin() + "@" + event.getUser().getHostmask());
-                    ResultSet set = statement.executeQuery();
-                    if (set.first()) {
-                        String content = set.getString("content").replace("%", "*");
-                        String message = set.getString("kickMessage");
-                        event.getChannel().send().ban(content);
-                        event.getChannel().send().kick(event.getUser(), message + " (#" + set.getInt("id") + ")");
-                    }
-                }
-            } catch (SQLException e) {
-                core.getLogger().log(Level.SEVERE, "Error on checking for bans", e);
-            }
+
+    }
+
+    @EventExecutor
+    public void onAuth(UserAuthEvent event) {
+        Set<Channel> channels = event.getUser().getChannels();
+        for (Channel chan : channels) {
+            processEvent(event.getUser(), chan);
         }
     }
 
@@ -83,6 +73,33 @@ public class BanSystemListener implements Listener {
             return;
         }
         PokeBot.getScheduler().scheduleTask(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
+    }
+
+    private void processEvent(User user, Channel channel) {
+        if (!getChannels().contains(channel.getName().toLowerCase())) {
+            return;
+        }
+        if (user.getBot().getUserBot().getNick().equals(user.getNick())) {
+            return;
+        }
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass)) {
+            try (PreparedStatement statement = connection.prepareStatement("SELECT id,content,kickMessage FROM bans"
+                    + " INNER JOIN banchannels ON bans.id = banchannels.banId"
+                    + " WHERE channel IN (?, \"all\") AND (expireDate > CURRENT_TIMESTAMP OR expireDate IS NULL) AND (? LIKE content OR content=?)")) {
+                statement.setString(1, channel.getName());
+                statement.setString(2, user.getNick() + "!" + user.getLogin() + "@" + user.getHostmask());
+                statement.setString(3, "$a:" + user.getLogin());
+                ResultSet set = statement.executeQuery();
+                if (set.first()) {
+                    String content = set.getString("content").replace("%", "*");
+                    String message = set.getString("kickMessage");
+                    channel.send().ban(content);
+                    channel.send().kick(user, message + " (#" + set.getInt("id") + ")");
+                }
+            }
+        } catch (SQLException e) {
+            core.getLogger().log(Level.SEVERE, "Error on checking for bans", e);
+        }
     }
 
     private List<String> getChannels() {
