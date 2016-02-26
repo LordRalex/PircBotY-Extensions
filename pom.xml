@@ -60,7 +60,20 @@
                         <configuration>
                             <classifier>faq</classifier>
                             <includes>
-                                <include>**/faq/**</include>
+                                <include>**/extensions/faq/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bans</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>bans</classifier>
+                            <includes>
+                                <include>**/extensions/bans/**</include>
                             </includes>
                         </configuration>
                     </execution>

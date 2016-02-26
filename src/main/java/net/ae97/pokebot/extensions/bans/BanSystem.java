@@ -33,7 +33,8 @@ public class BanSystem extends Extension {
 
     @Override
     public void load() {
-        PokeBot.getEventHandler().registerListener(new BanSystemListener(this));
+        BanSystemListener listener = new BanSystemListener(this);
+        PokeBot.getEventHandler().registerListener(listener);
+        PokeBot.getEventHandler().registerCommandExecutor(listener);
     }
-
 }

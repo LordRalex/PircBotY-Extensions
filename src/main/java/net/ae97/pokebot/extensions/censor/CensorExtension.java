@@ -26,7 +26,6 @@ import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.EventExecutor;
 import net.ae97.pokebot.api.Listener;
 import net.ae97.pokebot.extension.Extension;
-import net.ae97.pokebot.extension.ExtensionReloadFailedException;
 
 /**
  * @author Lord_Ralex
@@ -43,10 +42,6 @@ public class CensorExtension extends Extension implements Listener {
     @Override
     public void load() {
         PokeBot.getExtensionManager().addListener(this);
-    }
-
-    @Override
-    public void reload() throws ExtensionReloadFailedException {
     }
 
     @EventExecutor
@@ -100,7 +95,7 @@ public class CensorExtension extends Extension implements Listener {
         String message = event.getUser().getNick().toLowerCase();
         String trigger = getTrigger(message);
         if (trigger != null) {
-            event.getChannel().send().ban("*" + trigger + "*!*@*");
+            event.getChannel().send().ban("*" + trigger + "*!*@" + event.getUser().getHostmask());
             event.getChannel().send().kick(event.getUser(), getConfig().getString("kickmessage", "Please get a different nickname"));
         }
     }
