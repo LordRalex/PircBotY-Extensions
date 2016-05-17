@@ -55,6 +55,9 @@ public class CensorExtension extends Extension implements Listener {
         String message = event.getMessage().toLowerCase();
         if (scanMessage(message)) {
             if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHostmask())) {
+                if (event.getChannel().getUserLevels(event.getUser()).size() > 0) {
+                    return;
+                }
                 event.getChannel().send().kick(event.getUser(), getConfig().getString("kickmessage"));
             } else {
                 warned.add(event.getUser().getNick());
@@ -72,12 +75,12 @@ public class CensorExtension extends Extension implements Listener {
         if (event.getUser().getNick().equalsIgnoreCase(PokeBot.getBot().getNick())) {
             return;
         }
-        if (event.getChannel().getOps().contains(event.getUser())) {
-            return;
-        }
         String message = event.getMessage().toLowerCase();
         if (scanMessage(message)) {
             if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHostmask())) {
+                if (event.getChannel().getUserLevels(event.getUser()).size() > 0) {
+                    return;
+                }
                 event.getChannel().send().kick(event.getUser(), getConfig().getString("kickmessage"));
             } else {
                 warned.add(event.getUser().getNick());
