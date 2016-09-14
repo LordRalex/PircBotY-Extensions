@@ -83,7 +83,7 @@ public class HJTListener implements Listener, CommandExecutor {
             String text = scanner.useDelimiter("\\A").next();
             scanner.close();
             StringBuilder builder = new StringBuilder();
-            PreparedStatement statement = openConnection().prepareStatement("SELECT * FROM hjt");
+            PreparedStatement statement = openConnection().prepareStatement("SELECT name, value FROM `hjt`");
             ResultSet set = statement.executeQuery();
             while (set.next()) {
                 String name = set.getString(1);
@@ -106,8 +106,8 @@ public class HJTListener implements Listener, CommandExecutor {
     private String addHJT(String s) {
         if(!s.contains("=")) return "Usage: addHJT [name]=[value]";
         String[] array = s.split("=");
-        String name = array[0];
-        String value = array[1];
+        String name = array[0].trim();
+        String value = array[1].trim();
         try (Connection connection = openConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("INSERT INTO hjt (name, value) VALUES (?, ?)")) {
                 statement.setString(1, name);
