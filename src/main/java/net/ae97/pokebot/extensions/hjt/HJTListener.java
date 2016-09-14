@@ -106,13 +106,13 @@ public class HJTListener implements Listener, CommandExecutor {
     private String addHJT(String s) {
         if(!s.contains("=")) return "Usage: addHJT [name]=[value]";
         String[] array = s.split("=");
-        String name = array[0].trim();
-        String value = array[1].trim();
+        String namet = array[0].trim();
+        String valuet = array[1].trim();
         try (Connection connection = openConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("INSERT INTO hjt (name, value) VALUES (?, ?)")) {
-                statement.setString(1, name);
-                statement.setString(2, value);
-                return name + "=" + value + " added to database!";
+                statement.setString(1, namet);
+                statement.setString(2, valuet);
+                return namet + "=" + valuet + " added to database!";
             }
         } catch (SQLException e) {
             core.getLogger().log(Level.SEVERE, "Error inserting hjt", e);
