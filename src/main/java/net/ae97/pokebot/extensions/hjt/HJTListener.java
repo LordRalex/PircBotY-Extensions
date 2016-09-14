@@ -83,7 +83,7 @@ public class HJTListener implements Listener, CommandExecutor {
             String text = scanner.useDelimiter("\\A").next();
             scanner.close();
             StringBuilder builder = new StringBuilder();
-            PreparedStatement statement = openConnection().prepareStatement("SELECT name, value FROM `hjt`");
+            PreparedStatement statement = openConnection().prepareStatement("SELECT name, value FROM hjt");
             ResultSet set = statement.executeQuery();
             while (set.next()) {
                 String name = set.getString(1);
