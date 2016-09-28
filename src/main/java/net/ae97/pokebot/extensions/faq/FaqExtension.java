@@ -196,6 +196,10 @@ public class FaqExtension extends Extension implements CommandExecutor {
                     break;
                 }
             }
+            if(name.equals("Minecraft") && event.getChannel().getName().startsWith("mc")) {
+                index = databases.get(name);
+                break;
+            }
         }
         if (databases.size() == 1) {
             index = databases.get(dbNames[0]);
