@@ -19,9 +19,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class HJTListener implements Listener, CommandExecutor {
 
-    private HJTParser core;
-    private String host, mysqlUser, pass, database;
-    private int port;
+    private final HJTParser core;
 
     public HJTListener(HJTParser system) {
         core = system;
@@ -68,33 +66,34 @@ public class HJTListener implements Listener, CommandExecutor {
     }
 
     private String getHJT(String s) {
-        try {
-            String text;
-            try (Scanner scanner = new Scanner(new URL(s).openStream())) {
-                text = scanner.useDelimiter("\\A").next();
-            }
-            StringBuilder builder = new StringBuilder();
-            try (ResultSet set = openConnection().prepareStatement("SELECT name, value FROM hjt").executeQuery()) {
-                while (set.next()) {
-                    String name = set.getString(1);
-                    String value = set.getString(2);
-                    if (text.contains(name)) {
-                        if (builder.length() == 0) {
-                            builder.append(value);
-                        } else {
-                            builder.append(", ").append(value);
-                        }
+        String text;
+        try (Scanner scanner = new Scanner(new URL(s).openStream())) {
+            text = scanner.useDelimiter("\\A").next();
+        } catch (IOException ex) {
+            core.getLogger().log(Level.SEVERE, "Error getting hjt", ex);
+            return "Error reading from URL (" + s + "): " + ex.getMessage();
+        }
+        StringBuilder builder = new StringBuilder();
+        try (ResultSet set = openConnection().prepareStatement("SELECT name, value FROM hjt").executeQuery()) {
+            while (set.next()) {
+                String name = set.getString(1);
+                String value = set.getString(2);
+                if (text.contains(name)) {
+                    if (builder.length() == 0) {
+                        builder.append(value);
+                    } else {
+                        builder.append(", ").append(value);
                     }
                 }
             }
-            if (builder.length() == 0) {
-                return "Nothing matching in database";
-            } else {
-                return "Found: " + builder.toString();
-            }
-        } catch (IOException | SQLException e) {
-            core.getLogger().log(Level.SEVERE, "Error getting hjt", e);
-            return "SQL error";
+        } catch (SQLException ex) {
+            core.getLogger().log(Level.SEVERE, "Error getting hjt", ex);
+            return "SQL error: " + ex.getMessage();
+        }
+        if (builder.length() == 0) {
+            return "Nothing matching in database";
+        } else {
+            return "Found: " + builder.toString();
         }
     }
 
@@ -124,11 +123,11 @@ public class HJTListener implements Listener, CommandExecutor {
     }
 
     private Connection openConnection() throws SQLException {
-        host = core.getConfig().getString("host");
-        port = core.getConfig().getInt("port");
-        mysqlUser = core.getConfig().getString("user");
-        pass = core.getConfig().getString("pass");
-        database = core.getConfig().getString("database");
+        String host = core.getConfig().getString("host");
+        int port = core.getConfig().getInt("port");
+        String mysqlUser = core.getConfig().getString("user");
+        String pass = core.getConfig().getString("pass");
+        String database = core.getConfig().getString("database");
         return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass);
     }
 }
