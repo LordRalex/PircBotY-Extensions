@@ -148,7 +148,7 @@ public class BanSystemListener implements Listener, CommandExecutor {
     private void addBanToSystem(String mask, User banner, Channel channel) {
         try (Connection connection = openConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("INSERT INTO bans VALUES (null, 0, ?, ?, ?, ?, CURRENT_TIMESTAMP(), TIMESTAMPADD(HOUR, ?, CURRENT_TIMESTAMP()))")) {
-                statement.setString(1, mask);
+                statement.setString(1, mask.replace("*", "%"));
                 statement.setString(2, "00000000-0000-0000-0000-000000000000");
                 statement.setString(3, core.getConfig().getString("automessage", "You are temp banned from this channel"));
                 statement.setString(4, "Automatic ban when IP was banned by " + banner.getNick() + "@" + banner.getHostmask());
@@ -156,7 +156,7 @@ public class BanSystemListener implements Listener, CommandExecutor {
                 statement.execute();
             }
             try (PreparedStatement statement = connection.prepareStatement("INSERT INTO banchannels VALUES ((SELECT id FROM bans WHERE content = ? ORDER BY issueDate DESC LIMIT 1), ?)")) {
-                statement.setString(1, mask);
+                statement.setString(1, mask.replace("*", "%"));
                 statement.setString(2, channel.getName());
                 statement.execute();
             }
