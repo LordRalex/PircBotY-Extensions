@@ -52,15 +52,15 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>faq</id>
+                        <id>antispam</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                         <phase>package</phase>
                         <configuration>
-                            <classifier>faq</classifier>
+                            <classifier>antispam</classifier>
                             <includes>
-                                <include>**/extensions/faq/**</include>
+                                <include>**/extensions/antispam/**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -74,6 +74,175 @@
                             <classifier>bans</classifier>
                             <includes>
                                 <include>**/extensions/bans/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>censor</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>censor</classifier>
+                            <includes>
+                                <include>**/extensions/censor/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>faq</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>faq</classifier>
+                            <includes>
+                                <include>**/extensions/faq/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>help</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>help</classifier>
+                            <includes>
+                                <include>**/extensions/help/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>hjt</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>hjt</classifier>
+                            <includes>
+                                <include>**/extensions/hjt/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>htop</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>htop</classifier>
+                            <includes>
+                                <include>**/extensions/htop/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>info</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>info</classifier>
+                            <includes>
+                                <include>**/extensions/info/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>invite</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>invite</classifier>
+                            <includes>
+                                <include>**/extensions/invite/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mcping</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>mcping</classifier>
+                            <includes>
+                                <include>**/extensions/mcping/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>names</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>names</classifier>
+                            <includes>
+                                <include>**/extensions/names/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>rem</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>rem</classifier>
+                            <includes>
+                                <include>**/extensions/rem/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scales</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>scales</classifier>
+                            <includes>
+                                <include>**/extensions/testscales/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>uptime</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>uptime</classifier>
+                            <includes>
+                                <include>**/extensions/uptime/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>welcome</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>welcome</classifier>
+                            <includes>
+                                <include>**/extensions/welcomemessage/**</include>
                             </includes>
                         </configuration>
                     </execution>

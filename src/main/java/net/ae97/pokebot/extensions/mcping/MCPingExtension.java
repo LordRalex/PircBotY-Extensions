@@ -20,14 +20,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import net.ae97.pircboty.api.events.CommandEvent;
+import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.CommandExecutor;
 import net.ae97.pokebot.extension.Extension;
+import net.ae97.pokebot.extension.ExtensionLoadFailedException;
 
 /**
  *
  * @author Joshua
  */
 public class MCPingExtension extends Extension implements CommandExecutor {
+
+    @Override
+    public void load() throws ExtensionLoadFailedException {
+        PokeBot.getEventHandler().registerCommandExecutor(this);
+    }
     
     @Override
     public void runEvent(CommandEvent ce) {
