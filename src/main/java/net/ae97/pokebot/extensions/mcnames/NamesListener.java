@@ -16,7 +16,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.*;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 /**
@@ -31,29 +32,30 @@ public class NamesListener implements Listener, CommandExecutor {
 
     @Override
     public void runEvent(CommandEvent event) {
-        if(event.getCommand().equals("ns")) {
+        if (event.getCommand().equals("ns")) {
             if (event.getArgs().length == 0) {
                 event.respond("Usage: ns <name> [--extended]");
                 return;
             }
             boolean extended = false;
-            if(event.getArgs().length > 1 && event.getArgs()[1].equals("--extended")) extended = true;
+            if (event.getArgs().length > 1 && event.getArgs()[1].equals("--extended")) extended = true;
             event.respond(getNS(event.getArgs()[0], extended));
             return;
         }
     }
 
     private String getNS(String s, boolean extended) {
-        if(s==null || s.isEmpty()) return "Invalid username";
+        if (s == null || s.isEmpty()) return "Invalid username";
         long unixTimestamp = System.currentTimeMillis() / 1000l;
 
 
         String result = findInfo(s, extended, false, 0);
-        if(result==null || result.isEmpty()) {
-            result = findInfo(s, extended, true, unixTimestamp-2505600); //2500 seems to always work, get previous name
-            if(result==null || result.isEmpty()) {
+        if (result == null || result.isEmpty()) {
+            result = findInfo(s, extended, true, unixTimestamp - 2505600); //2500 seems to always work, get previous name
+            if (result == null || result.isEmpty()) {
                 result = findInfo(s, extended, true, 0); //get original name
-                if (result==null || result.isEmpty()) return ChatFormat.RED+"Username doesn't exists"+ChatFormat.NORMAL;
+                if (result == null || result.isEmpty())
+                    return ChatFormat.RED + "Username doesn't exists" + ChatFormat.NORMAL;
             }
         }
         return result;
@@ -62,7 +64,7 @@ public class NamesListener implements Listener, CommandExecutor {
     private String findInfo(String s, boolean extended, boolean previousName, long timestamp) {
         try {
             String str = "https://api.mojang.com/users/profiles/minecraft/" + s;
-            if(previousName) str = str+"?at="+timestamp;
+            if (previousName) str = str + "?at=" + timestamp;
             URL url = new URL(str);
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.connect();
@@ -79,7 +81,7 @@ public class NamesListener implements Listener, CommandExecutor {
             if (rootobj.has("demo")) paid = false;
             String[] names = getNames(id, extended);
             StringBuilder output = new StringBuilder();
-            if(previousName) output.append(ChatFormat.RED + "Name was changed to: " +ChatFormat.NORMAL);
+            if (previousName) output.append(ChatFormat.RED + "Name was changed to: " + ChatFormat.NORMAL);
             output.append(ChatFormat.BOLD + currentName + ChatFormat.NORMAL + ": " + ChatFormat.BLUE + "UUID: " + ChatFormat.NORMAL + id + " ");
             output.append(paid ? ChatFormat.GREEN + "PAID " + ChatFormat.NORMAL : ChatFormat.RED + "DEMO " + ChatFormat.NORMAL);
             output.append(migrated ? ChatFormat.YELLOW + "MIGRATED " + ChatFormat.NORMAL : ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
@@ -104,10 +106,10 @@ public class NamesListener implements Listener, CommandExecutor {
             JsonParser jp = new JsonParser(); //from gson
             JsonElement root = jp.parse(new InputStreamReader((InputStream) request.getContent())); //Convert the input stream to a json element
             JsonArray rootobj = root.getAsJsonArray(); //May be an array, may be an object.
-            if(rootobj.size()==1) return new String[]{};
+            if (rootobj.size() == 1) return new String[]{};
             SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-            if(extended) {
-                String[] names = new String[rootobj.size()-1];
+            if (extended) {
+                String[] names = new String[rootobj.size() - 1];
                 for (int i = 0; i < rootobj.size() - 1; i++) {
                     if (rootobj.get(i).getAsJsonObject().has("changedToAt")) {
                         names[i] = rootobj.get(i).getAsJsonObject().get("name").getAsString() + " changed " + format.format(new Date(new Timestamp(rootobj.get(i).getAsJsonObject().get("changedToAt").getAsLong()).getTime()));
@@ -117,11 +119,11 @@ public class NamesListener implements Listener, CommandExecutor {
                 }
                 return names;
             } else {
-                int limit = rootobj.size()-3;
-                if(limit < 0) limit = 0;
-                String[] names = new String[rootobj.size()-limit];
+                int limit = rootobj.size() - 3;
+                if (limit < 0) limit = 0;
+                String[] names = new String[rootobj.size() - limit];
                 int counter = 0;
-                for (int i = rootobj.size()-1; i >=limit; i--) {
+                for (int i = rootobj.size() - 1; i >= limit; i--) {
                     if (rootobj.get(i).getAsJsonObject().has("changedToAt")) {
                         names[counter] = rootobj.get(i).getAsJsonObject().get("name").getAsString() + " changed " + format.format(new Date(new Timestamp(rootobj.get(i).getAsJsonObject().get("changedToAt").getAsLong()).getTime()));
                     } else {

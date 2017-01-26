@@ -58,122 +58,134 @@ public class Config {
         }
 
         public void addDownload(String version, int arch, String downloadLink) {
-            if(arch==64) {
+            if (arch == 64) {
                 switch (version) {
                     case "10":
-                        if(downloadLinkWin6410.isEmpty()) downloadLinkWin6410 = downloadLink;
+                        if (downloadLinkWin6410.isEmpty()) downloadLinkWin6410 = downloadLink;
                         break;
                     case "8.1":
-                        if(downloadLinkWin6481.isEmpty()) downloadLinkWin6481 = downloadLink;
+                        if (downloadLinkWin6481.isEmpty()) downloadLinkWin6481 = downloadLink;
                         break;
                     case "8":
-                        if(downloadLinkWin648.isEmpty()) downloadLinkWin648 = downloadLink;
+                        if (downloadLinkWin648.isEmpty()) downloadLinkWin648 = downloadLink;
                         break;
                     case "7":
-                        if(downloadLinkWin647.isEmpty()) downloadLinkWin647 = downloadLink;
+                        if (downloadLinkWin647.isEmpty()) downloadLinkWin647 = downloadLink;
                         break;
                     case "Vista":
-                        if(downloadLinkWin64Vista.isEmpty()) downloadLinkWin64Vista = downloadLink;
+                        if (downloadLinkWin64Vista.isEmpty()) downloadLinkWin64Vista = downloadLink;
                         break;
                     case "XP":
-                        if(downloadLinkWin64XP.isEmpty()) downloadLinkWin64XP = downloadLink;
+                        if (downloadLinkWin64XP.isEmpty()) downloadLinkWin64XP = downloadLink;
                         break;
                 }
             } else {
                 switch (version) {
                     case "10":
-                        if(downloadLinkWin3210.isEmpty()) downloadLinkWin3210 = downloadLink;
+                        if (downloadLinkWin3210.isEmpty()) downloadLinkWin3210 = downloadLink;
                         break;
                     case "8.1":
-                        if(downloadLinkWin3281.isEmpty()) downloadLinkWin3281 = downloadLink;
+                        if (downloadLinkWin3281.isEmpty()) downloadLinkWin3281 = downloadLink;
                         break;
                     case "8":
-                        if(downloadLinkWin328.isEmpty()) downloadLinkWin328 = downloadLink;
+                        if (downloadLinkWin328.isEmpty()) downloadLinkWin328 = downloadLink;
                         break;
                     case "7":
-                        if(downloadLinkWin327.isEmpty()) downloadLinkWin327 = downloadLink;
+                        if (downloadLinkWin327.isEmpty()) downloadLinkWin327 = downloadLink;
                         break;
                     case "Vista":
-                        if(downloadLinkWin32Vista.isEmpty()) downloadLinkWin32Vista = downloadLink;
+                        if (downloadLinkWin32Vista.isEmpty()) downloadLinkWin32Vista = downloadLink;
                         break;
                     case "XP":
-                        if(downloadLinkWin32XP.isEmpty()) downloadLinkWin32XP = downloadLink;
+                        if (downloadLinkWin32XP.isEmpty()) downloadLinkWin32XP = downloadLink;
                         break;
                 }
             }
         }
 
         public void addAMD(AMD.Platform.ProductFamily.Product.Version version) {
-            for(AMD.Platform.ProductFamily.Product.Version.Download download: version.downloads){
-                int arch = download.is64? 64:32;
+            for (AMD.Platform.ProductFamily.Product.Version.Download download : version.downloads) {
+                int arch = download.is64 ? 64 : 32;
                 addDownload(download.minified, arch, download.file);
             }
         }
 
         public String getDownload(String minified, boolean is64) {
-            if(is64) {
+            if (is64) {
                 switch (minified) {
-                    case "XP": return downloadLinkWin64XP;
-                    case "Vista": return downloadLinkWin64Vista;
-                    case "7": return downloadLinkWin647;
-                    case "8": return downloadLinkWin648;
-                    case "8.1": return downloadLinkWin6481;
-                    case "10": return downloadLinkWin6410;
+                    case "XP":
+                        return downloadLinkWin64XP;
+                    case "Vista":
+                        return downloadLinkWin64Vista;
+                    case "7":
+                        return downloadLinkWin647;
+                    case "8":
+                        return downloadLinkWin648;
+                    case "8.1":
+                        return downloadLinkWin6481;
+                    case "10":
+                        return downloadLinkWin6410;
                 }
             } else {
                 switch (minified) {
-                    case "XP": return downloadLinkWin32XP;
-                    case "Vista": return downloadLinkWin32Vista;
-                    case "7": return downloadLinkWin327;
-                    case "8": return downloadLinkWin328;
-                    case "8.1": return downloadLinkWin3281;
-                    case "10": return downloadLinkWin3210;
+                    case "XP":
+                        return downloadLinkWin32XP;
+                    case "Vista":
+                        return downloadLinkWin32Vista;
+                    case "7":
+                        return downloadLinkWin327;
+                    case "8":
+                        return downloadLinkWin328;
+                    case "8.1":
+                        return downloadLinkWin3281;
+                    case "10":
+                        return downloadLinkWin3210;
                 }
             }
             return "Not found for " + this.name;
         }
 
         public void removeDownload(String os, int i) {
-            if(i==64) {
+            if (i == 64) {
                 switch (os) {
                     case "10":
-                        if(downloadLinkWin6410.isEmpty()) downloadLinkWin6410 = "";
+                        if (downloadLinkWin6410.isEmpty()) downloadLinkWin6410 = "";
                         break;
                     case "8.1":
-                        if(downloadLinkWin6481.isEmpty()) downloadLinkWin6481 = "";
+                        if (downloadLinkWin6481.isEmpty()) downloadLinkWin6481 = "";
                         break;
                     case "8":
-                        if(downloadLinkWin648.isEmpty()) downloadLinkWin648 = "";
+                        if (downloadLinkWin648.isEmpty()) downloadLinkWin648 = "";
                         break;
                     case "7":
-                        if(downloadLinkWin647.isEmpty()) downloadLinkWin647 = "";
+                        if (downloadLinkWin647.isEmpty()) downloadLinkWin647 = "";
                         break;
                     case "Vista":
-                        if(downloadLinkWin64Vista.isEmpty()) downloadLinkWin64Vista = "";
+                        if (downloadLinkWin64Vista.isEmpty()) downloadLinkWin64Vista = "";
                         break;
                     case "XP":
-                        if(downloadLinkWin64XP.isEmpty()) downloadLinkWin64XP = "";
+                        if (downloadLinkWin64XP.isEmpty()) downloadLinkWin64XP = "";
                         break;
                 }
             } else {
                 switch (os) {
                     case "10":
-                        if(downloadLinkWin3210.isEmpty()) downloadLinkWin3210 = "";
+                        if (downloadLinkWin3210.isEmpty()) downloadLinkWin3210 = "";
                         break;
                     case "8.1":
-                        if(downloadLinkWin3281.isEmpty()) downloadLinkWin3281 = "";
+                        if (downloadLinkWin3281.isEmpty()) downloadLinkWin3281 = "";
                         break;
                     case "8":
-                        if(downloadLinkWin328.isEmpty()) downloadLinkWin328 = "";
+                        if (downloadLinkWin328.isEmpty()) downloadLinkWin328 = "";
                         break;
                     case "7":
-                        if(downloadLinkWin327.isEmpty()) downloadLinkWin327 = "";
+                        if (downloadLinkWin327.isEmpty()) downloadLinkWin327 = "";
                         break;
                     case "Vista":
-                        if(downloadLinkWin32Vista.isEmpty()) downloadLinkWin32Vista = "";
+                        if (downloadLinkWin32Vista.isEmpty()) downloadLinkWin32Vista = "";
                         break;
                     case "XP":
-                        if(downloadLinkWin32XP.isEmpty()) downloadLinkWin32XP = "";
+                        if (downloadLinkWin32XP.isEmpty()) downloadLinkWin32XP = "";
                         break;
                 }
             }
