@@ -12,18 +12,13 @@ import java.util.logging.Level;
 public class DownloadMain {
     public static DxdiagParser core;
 
-    public static void prepare() {
-        try (Connection connection = openConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM Dxdiag where isold = TRUE")) {
-                statement.execute();
-            }
-        } catch (SQLException e) {
-            core.getLogger().log(Level.SEVERE, "Error removing old links", e);
-        }
-    }
 
     public static void add(Config.GPU gpu, String manufacturer) {
         try (Connection connection = openConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM Dxdiag where isold = TRUE AND drivername = ?")) {
+                statement.setString(1, Util.removeSpecialChars(gpu.name.toLowerCase().trim()));
+                statement.execute();
+            }
             try (PreparedStatement statement = connection.prepareStatement("UPDATE Dxdiag SET isold=TRUE WHERE drivername = ?")) {
                 statement.setString(1, Util.removeSpecialChars(gpu.name.toLowerCase().trim()));
                 statement.execute();
@@ -31,23 +26,47 @@ public class DownloadMain {
         } catch (SQLException e) {
             core.getLogger().log(Level.SEVERE, "Error updating old links", e);
         }
-        if(!gpu.downloadLinkWin32Vista.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "Vista", "32", manufacturer, gpu.downloadLinkWin32Vista);
-        if(!gpu.downloadLinkWin64Vista.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "Vista", "64", manufacturer, gpu.downloadLinkWin64Vista);
+        if(!gpu.downloadLinkWin32Vista.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "Vista", "32", manufacturer, gpu.downloadLinkWin32Vista);
+        }
+        if(!gpu.downloadLinkWin64Vista.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "Vista", "64", manufacturer, gpu.downloadLinkWin64Vista);
+        }
 
-        if(!gpu.downloadLinkWin32XP.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "XP", "32", manufacturer, gpu.downloadLinkWin32XP);
-        if(!gpu.downloadLinkWin64XP.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "XP", "64", manufacturer, gpu.downloadLinkWin64XP);
+        if(!gpu.downloadLinkWin32XP.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "XP", "32", manufacturer, gpu.downloadLinkWin32XP);
+        }
+        if(!gpu.downloadLinkWin64XP.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "XP", "64", manufacturer, gpu.downloadLinkWin64XP);
+        }
 
-        if(!gpu.downloadLinkWin327.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "7", "32", manufacturer, gpu.downloadLinkWin327);
-        if(!gpu.downloadLinkWin647.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "7", "64", manufacturer, gpu.downloadLinkWin647);
+        if(!gpu.downloadLinkWin327.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "7", "32", manufacturer, gpu.downloadLinkWin327);
+        }
+        if(!gpu.downloadLinkWin647.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "7", "64", manufacturer, gpu.downloadLinkWin647);
+        }
 
-        if(!gpu.downloadLinkWin328.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "8", "32", manufacturer, gpu.downloadLinkWin328);
-        if(!gpu.downloadLinkWin648.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "8", "64", manufacturer, gpu.downloadLinkWin648);
+        if(!gpu.downloadLinkWin328.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "8", "32", manufacturer, gpu.downloadLinkWin328);
+        }
+        if(!gpu.downloadLinkWin648.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "8", "64", manufacturer, gpu.downloadLinkWin648);
+        }
 
-        if(!gpu.downloadLinkWin3281.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "8.1", "32", manufacturer, gpu.downloadLinkWin3281);
-        if(!gpu.downloadLinkWin6481.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "8.1", "64", manufacturer, gpu.downloadLinkWin6481);
+        if(!gpu.downloadLinkWin3281.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "8.1", "32", manufacturer, gpu.downloadLinkWin3281);
+        }
+        if(!gpu.downloadLinkWin6481.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "8.1", "64", manufacturer, gpu.downloadLinkWin6481);
+        }
 
-        if(!gpu.downloadLinkWin3210.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "10", "32", manufacturer, gpu.downloadLinkWin3210);
-        if(!gpu.downloadLinkWin6410.isEmpty()) add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "10", "64", manufacturer, gpu.downloadLinkWin6410);
+        if(!gpu.downloadLinkWin3210.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "10", "32", manufacturer, gpu.downloadLinkWin3210);
+        }
+        if(!gpu.downloadLinkWin6410.isEmpty()) {
+            add(Util.removeSpecialChars(gpu.name.toLowerCase().trim()), "10", "64", manufacturer, gpu.downloadLinkWin6410);
+        }
 
     }
 

@@ -52,7 +52,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
     }
 
     private void downloadDrivers() {
-        DownloadMain.prepare();
         intelFullUpdate();
         amdFullUpdate();
         nvidiaFullUpdate();
