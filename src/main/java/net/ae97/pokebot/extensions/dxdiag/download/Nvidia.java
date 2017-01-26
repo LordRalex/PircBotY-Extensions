@@ -79,17 +79,17 @@ public class Nvidia {
                     code = lookupValue.getAttribute("Code").getValue();
                     name = lookupValue.getFirstChildElement("Name").getValue();
                     id = Integer.parseInt(lookupValue.getFirstChildElement("Value").getValue());
-                    if(code.startsWith("10.0")) {
+                    if (code.startsWith("10.0")) {
                         minified = "10";
-                    } else if(code.startsWith("6.3")) {
+                    } else if (code.startsWith("6.3")) {
                         minified = "8.1";
-                    } else if(code.startsWith("6.2")) {
+                    } else if (code.startsWith("6.2")) {
                         minified = "8";
-                    } else if(code.startsWith("6.1")) {
+                    } else if (code.startsWith("6.1")) {
                         minified = "7";
-                    } else if(code.startsWith("6.0")) {
+                    } else if (code.startsWith("6.0")) {
                         minified = "Vista";
-                    } else if(code.startsWith("5.1")) {
+                    } else if (code.startsWith("5.1")) {
                         minified = "XP";
                     }
                     is64 = !(name.contains("32") || !name.contains("64"));

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class PartialUpdateData {
     public Intel.Driver driver;
     public ArrayList<Download> downloads;
+
     public PartialUpdateData(Intel.Driver driver, ArrayList<Download> downloads) {
         this.driver = driver;
         this.downloads = downloads;

@@ -67,13 +67,13 @@ public class AMD {
                     public Version(String type, String number, Elements downloads) {
                         name = type;
                         version = number;
-                        if(number != null) {
+                        if (number != null) {
                             for (int i = 0; i < downloads.size(); i++) {
                                 Element download = downloads.get(i);
-                                if(download.getAttribute("name")==null) continue;
+                                if (download.getAttribute("name") == null) continue;
                                 if (download.getAttributeValue("name").contains("Windows")) {
                                     String code = download.getAttributeValue("osrev");
-                                    if(code==null) continue;
+                                    if (code == null) continue;
                                     String file = "support.amd.com/en-us" + download.getValue();
                                     boolean is64 = download.getAttributeValue("bit").equals("64");
                                     String minified = null;

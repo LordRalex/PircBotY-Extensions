@@ -29,24 +29,24 @@ public class Download {
         epmID = display.Id;
         os = new ArrayList<>();
         Config.GPU gpu = new Config.GPU(driver.name);
-        for(String str: display.OperatingSystemSet) {
+        for (String str : display.OperatingSystemSet) {
             String version = "TooOld";
             int arch = str.contains("64") ? 64 : 32;
-            if(str.contains("7")) {
+            if (str.contains("7")) {
                 version = "7";
-            } else if(str.contains("8") && !str.contains("8.1")) {
+            } else if (str.contains("8") && !str.contains("8.1")) {
                 version = "8";
-            } else if(str.contains("8.1")) {
+            } else if (str.contains("8.1")) {
                 version = "8.1";
-            } else if(str.contains("10")) {
+            } else if (str.contains("10")) {
                 version = "10";
-            } else if(str.contains("Vista")) {
+            } else if (str.contains("Vista")) {
                 version = "Vista";
-            } else if(str.contains("XP")) {
+            } else if (str.contains("XP")) {
                 version = "XP";
             }
-            if(version.equals("TooOld")) continue;
-            gpu.addDownload(version, arch, "https://downloadcenter.intel.com/download/"+epmID);
+            if (version.equals("TooOld")) continue;
+            gpu.addDownload(version, arch, "https://downloadcenter.intel.com/download/" + epmID);
             os.add(new OS(version, arch));
         }
         DownloadMain.add(gpu, "Intel");

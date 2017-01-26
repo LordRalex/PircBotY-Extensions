@@ -72,14 +72,14 @@ public class DxdiagListener implements Listener, CommandExecutor {
                     nu.xom.Element productFamilyElement = productFamilies.get(j);
                     String productFamilyName = productFamilyElement.getAttributeValue("name");
                     String productFamilyID = productFamilyElement.getAttributeValue("value");
-                    if(productFamilyID.equals("autodetect")) continue;
+                    if (productFamilyID.equals("autodetect")) continue;
                     AMD.Platform.ProductFamily productFamily = new AMD.Platform.ProductFamily(productFamilyName, productFamilyID);
                     Elements products = productFamilyElement.getChildElements("product");
                     for (int k = 0; k < products.size(); k++) {
                         nu.xom.Element productElement = products.get(k);
                         String productName = productElement.getAttributeValue("label");
                         String productID = productElement.getAttributeValue("value");
-                        if(productID.equals("autodetect") || productID.equals("not_sure")) continue;
+                        if (productID.equals("autodetect") || productID.equals("not_sure")) continue;
                         AMD.Platform.ProductFamily.Product product = new AMD.Platform.ProductFamily.Product(productName, productID);
                         Config.GPU gpu = new Config.GPU(productName);
                         Elements versions = productElement.getChildElements("version");
@@ -89,7 +89,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                             String number = versionElement.getAttributeValue("number"); //version
                             Elements downloads = versionElement.getChildElements();
                             AMD.Platform.ProductFamily.Product.Version version = new AMD.Platform.ProductFamily.Product.Version(type, number, downloads);
-                            if(version.shouldDownload) {
+                            if (version.shouldDownload) {
                                 product.versions.add(version);
                                 gpu.addAMD(version);
                             }
@@ -113,11 +113,11 @@ public class DxdiagListener implements Listener, CommandExecutor {
             Document document = Jsoup.connect("http://www.intel.com/content/www/us/en/support/graphics-drivers.html").userAgent("UrielsalisBot for auto-dxdiag parsing/github.com/urielsalads-reboot/uriel@urielsalis.me/Jsoup").get();
             Element tableMain = document.getElementById("productSelector-1").getAllElements().first().getElementsByClass("blade-expand-secondary").first();
             org.jsoup.select.Elements blades = tableMain.getElementsByClass("blade-group").first().getElementsByClass("blade");
-            for(Element blade: blades) {
+            for (Element blade : blades) {
                 org.jsoup.select.Elements divs = blade.getElementsByClass("container").first().select("div").first().select("div");
-                for(Element div: divs) {
+                for (Element div : divs) {
                     org.jsoup.select.Elements uls = div.select("ul");
-                    for(Element ul: uls) {
+                    for (Element ul : uls) {
                         Element a = ul.select("li").first().select("a").first();
                         final String name = Util.removeSpecialChars(a.text());
                         final String href = "http://www.intel.com/" + a.attr("href");
@@ -127,16 +127,16 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                 String[] html = Jsoup.connect(href).userAgent("UrielsalisBot for auto-dxdiag parsing/github.com/urielsalads-reboot/uriel@urielsalis.me/Jsoup").get().html().split("[\\r\\n]+");
                                 //var epmid = "81498";
                                 int epmID = 0;
-                                for(String str: html) {
-                                    if(str.trim().startsWith("var epmid = ")) {
-                                        epmID = Integer.parseInt(str.substring(str.indexOf("\"")+1, str.lastIndexOf("\"")));
+                                for (String str : html) {
+                                    if (str.trim().startsWith("var epmid = ")) {
+                                        epmID = Integer.parseInt(str.substring(str.indexOf("\"") + 1, str.lastIndexOf("\"")));
                                         break;
                                     }
                                 }
-                                if(epmID==0) {
+                                if (epmID == 0) {
                                     System.out.println("Error processing " + href);
                                 }
-                                System.out.println("Thread " + Thread.currentThread().getName() + " of " +  Thread.activeCount() + ": " + name + " - " + epmID);
+                                System.out.println("Thread " + Thread.currentThread().getName() + " of " + Thread.activeCount() + ": " + name + " - " + epmID);
                                 Intel.Driver driver = new Intel.Driver(name, epmID);
                                 intel.driver.add(driver);
                                 return null;
@@ -148,7 +148,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
             ExecutorService service = Executors.newFixedThreadPool(8);
             try {
                 service.invokeAll(callables);
-                while(service.awaitTermination(1, TimeUnit.SECONDS)) { //Wait till all threads finished
+                while (service.awaitTermination(1, TimeUnit.SECONDS)) { //Wait till all threads finished
                     service.awaitTermination(1, TimeUnit.SECONDS);
                 }
             } catch (InterruptedException e) {
@@ -164,7 +164,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
     public void intelPartialUpdate() {
         List<Callable<PartialUpdateData>> callables2 = new ArrayList<>();
 
-        for(final Intel.Driver driver: intel.driver) {
+        for (final Intel.Driver driver : intel.driver) {
             callables2.add(new Callable<PartialUpdateData>() {
                 @Override
                 public PartialUpdateData call() throws Exception {
@@ -176,12 +176,12 @@ public class DxdiagListener implements Listener, CommandExecutor {
         ExecutorService service = Executors.newFixedThreadPool(8);
         try {
             List<Future<PartialUpdateData>> futures = service.invokeAll(callables2);
-            while(service.awaitTermination(1, TimeUnit.SECONDS)) { //Wait till all threads finished
+            while (service.awaitTermination(1, TimeUnit.SECONDS)) { //Wait till all threads finished
                 service.awaitTermination(1, TimeUnit.SECONDS);
             }
             intel.driver.clear();
-            for(Future<PartialUpdateData> future: futures) {
-                if(future.isDone()) {
+            for (Future<PartialUpdateData> future : futures) {
+                if (future.isDone()) {
                     PartialUpdateData data = future.get();
                     data.driver.download.addAll(data.downloads);
                     //DownloadMain.add(data.driver); Already added when creating Download
@@ -257,7 +257,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
             String args = "?TypeID=" + step + "&ParentID=" + value;
             System.out.println("--> " + this.lookupUrl + args);
             try {
-                URL url = new URL(lookupUrl+args);
+                URL url = new URL(lookupUrl + args);
                 InputStream stream = url.openStream();
                 return parser.build(stream);
             } catch (ParsingException | IOException e) {
@@ -267,7 +267,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
         }
 
         public String processRequest(int ProductSeriesID, int ProductFamilyID, int RPF, int OperatingSystemID, int LanguageID, String Locale, int CUDAToolkit) {
-            String args = "?psid="+ProductSeriesID+"&pfid="+ProductFamilyID+"&rpf="+RPF+"&osid="+OperatingSystemID+"&lid="+LanguageID+"&lang="+Locale+"&ctk="+CUDAToolkit;
+            String args = "?psid=" + ProductSeriesID + "&pfid=" + ProductFamilyID + "&rpf=" + RPF + "&osid=" + OperatingSystemID + "&lid=" + LanguageID + "&lang=" + Locale + "&ctk=" + CUDAToolkit;
             System.out.println("==> " + this.processUrl + args);
             try {
                 URLConnection conn = new URL(processUrl + args).openConnection();
@@ -326,7 +326,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                     Nvidia.Series.Product product = new Nvidia.Series.Product(lookupValue3);
                                     {
                                         //start step 4
-                                        nu.xom.Document documentStep4= lookupRequest(4, series.id);
+                                        nu.xom.Document documentStep4 = lookupRequest(4, series.id);
                                         if (documentStep4 == null) {
                                             System.out.println("Sleeping for 80 secs and trying again");
                                             TimeUnit.SECONDS.sleep(80);
@@ -342,13 +342,13 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                         for (int e = 0; e < lookupValuesStep4.size(); e++) {
                                             nu.xom.Element lookupValue4 = lookupValuesStep4.get(e);
                                             Nvidia.Series.Product.OS os = new Nvidia.Series.Product.OS(lookupValue4);
-                                            if(os.shouldDownload) {
+                                            if (os.shouldDownload) {
                                                 //start step 5
                                                 //String  String RPF, String OperatingSystemID, String LanguageID, String Locale, String CUDAToolkit) {
                                                 String downloadLink = processRequest(series.id, product.id, 1, os.id, language, locale, 0);
                                                 os.downloadLink = downloadLink;
-                                                int arch = os.is64? 64:32;
-                                                gpu.addDownload(os.minified,arch, downloadLink);
+                                                int arch = os.is64 ? 64 : 32;
+                                                gpu.addDownload(os.minified, arch, downloadLink);
                                                 //end step 5
                                             }
                                             //end step 4
@@ -360,7 +360,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                     //end step 3
                                     //series.products.add(product);
                                 }
-
 
 
                             }
@@ -378,13 +377,13 @@ public class DxdiagListener implements Listener, CommandExecutor {
 
     @Override
     public void runEvent(CommandEvent event) {
-        if(event.getCommand().equals("dx")) {
+        if (event.getCommand().equals("dx")) {
             if (event.getArgs().length == 0) {
                 event.respond("Usage: dx <link>");
                 return;
             }
             event.respond(parseDxdiag(event.getArgs()[0]));
-        } else if(event.getCommand().equals("fullUpdate")) {
+        } else if (event.getCommand().equals("fullUpdate")) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -399,34 +398,34 @@ public class DxdiagListener implements Listener, CommandExecutor {
         //ark.intel.com
         String[] strs = tmp.split("\\s+");
         String cpu = null;
-        for(String str: strs) {
-            if(Character.isLetter(str.charAt(0)) && Character.isDigit(str.charAt(1))) {
+        for (String str : strs) {
+            if (Character.isLetter(str.charAt(0)) && Character.isDigit(str.charAt(1))) {
                 cpu = str;
                 break;
             }
         }
         try {
-            if(cpu != null) {
-                InputStreamReader reader = new InputStreamReader(new URL("http://odata.intel.com/API/v1_0/Products/Processors()?api_key="+apiKey+"&$select=ProductId,CodeNameEPMId,GraphicsModel&$filter=substringof(%27"+cpu+"%27,ProductName)&$format=json").openStream());
+            if (cpu != null) {
+                InputStreamReader reader = new InputStreamReader(new URL("http://odata.intel.com/API/v1_0/Products/Processors()?api_key=" + apiKey + "&$select=ProductId,CodeNameEPMId,GraphicsModel&$filter=substringof(%27" + cpu + "%27,ProductName)&$format=json").openStream());
                 Ark ark = new Gson().fromJson(reader, Ark.class);
                 boolean showMessage = true;
-                for(Ark.CPU cpu2: ark.d) {
-                    if(cpu2.GraphicsModel != null) {
+                for (Ark.CPU cpu2 : ark.d) {
+                    if (cpu2.GraphicsModel != null) {
                         //search in database
                         String message = findDriver(cpu2.GraphicsModel, minified, is64);
-                        if(showMessage)
+                        if (showMessage)
                             return "Ark: " + message;
                         showMessage = false;
                         break;
                     }
                 }
-                if(showMessage)
-                    return "Cant find "+cpu+" in ark";
+                if (showMessage)
+                    return "Cant find " + cpu + " in ark";
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "Cant find "+cpu+" in ark";
+        return "Cant find " + cpu + " in ark";
     }
 
     private String parseDxdiag(String s) {
@@ -466,7 +465,8 @@ public class DxdiagListener implements Listener, CommandExecutor {
     public String findDriver(String name, String os, boolean is64) {
         if (!name.contains("Standard VGA") && !name.contains("Microsoft")) {
             name = name.replace("NVIDIA ", "").replace("(R)", "").replace("AMD ", "").replace("®", "").toLowerCase().trim();
-            if(name.equals("intel hd graphics")) return "Do Manual search https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005526.html & https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005538.html";
+            if (name.equals("intel hd graphics"))
+                return "Do Manual search https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005526.html & https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005538.html";
             try (Connection connection = openConnection()) {
                 try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM Dxdiag where os = ? AND arch = ? AND Name like ?")) {
                     statement.setString(1, os);

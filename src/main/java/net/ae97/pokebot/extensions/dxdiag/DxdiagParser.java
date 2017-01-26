@@ -6,7 +6,7 @@ import net.ae97.pokebot.extension.Extension;
 /**
  * Created by urielsalis on 1/26/2017
  */
-public class DxdiagParser extends Extension{
+public class DxdiagParser extends Extension {
     @Override
     public String getName() {
         return "DxdiagParser";
