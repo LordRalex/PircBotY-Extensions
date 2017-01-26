@@ -130,6 +130,33 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>mcnames</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>mcnames</classifier>
+                            <includes>
+                                <include>**/extensions/mcnames/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>dxdiag</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>dxdiag</classifier>
+                            <includes>
+                                <include>**/extensions/dxdiag/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+
+                    <execution>
                         <id>htop</id>
                         <goals>
                             <goal>jar</goal>
