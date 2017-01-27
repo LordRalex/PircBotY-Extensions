@@ -28,12 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by urielsalis on 1/26/2017
  */
 public class DxdiagListener implements Listener, CommandExecutor {
-    private final DxdiagParser core;
+    private static DxdiagParser core;
     private String apiKey;
     static HashMap<String, Integer> PRODUCT_TYPES = new HashMap<>();
     Intel intel = new Intel("1.0", "intel");
@@ -134,9 +135,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                     }
                                 }
                                 if (epmID == 0) {
-                                    System.out.println("Error processing " + href);
                                 }
-                                System.out.println("Thread " + Thread.currentThread().getName() + " of " + Thread.activeCount() + ": " + name + " - " + epmID);
                                 Intel.Driver driver = new Intel.Driver(name, epmID);
                                 intel.driver.add(driver);
                                 return null;
@@ -155,7 +154,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                 e.printStackTrace();
             }
             intelPartialUpdate();
-            System.out.println("done");
+            core.getLogger().log(Level.INFO, "Intel download finished");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -186,7 +185,8 @@ public class DxdiagListener implements Listener, CommandExecutor {
                     data.driver.download.addAll(data.downloads);
                     //DownloadMain.add(data.driver); Already added when creating Download
                 } else {
-                    System.err.println("A future didnt finish in time!!!!");
+                    core.getLogger().log(Level.SEVERE, "Future didnt finish in time");
+
                 }
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -255,7 +255,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
 
         public nu.xom.Document lookupRequest(int step, int value) {
             String args = "?TypeID=" + step + "&ParentID=" + value;
-            System.out.println("--> " + this.lookupUrl + args);
             try {
                 URL url = new URL(lookupUrl + args);
                 InputStream stream = url.openStream();
@@ -268,7 +267,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
 
         public String processRequest(int ProductSeriesID, int ProductFamilyID, int RPF, int OperatingSystemID, int LanguageID, String Locale, int CUDAToolkit) {
             String args = "?psid=" + ProductSeriesID + "&pfid=" + ProductFamilyID + "&rpf=" + RPF + "&osid=" + OperatingSystemID + "&lid=" + LanguageID + "&lang=" + Locale + "&ctk=" + CUDAToolkit;
-            System.out.println("==> " + this.processUrl + args);
             try {
                 URLConnection conn = new URL(processUrl + args).openConnection();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
@@ -295,12 +293,10 @@ public class DxdiagListener implements Listener, CommandExecutor {
                     {
                         nu.xom.Document documentStep2 = lookupRequest(2, entry.getValue());
                         if (documentStep2 == null) {
-                            System.out.println("Sleeping for 80 secs and trying again");
                             TimeUnit.SECONDS.sleep(80);
                             documentStep2 = lookupRequest(2, entry.getValue());
                             if (documentStep2 == null) {
-                                System.out.println("Failed");
-                                System.exit(1);
+                                core.getLogger().log(Level.SEVERE, "Couldnt download nvidia drivers");
                             }
                         }
                         Elements lookupValuesStep2 = documentStep2.getRootElement().getFirstChildElement("LookupValues").getChildElements();
@@ -312,12 +308,10 @@ public class DxdiagListener implements Listener, CommandExecutor {
                             {
                                 nu.xom.Document documentStep3 = lookupRequest(3, series.id);
                                 if (documentStep3 == null) {
-                                    System.out.println("Sleeping for 80 secs and trying again");
                                     TimeUnit.SECONDS.sleep(80);
                                     documentStep3 = lookupRequest(3, series.id);
                                     if (documentStep3 == null) {
-                                        System.out.println("Failed");
-                                        System.exit(1);
+                                        core.getLogger().log(Level.SEVERE, "Couldnt download nvidia drivers");
                                     }
                                 }
                                 Elements lookupValuesStep3 = documentStep3.getRootElement().getFirstChildElement("LookupValues").getChildElements();
@@ -328,12 +322,10 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                         //start step 4
                                         nu.xom.Document documentStep4 = lookupRequest(4, series.id);
                                         if (documentStep4 == null) {
-                                            System.out.println("Sleeping for 80 secs and trying again");
                                             TimeUnit.SECONDS.sleep(80);
                                             documentStep4 = lookupRequest(4, entry.getValue());
                                             if (documentStep4 == null) {
-                                                System.out.println("Failed");
-                                                System.exit(1);
+                                                core.getLogger().log(Level.SEVERE, "Couldnt download nvidia drivers");
                                             }
                                         }
                                         Elements lookupValuesStep4 = documentStep4.getRootElement().getFirstChildElement("LookupValues").getChildElements();
