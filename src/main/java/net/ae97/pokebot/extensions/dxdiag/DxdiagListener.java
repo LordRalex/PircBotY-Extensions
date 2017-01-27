@@ -81,7 +81,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                         String productID = productElement.getAttributeValue("value");
                         if (productID.equals("autodetect") || productID.equals("not_sure")) continue;
                         AMD.Platform.ProductFamily.Product product = new AMD.Platform.ProductFamily.Product(productName, productID);
-                        Config.GPU gpu = new Config.GPU(productName);
+                        GPU gpu = new GPU(productName);
                         Elements versions = productElement.getChildElements("version");
                         for (int l = 0; l < versions.size(); l++) {
                             nu.xom.Element versionElement = versions.get(l);
@@ -337,7 +337,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                             }
                                         }
                                         Elements lookupValuesStep4 = documentStep4.getRootElement().getFirstChildElement("LookupValues").getChildElements();
-                                        Config.GPU gpu = new Config.GPU(product.name);
+                                        GPU gpu = new GPU(product.name);
 
                                         for (int e = 0; e < lookupValuesStep4.size(); e++) {
                                             nu.xom.Element lookupValue4 = lookupValuesStep4.get(e);

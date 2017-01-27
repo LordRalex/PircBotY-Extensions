@@ -28,7 +28,7 @@ public class Download {
     public Download(EPMIdResults.ResultsForDisplayImpl display, Intel.Driver driver) {
         epmID = display.Id;
         os = new ArrayList<>();
-        Config.GPU gpu = new Config.GPU(driver.name);
+        GPU gpu = new GPU(driver.name);
         for (String str : display.OperatingSystemSet) {
             String version = "TooOld";
             int arch = str.contains("64") ? 64 : 32;
