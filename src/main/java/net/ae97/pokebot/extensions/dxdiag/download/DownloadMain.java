@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 /**
@@ -97,5 +98,9 @@ public class DownloadMain {
         String pass = core.getConfig().getString("pass");
         String database = core.getConfig().getString("database");
         return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass);
+    }
+
+    public static void add(Intel.Driver driver, ArrayList<Download> downloads) {
+        add(driver.toGPU(), "Intel");
     }
 }

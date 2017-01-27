@@ -183,6 +183,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                 if (future.isDone()) {
                     PartialUpdateData data = future.get();
                     data.driver.download.addAll(data.downloads);
+                    DownloadMain.add(data.driver, data.downloads);
                     //DownloadMain.add(data.driver); Already added when creating Download
                 } else {
                     core.getLogger().log(Level.SEVERE, "Future didnt finish in time");
@@ -386,6 +387,27 @@ public class DxdiagListener implements Listener, CommandExecutor {
                     downloadDrivers();
                 }
             }).start();
+        } else if(event.getCommand().equals("intelUpdate")) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    intelFullUpdate();
+                }
+            }).start();
+        } else if(event.getCommand().equals("nvidiaUpdate")) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    nvidiaFullUpdate();
+                }
+            }).start();
+        } else if(event.getCommand().equals("amdUpdate")) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    amdFullUpdate();
+                }
+            }).start();
         }
 
     }
@@ -464,7 +486,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
             if (name.equals("intel hd graphics"))
                 return "Do Manual search https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005526.html & https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005538.html";
             try (Connection connection = openConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM Dxdiag where os = ? AND arch = ? AND drivername like ?")) {
+                try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM Dxdiag where os = ? AND arch = ? AND drivername like ? ORDER BY (`isold` = FALSE )")) {
                     statement.setString(1, os);
                     statement.setString(2, is64 ? "64" : "32");
                     statement.setString(3, "%" + Util.removeSpecialChars(name.toLowerCase().trim()) + "%");
@@ -484,7 +506,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"dx", "fullUpdate"};
+        return new String[]{"dx", "fullUpdate", "intelUpdate", "nvidiaUpdate", "amdUpdate"};
     }
 
     private Connection openConnection() throws SQLException {
