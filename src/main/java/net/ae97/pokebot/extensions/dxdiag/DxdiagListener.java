@@ -43,7 +43,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
     public DxdiagListener(DxdiagParser system) {
         core = system;
         DownloadMain.core = system;
-        core.getConfig().getString("arkAPIKey");
+        core.getConfig().getString("arkapikey");
         PokeBot.getScheduler().scheduleTask(new Runnable() {
             @Override
             public void run() {
