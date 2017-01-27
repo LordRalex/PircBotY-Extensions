@@ -99,4 +99,8 @@ public class DownloadMain {
         String database = core.getConfig().getString("database");
         return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass);
     }
+
+    public static void add(Intel.Driver driver, ArrayList<Download> downloads) {
+        add(driver.toGPU(), "Intel");
+    }
 }
