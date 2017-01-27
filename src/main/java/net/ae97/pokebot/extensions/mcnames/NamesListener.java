@@ -39,7 +39,11 @@ public class NamesListener implements Listener, CommandExecutor {
             }
             boolean extended = false;
             if (event.getArgs().length > 1 && event.getArgs()[1].equals("--extended")) extended = true;
-            event.respond(getNS(event.getArgs()[0], extended));
+            String result = getNS(event.getArgs()[0], extended);
+            String[] splitted = result.split("\n");
+            for(String s: splitted) {
+                event.respond(s);
+            }
             return;
         }
     }
