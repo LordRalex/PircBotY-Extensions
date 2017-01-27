@@ -374,7 +374,11 @@ public class DxdiagListener implements Listener, CommandExecutor {
                 event.respond("Usage: dx <link>");
                 return;
             }
-            event.respond(parseDxdiag(event.getArgs()[0]));
+            String result = parseDxdiag(event.getArgs()[0]);
+            String[] split = result.split("\n");
+            for(String s: split) {
+                event.respond(s);
+            }
         } else if (event.getCommand().equals("fullUpdate")) {
             new Thread(new Runnable() {
                 @Override
