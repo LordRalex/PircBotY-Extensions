@@ -22,21 +22,6 @@ import java.util.List;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 public class Config {
-    public String version;
-    public Date createdOn;
-    public Intel intel;
-    public AMD amd;
-    public Nvidia nvidia;
-    public List<GPU> list = new ArrayList<GPU>();
-    public List<GPU> manual = new ArrayList<GPU>();
-
-    public Config(String version, String id) {
-        this.version = version;
-        createdOn = new Date();
-        intel = new Intel(version, id);
-        amd = new AMD();
-        nvidia = new Nvidia();
-    }
 
     public static class GPU {
         public String name;
@@ -143,52 +128,6 @@ public class Config {
                 }
             }
             return "Not found for " + this.name;
-        }
-
-        public void removeDownload(String os, int i) {
-            if (i == 64) {
-                switch (os) {
-                    case "10":
-                        if (downloadLinkWin6410.isEmpty()) downloadLinkWin6410 = "";
-                        break;
-                    case "8.1":
-                        if (downloadLinkWin6481.isEmpty()) downloadLinkWin6481 = "";
-                        break;
-                    case "8":
-                        if (downloadLinkWin648.isEmpty()) downloadLinkWin648 = "";
-                        break;
-                    case "7":
-                        if (downloadLinkWin647.isEmpty()) downloadLinkWin647 = "";
-                        break;
-                    case "Vista":
-                        if (downloadLinkWin64Vista.isEmpty()) downloadLinkWin64Vista = "";
-                        break;
-                    case "XP":
-                        if (downloadLinkWin64XP.isEmpty()) downloadLinkWin64XP = "";
-                        break;
-                }
-            } else {
-                switch (os) {
-                    case "10":
-                        if (downloadLinkWin3210.isEmpty()) downloadLinkWin3210 = "";
-                        break;
-                    case "8.1":
-                        if (downloadLinkWin3281.isEmpty()) downloadLinkWin3281 = "";
-                        break;
-                    case "8":
-                        if (downloadLinkWin328.isEmpty()) downloadLinkWin328 = "";
-                        break;
-                    case "7":
-                        if (downloadLinkWin327.isEmpty()) downloadLinkWin327 = "";
-                        break;
-                    case "Vista":
-                        if (downloadLinkWin32Vista.isEmpty()) downloadLinkWin32Vista = "";
-                        break;
-                    case "XP":
-                        if (downloadLinkWin32XP.isEmpty()) downloadLinkWin32XP = "";
-                        break;
-                }
-            }
         }
     }
 }
