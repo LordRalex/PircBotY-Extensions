@@ -305,6 +305,5 @@
             <artifactId>jetty-server</artifactId>
             <version>9.3.0.v20150612</version>
         </dependency>
-
     </dependencies>
 </project>

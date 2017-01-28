@@ -186,7 +186,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
                     DownloadMain.add(data.driver);
                 } else {
                     core.getLogger().log(Level.SEVERE, "Future didnt finish in time");
-
                 }
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -312,6 +311,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                     documentStep3 = lookupRequest(3, series.id);
                                     if (documentStep3 == null) {
                                         core.getLogger().log(Level.SEVERE, "Couldnt download nvidia drivers");
+
                                     }
                                 }
                                 Elements lookupValuesStep3 = documentStep3.getRootElement().getFirstChildElement("LookupValues").getChildElements();
