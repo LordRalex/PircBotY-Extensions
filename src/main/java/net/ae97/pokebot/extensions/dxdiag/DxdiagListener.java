@@ -183,8 +183,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                 if (future.isDone()) {
                     PartialUpdateData data = future.get();
                     data.driver.download.addAll(data.downloads);
-                    DownloadMain.add(data.driver, data.downloads);
-                    //DownloadMain.add(data.driver); Already added when creating Download
+                    DownloadMain.add(data.driver);
                 } else {
                     core.getLogger().log(Level.SEVERE, "Future didnt finish in time");
 
