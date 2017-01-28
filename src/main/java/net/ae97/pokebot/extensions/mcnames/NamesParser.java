@@ -14,7 +14,7 @@ public class NamesParser extends Extension {
 
     @Override
     public void load() {
-        NamesListener listener = new NamesListener(this);
+        NamesListener listener = new NamesListener();
         PokeBot.getEventHandler().registerListener(listener);
         PokeBot.getEventHandler().registerCommandExecutor(listener);
 
