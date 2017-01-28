@@ -24,49 +24,40 @@ import java.util.List;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 public class AMD {
-    public boolean newConfig = true;
-
-    public List<Platform> platforms = new ArrayList<>();
 
     public static class Platform {
-        public String name;
-        public String id;
-        public List<ProductFamily> productFamilies = new ArrayList<>();
+        
+        
 
         public Platform(String platformName, String platformID) {
-            this.name = platformID;
-            this.id = platformName;
+            
         }
 
         public static class ProductFamily {
-            public String name;
-            public String id;
-            public List<Product> products = new ArrayList<>();
+            
+            
+            
 
             public ProductFamily(String productFamilyName, String productFamilyID) {
-                this.name = productFamilyID;
-                this.id = productFamilyName;
+                
             }
 
             public static class Product {
-                public String name;
-                public String id;
+                
+                
                 public List<Version> versions = new ArrayList<>();
 
                 public Product(String productName, String productID) {
-                    this.name = productID;
-                    this.id = productName;
+
                 }
 
                 public static class Version {
                     public boolean shouldDownload = false;
-                    public String name;
-                    public String version;
+                    
+                    
                     public List<Download> downloads = new ArrayList<>();
 
                     public Version(String type, String number, Elements downloads) {
-                        name = type;
-                        version = number;
                         if (number != null) {
                             for (int i = 0; i < downloads.size(); i++) {
                                 Element download = downloads.get(i);
@@ -103,7 +94,7 @@ public class AMD {
                         public String file;
                         public boolean is64;
 
-                        public Download(String minified, String file, boolean is64) {
+                        private Download(String minified, String file, boolean is64) {
                             this.minified = minified;
                             this.file = file;
                             this.is64 = is64;

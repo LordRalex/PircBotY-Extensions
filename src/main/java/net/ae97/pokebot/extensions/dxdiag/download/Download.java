@@ -1,9 +1,5 @@
 package net.ae97.pokebot.extensions.dxdiag.download;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * UrielSalads
  * Copyright (C) 2016 Uriel Salischiker
@@ -22,13 +18,11 @@ import java.util.List;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 public class Download {
-    public int epmID;
-    public List<OS> os;
+    private int epmID;
 
     public Download(EPMIdResults.ResultsForDisplayImpl display, Intel.Driver driver) {
         epmID = display.Id;
-        os = new ArrayList<>();
-        Config.GPU gpu = new Config.GPU(driver.name);
+        GPU gpu = new GPU(driver.name);
         for (String str : display.OperatingSystemSet) {
             String version = "TooOld";
             int arch = str.contains("64") ? 64 : 32;
@@ -47,14 +41,7 @@ public class Download {
             }
             if (version.equals("TooOld")) continue;
             gpu.addDownload(version, arch, "https://downloadcenter.intel.com/download/" + epmID);
-            os.add(new OS(version, arch));
         }
         DownloadMain.add(gpu, "Intel");
     }
-
-    public Download(int epmID) {
-        this.epmID = epmID;
-        os = new ArrayList<>();
-    }
-
 }

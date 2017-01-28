@@ -55,6 +55,7 @@ public class RememberExtension extends Extension implements CommandExecutor {
                 String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
                 Scanner reader = new Scanner(file);
                 String line = reader.nextLine().trim();
+                reader.close();
                 remMap.put(name, line);
             } catch (FileNotFoundException ex) {
                 PokeBot.getLogger().log(Level.SEVERE, null, ex);
@@ -72,6 +73,7 @@ public class RememberExtension extends Extension implements CommandExecutor {
                 String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
                 Scanner reader = new Scanner(file);
                 String line = reader.nextLine().trim();
+                reader.close();
                 remMap.put(name, line);
             } catch (FileNotFoundException ex) {
                 PokeBot.getLogger().log(Level.SEVERE, null, ex);
@@ -124,6 +126,7 @@ public class RememberExtension extends Extension implements CommandExecutor {
                     String name = file.getName().substring(0, file.getName().length() - 4).toLowerCase().trim();
                     Scanner reader = new Scanner(file);
                     String line = reader.nextLine().trim();
+                    reader.close();
                     remMap.put(name, line);
                 } catch (FileNotFoundException ex) {
                     PokeBot.getLogger().log(Level.SEVERE, null, ex);
