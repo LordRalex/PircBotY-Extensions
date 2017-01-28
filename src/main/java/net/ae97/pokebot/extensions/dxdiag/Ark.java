@@ -1,9 +1,7 @@
 package net.ae97.pokebot.extensions.dxdiag;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * UrielSalads
@@ -26,9 +24,6 @@ public class Ark {
     public List<CPU> d = new ArrayList<>();
 
     public static class CPU {
-        Map<String, String> __metadata = new HashMap<String, String>();
-        int ProductId = 0;
-        int CodeNameEPMId = 0;
         String GraphicsModel = null;
     }
 }

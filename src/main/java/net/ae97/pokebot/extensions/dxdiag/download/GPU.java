@@ -1,9 +1,5 @@
 package net.ae97.pokebot.extensions.dxdiag.download;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 /**
  * UrielSalads Copyright (C) 2016 Uriel Salischiker
  * <p>
@@ -101,38 +97,4 @@ public class GPU {
         }
     }
 
-    public String getDownload(String minified, boolean is64) {
-        if (is64) {
-            switch (minified) {
-            case "XP":
-                return downloadLinkWin64XP;
-            case "Vista":
-                return downloadLinkWin64Vista;
-            case "7":
-                return downloadLinkWin647;
-            case "8":
-                return downloadLinkWin648;
-            case "8.1":
-                return downloadLinkWin6481;
-            case "10":
-                return downloadLinkWin6410;
-            }
-        } else {
-            switch (minified) {
-            case "XP":
-                return downloadLinkWin32XP;
-            case "Vista":
-                return downloadLinkWin32Vista;
-            case "7":
-                return downloadLinkWin327;
-            case "8":
-                return downloadLinkWin328;
-            case "8.1":
-                return downloadLinkWin3281;
-            case "10":
-                return downloadLinkWin3210;
-            }
-        }
-        return "Not found for " + this.name;
-    }
 }
