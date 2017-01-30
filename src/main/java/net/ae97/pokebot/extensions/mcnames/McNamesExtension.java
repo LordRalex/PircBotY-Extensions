@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
-import jline.internal.Nullable;
 import net.ae97.pircboty.ChatFormat;
 import net.ae97.pircboty.api.events.CommandEvent;
 import net.ae97.pokebot.PokeBot;
@@ -107,7 +106,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
      * @param timestamp Time the user had the name at, or <code>null</code> for the current time
      * @return \n delimited string containing information about a username
      */
-    private String findInfo(String username, @Nullable Long timestamp) {
+    private String findInfo(String username, Long timestamp) {
         try {
             String str = "https://api.mojang.com/users/profiles/minecraft/" + username;
             if (timestamp != null) {
