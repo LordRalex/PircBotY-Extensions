@@ -29,12 +29,13 @@ import net.ae97.pokebot.api.Listener;
 import net.ae97.pokebot.extension.Extension;
 
 public class McNamesExtension extends Extension implements Listener, CommandExecutor {
-    
+
     private static final long MS_IN_A_SECOND = 1000L;
-    
+    private static final long SECONDS_IN_A_MONTH = 2505600L; // 29 days (in seconds)
+
     private Gson gson;
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // ISO 8601 format
-    
+
     @Override
     public String getName() {
         return "McNames";
@@ -47,12 +48,12 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             @Override
             public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
                     throws JsonParseException {
-                return new Date(json.getAsLong() * MS_IN_A_SECOND);
+                return new Date(json.getAsLong());
             }
         });
 
         gson = gsonBuilder.create();
-        
+
         PokeBot.getEventHandler().registerListener(this);
         PokeBot.getEventHandler().registerCommandExecutor(this);
     }
@@ -85,7 +86,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         String result = findInfo(s, null);
         if (result == null || result.isEmpty()) {
             // otherwise, find the user who until recently had this name
-            result = findInfo(s, unixTimestamp - 2505600L); // 29 days (in seconds)
+            result = findInfo(s, unixTimestamp - SECONDS_IN_A_MONTH);
             if (result == null || result.isEmpty()) {
                 // otherwise, find the user who originally had this name
                 result = findInfo(s, 0L);
@@ -99,8 +100,11 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     /**
      * Get information about a Minecraft username
-     * @param username Minecraft username of user
-     * @param timestamp Time the user had the name at, or <code>null</code> for the current time
+     * 
+     * @param username
+     *            Minecraft username of user
+     * @param timestamp
+     *            Time the user had the name at, or <code>null</code> for the current time
      * @return \n delimited string containing information about a username
      */
     private String findInfo(String username, @Nullable Long timestamp) {
@@ -144,7 +148,8 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             if (names != null && names.length > 1) {
                 output.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names[0].getName());
                 for (int i = 1; i < names.length; i++) {
-                    output.append(" → " + dateFormat.format(names[i].getChangedToAt()) + " → " + names[i].getName());
+                    output.append(String.format(" → %s (%s)", names[i].getName(),
+                            dateFormat.format(names[i].getChangedToAt())));
                 }
             }
             return output.toString();
@@ -156,7 +161,9 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     /**
      * Get name history of a user
-     * @param id uuid of the user
+     * 
+     * @param id
+     *            uuid of the user
      * @return Array of past names, or null if something went wrong
      */
     private NameResponse[] getNames(String id) {
@@ -176,10 +183,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     }
 
     /**
-     * Name response DTO.
-     * See <a href="http://wiki.vg/Mojang_API#UUID_-.3E_Name_history">
-     *   http://wiki.vg/Mojang_API
-     * </a>
+     * Name response DTO. See <a href="http://wiki.vg/Mojang_API#UUID_-.3E_Name_history"> http://wiki.vg/Mojang_API </a>
      */
     private class NameResponse {
         private String name;
