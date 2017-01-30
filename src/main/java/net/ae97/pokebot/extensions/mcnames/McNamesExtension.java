@@ -147,15 +147,23 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             if (names != null && names.length > 1) {
                 StringBuilder nameHistory = new StringBuilder();
                 nameHistory.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names[0].getName());
+                int lineLength = nameHistory.length();
                 for (int i = 1; i < names.length; i++) {
-                    nameHistory.append(String.format(" → %s (%s)", names[i].getName(),
-                            dateFormat.format(names[i].getChangedToAt())));
+                    
+                    final String name = String.format("→ %s (%s)", names[i].getName(),
+                            dateFormat.format(names[i].getChangedToAt()));
+                    lineLength += name.length();
+                    
+                    if (lineLength > MAX_MESSAGE_CHARACTERS) {
+                        lineLength = name.length();
+                        nameHistory.append('\n');
+                    } else {
+                        nameHistory.append(' ');
+                    }
+                    
+                    nameHistory.append(name);
                 }
-                if (nameHistory.length() > MAX_MESSAGE_CHARACTERS) {
-                    output.append(String.format("Name history too long for display: https://api.mojang.com/user/profiles/%s/names", id));
-                } else {
-                    output.append(nameHistory);
-                }
+                output.append(nameHistory);
             }
             return output.toString();
         } catch (Exception e) {
