@@ -485,10 +485,11 @@ public class DxdiagListener implements Listener, CommandExecutor {
             if (name.equals("intel hd graphics"))
                 return "Do Manual search https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005526.html & https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005538.html";
             try (Connection connection = openConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM Dxdiag where os = ? AND arch = ? AND drivername like ? ORDER BY (`isold` = FALSE )")) {
+                try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM dxdiag where os = ? AND arch = ? AND drivername like ? ORDER BY (`isold` = FALSE )")) {
                     statement.setString(1, os);
                     statement.setString(2, is64 ? "64" : "32");
                     statement.setString(3, "%" + Util.removeSpecialChars(name.toLowerCase().trim()) + "%");
+                    core.getLogger().log(Level.INFO, Util.removeSpecialChars(name.toLowerCase().trim()));
                     ResultSet set = statement.executeQuery();
                     while (set.next()) {
                         return set.getString("link");
