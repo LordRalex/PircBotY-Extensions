@@ -32,6 +32,9 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     
     private static final long MS_IN_A_SECOND = 1000L;
     
+    private Gson gson;
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // ISO 8601 format
+    
     @Override
     public String getName() {
         return "Names";
@@ -39,9 +42,19 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     @Override
     public void load() {
+        final GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
+            @Override
+            public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                    throws JsonParseException {
+                return new Date(json.getAsLong() * MS_IN_A_SECOND);
+            }
+        });
+
+        gson = gsonBuilder.create();
+        
         PokeBot.getEventHandler().registerListener(this);
         PokeBot.getEventHandler().registerCommandExecutor(this);
-
     }
 
     @Override
@@ -128,11 +141,10 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             output.append(migrated ? ChatFormat.YELLOW + "MIGRATED " + ChatFormat.NORMAL
                     : ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
 
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             if (names != null && names.length > 1) {
                 output.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names[0].getName());
                 for (int i = 1; i < names.length; i++) {
-                    output.append(" → " + df.format(names[i].getChangedToAt()) + " → " + names[i].getName());
+                    output.append(" → " + dateFormat.format(names[i].getChangedToAt()) + " → " + names[i].getName());
                 }
             }
             return output.toString();
@@ -152,17 +164,6 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             URL url = new URL("https://api.mojang.com/user/profiles/" + id + "/names");
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.connect();
-
-            final GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
-                @Override
-                public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                        throws JsonParseException {
-                    return new Date(json.getAsLong() * MS_IN_A_SECOND);
-                }
-            });
-
-            final Gson gson = gsonBuilder.create();
 
             return gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class);
 
