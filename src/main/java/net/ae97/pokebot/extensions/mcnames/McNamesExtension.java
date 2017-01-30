@@ -118,9 +118,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
             // Convert to a JSON object to print data
             JsonParser jp = new JsonParser(); // from gson
-            JsonElement root = jp.parse(new InputStreamReader((InputStream) request.getContent())); // Convert the input
-                                                                                                    // stream to a json
-                                                                                                    // element
+            JsonElement root = jp.parse(new InputStreamReader(request.getInputStream()));
             JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
             String id = rootobj.get("id").getAsString();
             String currentName = rootobj.get("name").getAsString();
