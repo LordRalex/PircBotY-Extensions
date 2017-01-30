@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by urielsalis on 1/26/2017
@@ -156,55 +155,47 @@ public class DxdiagListener implements Listener, CommandExecutor {
     }
 
     private void intelPartialUpdate() {
-        List<Callable<PartialUpdateData>> callables2 = new ArrayList<>();
+        List<Callable<Void>> callables2 = new ArrayList<>();
 
         for (final Intel.Driver driver : intel.driver) {
-            callables2.add(new Callable<PartialUpdateData>() {
-                @Override
-                public PartialUpdateData call() throws Exception {
-                    return new PartialUpdateData(driver, fillDownload(driver));
-                }
+            callables2.add(() -> {
+                fillDownload(driver); return null;
             });
         }
 
         ExecutorService service = Executors.newFixedThreadPool(8);
         try {
-            List<Future<PartialUpdateData>> futures = service.invokeAll(callables2);
+            List<Future<Void>> futures = service.invokeAll(callables2);
             while (service.awaitTermination(1, TimeUnit.SECONDS)) { //Wait till all threads finished
                 service.awaitTermination(1, TimeUnit.SECONDS);
             }
             intel.driver.clear();
-            for (Future<PartialUpdateData> future : futures) {
-                if (future.isDone()) {
-                    PartialUpdateData data = future.get();
-                    data.driver.download.addAll(data.downloads);
-                    DownloadMain.add(data.driver);
-                } else {
+            for (Future<Void> future : futures) {
+                if (!future.isDone()) {
                     core.getLogger().log(Level.SEVERE, "Future didnt finish in time");
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
 
     }
 
-    private ArrayList<Download> fillDownload(Intel.Driver driver) {
+    private void fillDownload(Intel.Driver driver) {
         try {
             URL url = new URL("https://downloadcenter.intel.com/json/pageresults?pageNumber=1&&productId=" + driver.epmID);
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.connect();
-            ArrayList<Download> downloads = new ArrayList<>();
             EPMIdResults results = new Gson().fromJson(new InputStreamReader((InputStream) request.getContent()), EPMIdResults.class);
+            Download download = new Download(driver.name);
             for (EPMIdResults.ResultsForDisplayImpl display : results.ResultsForDisplay) {
-                downloads.add(new Download(display, driver));
+                download.addDownload(display);
             }
-            return downloads;
+            DownloadMain.add(download.gpu, "Intel");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     private void nvidiaFullUpdate() {
@@ -467,10 +458,11 @@ public class DxdiagListener implements Listener, CommandExecutor {
             if (name.equals("intel hd graphics"))
                 return "Do Manual search https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005526.html & https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005538.html";
             try (Connection connection = openConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM dxdiag where os = ? AND arch = ? AND drivername like ? ORDER BY (`isold` = FALSE )")) {
+                try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM dxdiag where os = ? AND arch = ? AND (drivername like ? OR ? like drivername) ORDER BY (`isold` = FALSE )")) {
                     statement.setString(1, os);
                     statement.setString(2, is64 ? "64" : "32");
                     statement.setString(3, "%" + Util.removeSpecialChars(name.toLowerCase().trim()) + "%");
+                    statement.setString(4, "%" + Util.removeSpecialChars(name.toLowerCase().trim()) + "%");
                     core.getLogger().log(Level.INFO, Util.removeSpecialChars(name.toLowerCase().trim()));
                     ResultSet set = statement.executeQuery();
                     while (set.next()) {

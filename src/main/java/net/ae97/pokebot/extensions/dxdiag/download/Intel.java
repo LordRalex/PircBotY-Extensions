@@ -42,16 +42,6 @@ public class Intel {
         public Driver() {
 
         }
-
-        public Config.GPU toGPU() {
-            Config.GPU gpu = new Config.GPU(this.name);
-            for(Download download: this.download) {
-                for(OS os: download.os) {
-                    gpu.addDownload(os.version, os.arch, "https://downloadcenter.intel.com/download/" + this.epmID);
-                }
-            }
-            return gpu;
-        }
     }
 
 }

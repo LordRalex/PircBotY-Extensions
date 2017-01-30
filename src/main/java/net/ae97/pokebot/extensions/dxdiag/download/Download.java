@@ -19,29 +19,30 @@ package net.ae97.pokebot.extensions.dxdiag.download;
  */
 public class Download {
     private int epmID;
+    public GPU gpu;
 
-    public Download(EPMIdResults.ResultsForDisplayImpl display, Intel.Driver driver) {
+    public Download(String name) {
+        gpu = new GPU(name);
+    }
+
+    public void addDownload(EPMIdResults.ResultsForDisplayImpl display) {
         epmID = display.Id;
-        GPU gpu = new GPU(driver.name);
         for (String str : display.OperatingSystemSet) {
             String version = "TooOld";
             int arch = str.contains("64") ? 64 : 32;
             if (str.contains("7")) {
-                version = "7";
+                gpu.addDownload("7", arch, "https://downloadcenter.intel.com/download/" + epmID);
             } else if (str.contains("8") && !str.contains("8.1")) {
-                version = "8";
+                gpu.addDownload("8", arch, "https://downloadcenter.intel.com/download/" + epmID);
             } else if (str.contains("8.1")) {
-                version = "8.1";
+                gpu.addDownload("8.1", arch, "https://downloadcenter.intel.com/download/" + epmID);
             } else if (str.contains("10")) {
-                version = "10";
+                gpu.addDownload("10", arch, "https://downloadcenter.intel.com/download/" + epmID);
             } else if (str.contains("Vista")) {
-                version = "Vista";
+                gpu.addDownload("Vista", arch, "https://downloadcenter.intel.com/download/" + epmID);
             } else if (str.contains("XP")) {
-                version = "XP";
+                gpu.addDownload("XP", arch, "https://downloadcenter.intel.com/download/" + epmID);
             }
-            if (version.equals("TooOld")) continue;
-            gpu.addDownload(version, arch, "https://downloadcenter.intel.com/download/" + epmID);
         }
-        DownloadMain.add(gpu, "Intel");
     }
 }
