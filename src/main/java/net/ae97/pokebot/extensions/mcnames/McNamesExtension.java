@@ -10,6 +10,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -157,7 +158,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             }
             return output.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            PokeBot.getLogger().log(Level.WARNING, "Error looking up player name", e);
             return null;
         }
     }
@@ -176,9 +177,9 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             return gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class);
 
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            PokeBot.getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            PokeBot.getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         }
         return null;
     }
