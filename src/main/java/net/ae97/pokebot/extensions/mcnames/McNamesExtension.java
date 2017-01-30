@@ -152,7 +152,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                             dateFormat.format(names[i].getChangedToAt())));
                 }
                 if (nameHistory.length() > MAX_MESSAGE_CHARACTERS) {
-                    output.append(String.format("Name history too long for display: https://api.mojang.com/user/profiles/%s/names", id));
+                    output.append(String.format("\nName history too long for display: https://namemc.com/profile/%s", id));
                 } else {
                     output.append(nameHistory);
                 }
