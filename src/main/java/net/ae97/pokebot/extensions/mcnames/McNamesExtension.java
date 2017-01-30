@@ -37,7 +37,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     
     @Override
     public String getName() {
-        return "Names";
+        return "McNames";
     }
 
     @Override
