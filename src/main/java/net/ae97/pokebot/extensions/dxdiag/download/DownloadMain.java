@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 /**
@@ -16,13 +17,13 @@ public class DownloadMain {
     public static DxdiagParser core;
 
 
-    public static void add(Config.GPU gpu, String manufacturer) {
+    public static void add(GPU gpu, String manufacturer) {
         try (Connection connection = openConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM Dxdiag where isold = TRUE AND drivername = ?")) {
+            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM dxdiag where isold = TRUE AND drivername = ?")) {
                 statement.setString(1, Util.removeSpecialChars(gpu.name.toLowerCase().trim()));
                 statement.execute();
             }
-            try (PreparedStatement statement = connection.prepareStatement("UPDATE Dxdiag SET isold=TRUE WHERE drivername = ?")) {
+            try (PreparedStatement statement = connection.prepareStatement("UPDATE dxdiag SET isold=TRUE WHERE drivername = ?")) {
                 statement.setString(1, Util.removeSpecialChars(gpu.name.toLowerCase().trim()));
                 statement.execute();
             }
@@ -75,7 +76,7 @@ public class DownloadMain {
 
     private static void add(String name, String os, String arch, String manufacturer, String link) {
         try (Connection connection = openConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO Dxdiag (drivername, os, arch, manufacturer, link, isold) VALUES (?, ?, ?, ?, ?, FALSE)")) {
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO dxdiag (drivername, os, arch, manufacturer, link, isold) VALUES (?, ?, ?, ?, ?, FALSE)")) {
                 statement.setString(1, name);
                 statement.setString(2, os);
                 statement.setString(3, arch);
@@ -97,5 +98,9 @@ public class DownloadMain {
         String pass = core.getConfig().getString("pass");
         String database = core.getConfig().getString("database");
         return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass);
+    }
+
+    public static void add(Intel.Driver driver) {
+        add(driver.toGPU(), "Intel");
     }
 }

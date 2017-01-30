@@ -1,7 +1,6 @@
 package net.ae97.pokebot.extensions.dxdiag.download;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,21 +21,11 @@ import java.util.List;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 public class Intel {
-    public String version;
-    public Date lastPartialUpdate;
-    public Date lastFullUpdate;
-    public String name;
+    
     public List<Driver> driver;
-    public List<Ark> ark;
-    public boolean newConfig = true;
 
     public Intel(String version, String id) {
-        this.version = version;
-        lastPartialUpdate = new Date();
-        lastFullUpdate = new Date();
-        name = id;
         driver = new ArrayList<>();
-        ark = new ArrayList<>();
     }
 
     public static class Driver {
@@ -53,19 +42,15 @@ public class Intel {
         public Driver() {
 
         }
-    }
 
-    public class Ark {
-        public String name;
-        public List<Download> download;
-
-        public Ark(String name) {
-            this.name = name;
-            download = new ArrayList<>();
-        }
-
-        public Ark() {
-
+        public Config.GPU toGPU() {
+            Config.GPU gpu = new Config.GPU(this.name);
+            for(Download download: this.download) {
+                for(OS os: download.os) {
+                    gpu.addDownload(os.version, os.arch, "https://downloadcenter.intel.com/download/" + this.epmID);
+                }
+            }
+            return gpu;
         }
     }
 

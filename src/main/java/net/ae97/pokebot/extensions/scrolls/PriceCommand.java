@@ -50,7 +50,7 @@ public class PriceCommand implements CommandExecutor {
             event.respond("Usage: .price [name]");
             return;
         }
-        int days = 2;
+        
         String[] name = event.getArgs();
         try {
             URL playerURL = new URL(url.replace("{name}", StringUtils.join(name, "%20")));
