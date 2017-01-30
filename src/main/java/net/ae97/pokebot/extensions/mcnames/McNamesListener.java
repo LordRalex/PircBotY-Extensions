@@ -29,7 +29,7 @@ public class McNamesListener implements Listener, CommandExecutor {
     public void runEvent(CommandEvent event) {
         if (event.getCommand().equals("ns")) {
             if (event.getArgs().length == 0) {
-                event.respond("Usage: ns <name> [--extended]");
+                event.getUser().send().notice("Usage: ns <name> [--extended]");
                 return;
             }
             boolean extended = false;
