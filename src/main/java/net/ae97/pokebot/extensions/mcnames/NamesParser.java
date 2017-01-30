@@ -9,7 +9,7 @@ import net.ae97.pokebot.extension.Extension;
 public class NamesParser extends Extension {
     @Override
     public String getName() {
-        return "DxdiagParser";
+        return "NamesParser";
     }
 
     @Override
