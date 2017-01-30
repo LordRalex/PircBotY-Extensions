@@ -34,8 +34,8 @@ public class McNamesListener implements Listener, CommandExecutor {
     @Override
     public void runEvent(CommandEvent event) {
         if (event.getCommand().equals("ns")) {
-            if (event.getArgs().length == 0) {
-                event.getUser().send().notice("Usage: ns <name> [--extended]");
+            if (event.getArgs().length != 1) {
+                event.getUser().send().notice("Usage: ns <name>");
                 return;
             }
             String result = getNS(event.getArgs()[0]);
