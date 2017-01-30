@@ -101,10 +101,8 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     /**
      * Get information about a Minecraft username
      * 
-     * @param username
-     *            Minecraft username of user
-     * @param timestamp
-     *            Time the user had the name at, or <code>null</code> for the current time
+     * @param username Minecraft username of user
+     * @param timestamp Time the user had the name at, or <code>null</code> for the current time
      * @return \n delimited string containing information about a username
      */
     private String findInfo(String username, @Nullable Long timestamp) {
@@ -161,9 +159,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     /**
      * Get name history of a user
-     * 
-     * @param id
-     *            uuid of the user
+     * @param id uuid of the user
      * @return Array of past names, or null if something went wrong
      */
     private NameResponse[] getNames(String id) {
