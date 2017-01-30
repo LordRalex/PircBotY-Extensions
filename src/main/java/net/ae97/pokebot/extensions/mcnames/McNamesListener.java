@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat;
 /**
  * Created by urielsalis on 1/26/2017
  */
-public class NamesListener implements Listener, CommandExecutor {
+public class McNamesListener implements Listener, CommandExecutor {
 
     @Override
     public void runEvent(CommandEvent event) {

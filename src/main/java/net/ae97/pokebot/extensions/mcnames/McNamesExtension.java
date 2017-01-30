@@ -6,7 +6,7 @@ import net.ae97.pokebot.extension.Extension;
 /**
  * Created by urielsalis on 1/26/2017
  */
-public class NamesParser extends Extension {
+public class McNamesExtension extends Extension {
     @Override
     public String getName() {
         return "NamesParser";
@@ -14,7 +14,7 @@ public class NamesParser extends Extension {
 
     @Override
     public void load() {
-        NamesListener listener = new NamesListener();
+        McNamesListener listener = new McNamesListener();
         PokeBot.getEventHandler().registerListener(listener);
         PokeBot.getEventHandler().registerCommandExecutor(listener);
 
