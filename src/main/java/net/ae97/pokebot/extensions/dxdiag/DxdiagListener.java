@@ -36,8 +36,8 @@ import java.util.logging.Logger;
 public class DxdiagListener implements Listener, CommandExecutor {
     private static DxdiagParser core;
     private String apiKey;
-    static HashMap<String, Integer> PRODUCT_TYPES = new HashMap<>();
-    Intel intel = new Intel("1.0", "intel");
+    private static HashMap<String, Integer> PRODUCT_TYPES = new HashMap<>();
+    private Intel intel = new Intel("1.0", "intel");
 
 
     public DxdiagListener(DxdiagParser system) {
@@ -65,16 +65,11 @@ public class DxdiagListener implements Listener, CommandExecutor {
             Elements platforms = root.getChildElements("platform");
             for (int i = 0; i < platforms.size(); i++) {
                 nu.xom.Element platformElement = platforms.get(i);
-                String platformName = platformElement.getAttributeValue("name");
-                String platformID = platformElement.getAttributeValue("value");
-                AMD.Platform platform = new AMD.Platform(platformName, platformID);
                 Elements productFamilies = platformElement.getChildElements("productfamily");
                 for (int j = 0; j < productFamilies.size(); j++) {
                     nu.xom.Element productFamilyElement = productFamilies.get(j);
-                    String productFamilyName = productFamilyElement.getAttributeValue("name");
                     String productFamilyID = productFamilyElement.getAttributeValue("value");
                     if (productFamilyID.equals("autodetect")) continue;
-                    AMD.Platform.ProductFamily productFamily = new AMD.Platform.ProductFamily(productFamilyName, productFamilyID);
                     Elements products = productFamilyElement.getChildElements("product");
                     for (int k = 0; k < products.size(); k++) {
                         nu.xom.Element productElement = products.get(k);
@@ -82,7 +77,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                         String productID = productElement.getAttributeValue("value");
                         if (productID.equals("autodetect") || productID.equals("not_sure")) continue;
                         AMD.Platform.ProductFamily.Product product = new AMD.Platform.ProductFamily.Product(productName, productID);
-                        Config.GPU gpu = new Config.GPU(productName);
+                        GPU gpu = new GPU(productName);
                         Elements versions = productElement.getChildElements("version");
                         for (int l = 0; l < versions.size(); l++) {
                             nu.xom.Element versionElement = versions.get(l);
@@ -160,7 +155,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
         }
     }
 
-    public void intelPartialUpdate() {
+    private void intelPartialUpdate() {
         List<Callable<PartialUpdateData>> callables2 = new ArrayList<>();
 
         for (final Intel.Driver driver : intel.driver) {
@@ -186,7 +181,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
                     DownloadMain.add(data.driver);
                 } else {
                     core.getLogger().log(Level.SEVERE, "Future didnt finish in time");
-
                 }
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -213,14 +207,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
         return null;
     }
 
-    private synchronized void fillDownload(Intel.Driver driver, EPMIdResults.ResultsForDisplayImpl display) {
-        driver.download.add(new Download(display, driver));
-    }
-
-    private synchronized void addDriver(Intel.Driver driver) {
-        intel.driver.add(driver);
-    }
-
     private void nvidiaFullUpdate() {
         PRODUCT_TYPES.put("GeForce", 1);
         //PRODUCT_TYPES.put("nForce", 2);
@@ -236,21 +222,17 @@ public class DxdiagListener implements Listener, CommandExecutor {
     }
 
     private static class NvidiaDriverGrabber {
-        public String lookupUrl;
-        public String processUrl;
-        public String locale;
-        public int language;
-        public ArrayList<String> errors;
-        public int throttle = 5;
-        Builder parser = new Builder();
+        private String lookupUrl;
+        private String processUrl;
+        private String locale;
+        private int language;
+        private Builder parser = new Builder();
 
         public NvidiaDriverGrabber(String lookupUrl, String processUrl, String locale, int language, int throttle) {
             this.lookupUrl = lookupUrl;
             this.processUrl = processUrl;
             this.locale = locale;
             this.language = language;
-            this.throttle = throttle;
-            this.errors = new ArrayList<>();
         }
 
         public nu.xom.Document lookupRequest(int step, int value) {
@@ -288,7 +270,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
         public void parse() {
             try {
                 for (Map.Entry<String, Integer> entry : PRODUCT_TYPES.entrySet()) {
-                    Nvidia.ProductType productType = new Nvidia.ProductType(entry.getKey()); //start step 1
                     //start step 2
                     {
                         nu.xom.Document documentStep2 = lookupRequest(2, entry.getValue());
@@ -312,6 +293,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                     documentStep3 = lookupRequest(3, series.id);
                                     if (documentStep3 == null) {
                                         core.getLogger().log(Level.SEVERE, "Couldnt download nvidia drivers");
+
                                     }
                                 }
                                 Elements lookupValuesStep3 = documentStep3.getRootElement().getFirstChildElement("LookupValues").getChildElements();
@@ -329,7 +311,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                             }
                                         }
                                         Elements lookupValuesStep4 = documentStep4.getRootElement().getFirstChildElement("LookupValues").getChildElements();
-                                        Config.GPU gpu = new Config.GPU(product.name);
+                                        GPU gpu = new GPU(product.name);
 
                                         for (int e = 0; e < lookupValuesStep4.size(); e++) {
                                             nu.xom.Element lookupValue4 = lookupValuesStep4.get(e);
@@ -479,7 +461,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
         return result.substring(1);
     }
 
-    public String findDriver(String name, String os, boolean is64) {
+    private String findDriver(String name, String os, boolean is64) {
         if (!name.contains("Standard VGA") && !name.contains("Microsoft")) {
             name = name.replace("NVIDIA ", "").replace("(R)", "").replace("AMD ", "").replace("®", "").toLowerCase().trim();
             if (name.equals("intel hd graphics"))

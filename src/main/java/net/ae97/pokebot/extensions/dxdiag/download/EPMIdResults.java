@@ -20,50 +20,11 @@ import java.util.List;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 public class EPMIdResults {
-    public SearchCriteriaImpl SearchCriteria;
+    
     public List<ResultsForDisplayImpl> ResultsForDisplay;
-    public List<TypeFilterImpl> TypeFilter;
-    public List<OSFilterImpl> OSFilter;
-    public String ProductChilder;
-    public String SelectedProduct;
-    public String ProductContextualization;
-    public int RequestedPage;
-    public String CurrentSearchTerm;
-    public boolean ProductIsEois;
-
-    public static class SearchCriteriaImpl {
-        int NumOfResult;
-        String LanguageId;
-        String Keyword;
-        int HitsPerPage;
-        int Offset;
-    }
 
     public static class ResultsForDisplayImpl {
         public int Id;
-        public String FullDescriptionUrl;
-        public String Title;
-        public String SummaryDescription;
-        public String OperatingSystems;
-        public String OperatingSystemIds;
-        public String DownloadType;
-        public String PublishDate;
-        public String PublishDateMMDDYYYY;
-        public String Version;
-        public String VersionStatus;
         public List<String> OperatingSystemSet;
-        public boolean InIduu;
-    }
-
-    public static class TypeFilterImpl {
-        String Id;
-        String Label;
-        int Quantity;
-    }
-
-    public static class OSFilterImpl {
-        String Id;
-        String Label;
-        int Quantity;
     }
 }

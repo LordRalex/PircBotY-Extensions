@@ -24,11 +24,6 @@ import java.text.SimpleDateFormat;
  * Created by urielsalis on 1/26/2017
  */
 public class NamesListener implements Listener, CommandExecutor {
-    private final NamesParser core;
-
-    public NamesListener(NamesParser system) {
-        core = system;
-    }
 
     @Override
     public void runEvent(CommandEvent event) {
