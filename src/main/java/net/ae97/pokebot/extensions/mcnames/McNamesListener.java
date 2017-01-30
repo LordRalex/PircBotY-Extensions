@@ -1,30 +1,36 @@
 package net.ae97.pokebot.extensions.mcnames;
 
-import com.google.gson.JsonArray;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import net.ae97.pircboty.ChatFormat;
 import net.ae97.pircboty.api.events.CommandEvent;
 import net.ae97.pokebot.api.CommandExecutor;
 import net.ae97.pokebot.api.Listener;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by urielsalis on 1/26/2017
  */
 public class McNamesListener implements Listener, CommandExecutor {
 
+    private static final long MS_IN_A_SECOND = 1000L;
+    
     @Override
     public void runEvent(CommandEvent event) {
         if (event.getCommand().equals("ns")) {
@@ -32,8 +38,7 @@ public class McNamesListener implements Listener, CommandExecutor {
                 event.getUser().send().notice("Usage: ns <name> [--extended]");
                 return;
             }
-            final boolean extended = event.getArgs().length > 1 && event.getArgs()[1].equals("--extended");
-            String result = getNS(event.getArgs()[0], extended);
+            String result = getNS(event.getArgs()[0]);
             String[] split = result.split("\n");
             for(String s: split) {
                 event.respond(s);
@@ -42,18 +47,22 @@ public class McNamesListener implements Listener, CommandExecutor {
         }
     }
 
-    private String getNS(String s, boolean extended) {
+    private String getNS(String s) {
         if (s == null || s.isEmpty()) {
             return "Invalid username";
         }
-        long unixTimestamp = System.currentTimeMillis() / 1000l;
+        
+        // the Mojang API uses Unix timestamps without ms (1 second accuracy)
+        long unixTimestamp = System.currentTimeMillis() / MS_IN_A_SECOND;
 
-
-        String result = findInfo(s, extended, false, 0);
+        // find the user who currently has this name
+        String result = findInfo(s, null);
         if (result == null || result.isEmpty()) {
-            result = findInfo(s, extended, true, unixTimestamp - 2505600); //2500 seems to always work, get previous name
+            // otherwise, find the user who until recently had this name
+            result = findInfo(s, unixTimestamp - 2505600L); // 29 days (in seconds)
             if (result == null || result.isEmpty()) {
-                result = findInfo(s, extended, true, 0); //get original name
+                // otherwise, find the user who originally had this name
+                result = findInfo(s, 0L); 
                 if (result == null || result.isEmpty()){
                     return ChatFormat.RED + "Username doesn't exist" + ChatFormat.NORMAL;                    
                 }
@@ -62,11 +71,11 @@ public class McNamesListener implements Listener, CommandExecutor {
         return result;
     }
 
-    private String findInfo(String s, boolean extended, boolean previousName, long timestamp) {
+    private String findInfo(String s, Long timestamp) {
         try {
             String str = "https://api.mojang.com/users/profiles/minecraft/" + s;
-            if (previousName) {
-                str = str + "?at=" + timestamp;
+            if (timestamp != null) {
+                str = str + "?at=" + timestamp.toString();
             }
             URL url = new URL(str);
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
@@ -86,17 +95,21 @@ public class McNamesListener implements Listener, CommandExecutor {
             if (rootobj.has("demo")) {
                 paid = false;
             }
-            String[] names = getNames(id, extended);
+            NameResponse[] names = getNames(id);
             StringBuilder output = new StringBuilder();
-            if (previousName) {
+            if (timestamp != null) {
                 output.append(ChatFormat.RED + "Name was changed to: " + ChatFormat.NORMAL);
             }
             output.append(ChatFormat.BOLD + currentName + ChatFormat.NORMAL + ": " + ChatFormat.BLUE + "UUID: " + ChatFormat.NORMAL + id + " ");
             output.append(paid ? ChatFormat.GREEN + "PAID " + ChatFormat.NORMAL : ChatFormat.RED + "DEMO " + ChatFormat.NORMAL);
             output.append(migrated ? ChatFormat.YELLOW + "MIGRATED " + ChatFormat.NORMAL : ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
-            if (names.length > 0) {
-                String namesStr = StringUtils.join(names, ", ");
-                output.append("\n" + ChatFormat.DARK_GRAY + "Previous names: " + ChatFormat.NORMAL + namesStr);
+            
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            if (names != null && names.length > 1) {
+                output.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names[0].getName());
+                for (int i = 1; i < names.length; i++) {
+                    output.append(" → " + df.format(names[i].getChangedToAt())  +" → " + names[i].getName());
+                }
             }
             return output.toString();
         } catch (Exception e) {
@@ -105,53 +118,45 @@ public class McNamesListener implements Listener, CommandExecutor {
         }
     }
 
-    private String[] getNames(String id, boolean extended) {
+    private NameResponse[] getNames(String id) {
         try {
             URL url = new URL("https://api.mojang.com/user/profiles/" + id + "/names");
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.connect();
 
-            // Convert to a JSON object to print data
-            JsonParser jp = new JsonParser(); //from gson
-            JsonElement root = jp.parse(new InputStreamReader((InputStream) request.getContent())); //Convert the input stream to a json element
-            JsonArray rootobj = root.getAsJsonArray(); //May be an array, may be an object.
-            if (rootobj.size() == 1) {
-                return new String[]{};
-            }
-            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-            if (extended) {
-                String[] names = new String[rootobj.size() - 1];
-                for (int i = 0; i < rootobj.size() - 1; i++) {
-                    if (rootobj.get(i).getAsJsonObject().has("changedToAt")) {
-                        names[i] = rootobj.get(i).getAsJsonObject().get("name").getAsString() + " changed " + format.format(new Date(new Timestamp(rootobj.get(i).getAsJsonObject().get("changedToAt").getAsLong()).getTime()));
-                    } else {
-                        names[i] = rootobj.get(i).getAsJsonObject().get("name").getAsString();
-                    }
+            final GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(Date.class, new JsonDeserializer<Date>(){
+                @Override
+                public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                        throws JsonParseException {
+                    return new Date(json.getAsLong() * MS_IN_A_SECOND);
                 }
-                return names;
-            } else {
-                int limit = rootobj.size() - 3;
-                if (limit < 0) {
-                    limit = 0;
-                }
-                String[] names = new String[rootobj.size() - limit];
-                int counter = 0;
-                for (int i = rootobj.size() - 1; i >= limit; i--) {
-                    if (rootobj.get(i).getAsJsonObject().has("changedToAt")) {
-                        names[counter] = rootobj.get(i).getAsJsonObject().get("name").getAsString() + " changed " + format.format(new Date(new Timestamp(rootobj.get(i).getAsJsonObject().get("changedToAt").getAsLong()).getTime()));
-                    } else {
-                        names[counter] = rootobj.get(i).getAsJsonObject().get("name").getAsString();
-                    }
-                    counter++;
-                }
-                return names;
-            }
+            });
+            
+            final Gson gson = gsonBuilder.create();
+            
+            return gson.fromJson(new InputStreamReader(request.getInputStream()),
+                    NameResponse[].class);
+            
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new String[]{};
+        return null;
+    }
+    
+    private class NameResponse {
+        private String name;
+        private Date changedToAt;
+        
+        public String getName() {
+            return name;
+        }
+        
+        public Date getChangedToAt() {
+            return changedToAt;
+        }
     }
 
 
