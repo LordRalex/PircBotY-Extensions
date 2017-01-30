@@ -54,7 +54,7 @@ public class McNamesListener implements Listener, CommandExecutor {
             if (result == null || result.isEmpty()) {
                 result = findInfo(s, extended, true, 0); //get original name
                 if (result == null || result.isEmpty())
-                    return ChatFormat.RED + "Username doesn't exists" + ChatFormat.NORMAL;
+                    return ChatFormat.RED + "Username doesn't exist" + ChatFormat.NORMAL;
             }
         }
         return result;
