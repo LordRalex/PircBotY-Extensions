@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by urielsalis on 1/26/2017
@@ -36,8 +35,8 @@ import java.util.logging.Logger;
 public class DxdiagListener implements Listener, CommandExecutor {
     private static DxdiagParser core;
     private String apiKey;
-    static HashMap<String, Integer> PRODUCT_TYPES = new HashMap<>();
-    Intel intel = new Intel("1.0", "intel");
+    private static HashMap<String, Integer> PRODUCT_TYPES = new HashMap<>();
+    private Intel intel = new Intel("1.0", "intel");
 
 
     public DxdiagListener(DxdiagParser system) {
@@ -65,16 +64,11 @@ public class DxdiagListener implements Listener, CommandExecutor {
             Elements platforms = root.getChildElements("platform");
             for (int i = 0; i < platforms.size(); i++) {
                 nu.xom.Element platformElement = platforms.get(i);
-                String platformName = platformElement.getAttributeValue("name");
-                String platformID = platformElement.getAttributeValue("value");
-                AMD.Platform platform = new AMD.Platform(platformName, platformID);
                 Elements productFamilies = platformElement.getChildElements("productfamily");
                 for (int j = 0; j < productFamilies.size(); j++) {
                     nu.xom.Element productFamilyElement = productFamilies.get(j);
-                    String productFamilyName = productFamilyElement.getAttributeValue("name");
                     String productFamilyID = productFamilyElement.getAttributeValue("value");
                     if (productFamilyID.equals("autodetect")) continue;
-                    AMD.Platform.ProductFamily productFamily = new AMD.Platform.ProductFamily(productFamilyName, productFamilyID);
                     Elements products = productFamilyElement.getChildElements("product");
                     for (int k = 0; k < products.size(); k++) {
                         nu.xom.Element productElement = products.get(k);
@@ -82,7 +76,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                         String productID = productElement.getAttributeValue("value");
                         if (productID.equals("autodetect") || productID.equals("not_sure")) continue;
                         AMD.Platform.ProductFamily.Product product = new AMD.Platform.ProductFamily.Product(productName, productID);
-                        Config.GPU gpu = new Config.GPU(productName);
+                        GPU gpu = new GPU(productName);
                         Elements versions = productElement.getChildElements("version");
                         for (int l = 0; l < versions.size(); l++) {
                             nu.xom.Element versionElement = versions.get(l);
@@ -160,65 +154,48 @@ public class DxdiagListener implements Listener, CommandExecutor {
         }
     }
 
-    public void intelPartialUpdate() {
-        List<Callable<PartialUpdateData>> callables2 = new ArrayList<>();
+    private void intelPartialUpdate() {
+        List<Callable<Void>> callables2 = new ArrayList<>();
 
         for (final Intel.Driver driver : intel.driver) {
-            callables2.add(new Callable<PartialUpdateData>() {
-                @Override
-                public PartialUpdateData call() throws Exception {
-                    return new PartialUpdateData(driver, fillDownload(driver));
-                }
+            callables2.add(() -> {
+                fillDownload(driver); return null;
             });
         }
 
         ExecutorService service = Executors.newFixedThreadPool(8);
         try {
-            List<Future<PartialUpdateData>> futures = service.invokeAll(callables2);
+            List<Future<Void>> futures = service.invokeAll(callables2);
             while (service.awaitTermination(1, TimeUnit.SECONDS)) { //Wait till all threads finished
                 service.awaitTermination(1, TimeUnit.SECONDS);
             }
             intel.driver.clear();
-            for (Future<PartialUpdateData> future : futures) {
-                if (future.isDone()) {
-                    PartialUpdateData data = future.get();
-                    data.driver.download.addAll(data.downloads);
-                    DownloadMain.add(data.driver);
-                } else {
+            for (Future<Void> future : futures) {
+                if (!future.isDone()) {
                     core.getLogger().log(Level.SEVERE, "Future didnt finish in time");
-
                 }
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
 
     }
 
-    private ArrayList<Download> fillDownload(Intel.Driver driver) {
+    private void fillDownload(Intel.Driver driver) {
         try {
             URL url = new URL("https://downloadcenter.intel.com/json/pageresults?pageNumber=1&&productId=" + driver.epmID);
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.connect();
-            ArrayList<Download> downloads = new ArrayList<>();
             EPMIdResults results = new Gson().fromJson(new InputStreamReader((InputStream) request.getContent()), EPMIdResults.class);
+            Download download = new Download(driver.name);
             for (EPMIdResults.ResultsForDisplayImpl display : results.ResultsForDisplay) {
-                downloads.add(new Download(display, driver));
+                download.addDownload(display);
             }
-            return downloads;
+            DownloadMain.add(download.gpu, "Intel");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
-    }
-
-    private synchronized void fillDownload(Intel.Driver driver, EPMIdResults.ResultsForDisplayImpl display) {
-        driver.download.add(new Download(display, driver));
-    }
-
-    private synchronized void addDriver(Intel.Driver driver) {
-        intel.driver.add(driver);
     }
 
     private void nvidiaFullUpdate() {
@@ -236,21 +213,17 @@ public class DxdiagListener implements Listener, CommandExecutor {
     }
 
     private static class NvidiaDriverGrabber {
-        public String lookupUrl;
-        public String processUrl;
-        public String locale;
-        public int language;
-        public ArrayList<String> errors;
-        public int throttle = 5;
-        Builder parser = new Builder();
+        private String lookupUrl;
+        private String processUrl;
+        private String locale;
+        private int language;
+        private Builder parser = new Builder();
 
         public NvidiaDriverGrabber(String lookupUrl, String processUrl, String locale, int language, int throttle) {
             this.lookupUrl = lookupUrl;
             this.processUrl = processUrl;
             this.locale = locale;
             this.language = language;
-            this.throttle = throttle;
-            this.errors = new ArrayList<>();
         }
 
         public nu.xom.Document lookupRequest(int step, int value) {
@@ -288,7 +261,6 @@ public class DxdiagListener implements Listener, CommandExecutor {
         public void parse() {
             try {
                 for (Map.Entry<String, Integer> entry : PRODUCT_TYPES.entrySet()) {
-                    Nvidia.ProductType productType = new Nvidia.ProductType(entry.getKey()); //start step 1
                     //start step 2
                     {
                         nu.xom.Document documentStep2 = lookupRequest(2, entry.getValue());
@@ -312,6 +284,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                     documentStep3 = lookupRequest(3, series.id);
                                     if (documentStep3 == null) {
                                         core.getLogger().log(Level.SEVERE, "Couldnt download nvidia drivers");
+
                                     }
                                 }
                                 Elements lookupValuesStep3 = documentStep3.getRootElement().getFirstChildElement("LookupValues").getChildElements();
@@ -329,7 +302,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                                             }
                                         }
                                         Elements lookupValuesStep4 = documentStep4.getRootElement().getFirstChildElement("LookupValues").getChildElements();
-                                        Config.GPU gpu = new Config.GPU(product.name);
+                                        GPU gpu = new GPU(product.name);
 
                                         for (int e = 0; e < lookupValuesStep4.size(); e++) {
                                             nu.xom.Element lookupValue4 = lookupValuesStep4.get(e);
@@ -479,16 +452,17 @@ public class DxdiagListener implements Listener, CommandExecutor {
         return result.substring(1);
     }
 
-    public String findDriver(String name, String os, boolean is64) {
+    private String findDriver(String name, String os, boolean is64) {
         if (!name.contains("Standard VGA") && !name.contains("Microsoft")) {
             name = name.replace("NVIDIA ", "").replace("(R)", "").replace("AMD ", "").replace("®", "").toLowerCase().trim();
             if (name.equals("intel hd graphics"))
                 return "Do Manual search https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005526.html & https://www-ssl.intel.com/content/www/us/en/support/graphics-drivers/000005538.html";
             try (Connection connection = openConnection()) {
-                try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM dxdiag where os = ? AND arch = ? AND drivername like ? ORDER BY (`isold` = FALSE )")) {
+                try (PreparedStatement statement = connection.prepareStatement("SELECT link FROM dxdiag where os = ? AND arch = ? AND (drivername like ? OR ? like drivername) ORDER BY (`isold` = FALSE )")) {
                     statement.setString(1, os);
                     statement.setString(2, is64 ? "64" : "32");
                     statement.setString(3, "%" + Util.removeSpecialChars(name.toLowerCase().trim()) + "%");
+                    statement.setString(4, "%" + Util.removeSpecialChars(name.toLowerCase().trim()) + "%");
                     core.getLogger().log(Level.INFO, Util.removeSpecialChars(name.toLowerCase().trim()));
                     ResultSet set = statement.executeQuery();
                     while (set.next()) {

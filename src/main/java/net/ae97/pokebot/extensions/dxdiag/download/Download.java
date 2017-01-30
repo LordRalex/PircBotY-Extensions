@@ -43,7 +43,6 @@ public class Download {
             } else if (str.contains("XP")) {
                 gpu.addDownload("XP", arch, "https://downloadcenter.intel.com/download/" + epmID);
             }
-            if (version.equals("TooOld")) continue;
         }
     }
 }
