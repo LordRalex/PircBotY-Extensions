@@ -32,6 +32,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     private static final long MS_IN_A_SECOND = 1000L;
     private static final long SECONDS_IN_A_MONTH = 2505600L; // 29 days (in seconds)
+    private static final int MAX_MESSAGE_CHARACTERS = 350;
 
     private Gson gson;
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // ISO 8601 format
@@ -144,10 +145,16 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                     : ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
 
             if (names != null && names.length > 1) {
-                output.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names[0].getName());
+                StringBuilder nameHistory = new StringBuilder();
+                nameHistory.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names[0].getName());
                 for (int i = 1; i < names.length; i++) {
-                    output.append(String.format(" → %s (%s)", names[i].getName(),
+                    nameHistory.append(String.format(" → %s (%s)", names[i].getName(),
                             dateFormat.format(names[i].getChangedToAt())));
+                }
+                if (nameHistory.length() > MAX_MESSAGE_CHARACTERS) {
+                    output.append(String.format("Name history too long for display: https://api.mojang.com/user/profiles/%s/names", id));
+                } else {
+                    output.append(nameHistory);
                 }
             }
             return output.toString();
