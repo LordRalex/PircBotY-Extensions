@@ -32,8 +32,7 @@ public class McNamesListener implements Listener, CommandExecutor {
                 event.getUser().send().notice("Usage: ns <name> [--extended]");
                 return;
             }
-            boolean extended = false;
-            if (event.getArgs().length > 1 && event.getArgs()[1].equals("--extended")) extended = true;
+            final boolean extended = event.getArgs().length > 1 && event.getArgs()[1].equals("--extended");
             String result = getNS(event.getArgs()[0], extended);
             String[] splitted = result.split("\n");
             for(String s: splitted) {
