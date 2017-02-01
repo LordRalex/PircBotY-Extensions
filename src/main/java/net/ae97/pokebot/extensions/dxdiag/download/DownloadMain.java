@@ -100,7 +100,4 @@ public class DownloadMain {
         return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass);
     }
 
-    public static void add(Intel.Driver driver, ArrayList<Download> downloads) {
-        add(driver.toGPU(), "Intel");
-    }
 }
