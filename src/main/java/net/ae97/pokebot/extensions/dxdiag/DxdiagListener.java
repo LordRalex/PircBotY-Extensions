@@ -43,12 +43,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
         core = system;
         DownloadMain.core = system;
         apiKey = core.getConfig().getString("arkapikey");
-        PokeBot.getScheduler().scheduleTask(new Runnable() {
-            @Override
-            public void run() {
-                downloadDrivers();
-            }
-        }, 7, TimeUnit.DAYS);
+        PokeBot.getScheduler().scheduleTask(this::downloadDrivers, 7, TimeUnit.DAYS);
     }
 
     private void downloadDrivers() {
