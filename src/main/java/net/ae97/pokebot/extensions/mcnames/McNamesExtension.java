@@ -156,7 +156,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             }
             return output.toString();
         } catch (Exception e) {
-            PokeBot.getLogger().log(Level.WARNING, "Error looking up player name", e);
+            getLogger().log(Level.WARNING, "Error looking up player name", e);
             return null;
         }
     }
@@ -175,9 +175,9 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             return gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class);
 
         } catch (MalformedURLException e) {
-            PokeBot.getLogger().log(Level.WARNING, "Error looking up player uuid", e);
+            getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         } catch (IOException e) {
-            PokeBot.getLogger().log(Level.WARNING, "Error looking up player uuid", e);
+            getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         }
         return null;
     }
