@@ -17,7 +17,7 @@ public class DownloadMain {
     public static DxdiagParser core;
 
 
-    public static void add(Config.GPU gpu, String manufacturer) {
+    public static void add(GPU gpu, String manufacturer) {
         try (Connection connection = openConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("DELETE FROM dxdiag where isold = TRUE AND drivername = ?")) {
                 statement.setString(1, Util.removeSpecialChars(gpu.name.toLowerCase().trim()));
