@@ -42,7 +42,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
     public DxdiagListener(DxdiagParser system) {
         core = system;
         DownloadMain.core = system;
-        core.getConfig().getString("arkapikey");
+        apiKey = core.getConfig().getString("arkapikey");
         PokeBot.getScheduler().scheduleTask(new Runnable() {
             @Override
             public void run() {
@@ -463,7 +463,7 @@ public class DxdiagListener implements Listener, CommandExecutor {
                     statement.setString(2, is64 ? "64" : "32");
                     statement.setString(3, "%" + Util.removeSpecialChars(name.toLowerCase().trim()) + "%");
                     statement.setString(4, "%" + Util.removeSpecialChars(name.toLowerCase().trim()) + "%");
-                    core.getLogger().log(Level.INFO, Util.removeSpecialChars(name.toLowerCase().trim()));
+                    core.getLogger().log(Level.INFO, Util.removeSpecialChars(statement.toString()));
                     ResultSet set = statement.executeQuery();
                     while (set.next()) {
                         return set.getString("link");
