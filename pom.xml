@@ -274,6 +274,19 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>removal</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>removal</classifier>
+                            <includes>
+                                <include>**/extensions/removal/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>core</id>
                         <goals>
                             <goal>jar</goal>
