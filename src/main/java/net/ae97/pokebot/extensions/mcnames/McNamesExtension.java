@@ -1,7 +1,6 @@
 package net.ae97.pokebot.extensions.mcnames;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
@@ -21,7 +20,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
-import jline.internal.Nullable;
 import net.ae97.pircboty.ChatFormat;
 import net.ae97.pircboty.api.events.CommandEvent;
 import net.ae97.pokebot.PokeBot;
@@ -107,7 +105,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
      * @param timestamp Time the user had the name at, or <code>null</code> for the current time
      * @return \n delimited string containing information about a username
      */
-    private String findInfo(String username, @Nullable Long timestamp) {
+    private String findInfo(String username, Long timestamp) {
         try {
             String str = "https://api.mojang.com/users/profiles/minecraft/" + username;
             if (timestamp != null) {
@@ -158,7 +156,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             }
             return output.toString();
         } catch (Exception e) {
-            PokeBot.getLogger().log(Level.WARNING, "Error looking up player name", e);
+            getLogger().log(Level.WARNING, "Error looking up player name", e);
             return null;
         }
     }
@@ -177,9 +175,9 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             return gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class);
 
         } catch (MalformedURLException e) {
-            PokeBot.getLogger().log(Level.WARNING, "Error looking up player uuid", e);
+            getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         } catch (IOException e) {
-            PokeBot.getLogger().log(Level.WARNING, "Error looking up player uuid", e);
+            getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         }
         return null;
     }
