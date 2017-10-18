@@ -23,8 +23,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import net.ae97.pircboty.Channel;
@@ -44,16 +44,10 @@ import net.ae97.pokebot.api.Listener;
 public class BanSystemListener implements Listener, CommandExecutor {
 
     private final BanSystem core;
-    private final String host, mysqlUser, pass, database;
-    private final int port;
+    private final Map<String, List<String>> permBanTemp = new ConcurrentHashMap<>();
 
     public BanSystemListener(BanSystem system) {
         core = system;
-        host = system.getConfig().getString("host");
-        port = system.getConfig().getInt("port");
-        mysqlUser = system.getConfig().getString("user");
-        pass = system.getConfig().getString("pass");
-        database = system.getConfig().getString("database");
     }
 
     @EventExecutor
@@ -75,7 +69,22 @@ public class BanSystemListener implements Listener, CommandExecutor {
             return;
         }
         addBanToHistory(event.getHostmask(), event.getUser(), event.getChannel());
-        PokeBot.getScheduler().scheduleTask(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
+        boolean toSkip = false;
+        synchronized (permBanTemp) {
+            List<String> skip = permBanTemp.get(event.getChannel().getName());
+            if (skip != null) {
+                for (int i=0; i < skip.size(); i++) {
+                    if (skip.get(i).equals(event.getHostmask())) {
+                        toSkip = true;
+                        skip.remove(i);
+                        i--;
+                    }
+                }
+            }
+        }
+        if(!toSkip) {
+            PokeBot.getScheduler().scheduleTask(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
+        }
         if (!event.getUser().getNick().equals(event.getBot().getNick())) {
             addBanToSystem(event.getHostmask(), event.getUser(), event.getChannel());
         }
@@ -83,25 +92,22 @@ public class BanSystemListener implements Listener, CommandExecutor {
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getArgs().length == 0) {
-            event.respond("Usage: gbh <mask> [channel]");
+        if (!event.getChannel().isOp(event.getUser())) {
             return;
         }
-        if (event.getArgs().length == 1 && event.getChannel() == null) {
-            event.respond("Must specify channel");
-            return;
+        if (event.getArgs().length != 1) {
+            event.respond("Usage: permban <mask>");
         }
-        int bans = this.getPreviousBanCount(event.getArgs()[0], event.getArgs().length == 1 ? event.getChannel().getName() : event.getArgs()[1]);
-        if (bans == -1) {
-            event.respond("Failed to check for history, please report this error to my operator");
-        } else {
-            event.respond("Bans issued on that mask: " + bans);
+        synchronized (permBanTemp) {
+            List<String> existingBans = permBanTemp.getOrDefault(event.getChannel().getName(), new ArrayList<>());
+            existingBans.add(event.getArgs()[0]);
+            permBanTemp.put(event.getChannel().getName(), existingBans);
         }
     }
 
     @Override
     public String[] getAliases() {
-        return new String[]{"gbh"};
+        return new String[]{"permban"};
     }
 
     private void processEvent(User user, Channel channel) {
@@ -202,6 +208,11 @@ public class BanSystemListener implements Listener, CommandExecutor {
     }
 
     private Connection openConnection() throws SQLException {
+        String host = core.getConfig().getString("host");
+        int port = core.getConfig().getInt("port");
+        String mysqlUser = core.getConfig().getString("user");
+        String pass = core.getConfig().getString("pass");
+        String database = core.getConfig().getString("database");
         return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass);
     }
 }
