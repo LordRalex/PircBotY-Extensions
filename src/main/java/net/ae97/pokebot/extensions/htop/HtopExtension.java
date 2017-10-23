@@ -47,10 +47,9 @@ public class HtopExtension extends Extension implements CommandExecutor {
         max = runtime.maxMemory();
         perTotal = (int) (((total - free) / (double) total) * 100);
         perMax = (int) ((total / (double) max) * 100);
-        event.respond("Processors: " + proc + " - "
-                + " Memory: "
+        event.respond("Memory: "
                 + convert(total - free) + "/" + convert(total) + " (" + perTotal + "%)"
-                + " up to " + convert(max) + " (" + perMax + "%)");
+                + ", max allowed: " + convert(max) + " (" + perMax + "%)");
 
     }
 

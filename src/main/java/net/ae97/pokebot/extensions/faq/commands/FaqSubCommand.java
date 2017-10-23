@@ -25,10 +25,10 @@ import net.ae97.pokebot.extensions.faq.database.Database;
  */
 public interface FaqSubCommand {
 
-    public String[] getPrefix();
+    String[] getPrefix();
 
-    public void execute(FaqExtension extension, CommandEvent event, Database database);
+    void execute(FaqExtension extension, CommandEvent event, Database database);
 
-    public String[] getHelp();
+    String[] getHelp();
 
 }

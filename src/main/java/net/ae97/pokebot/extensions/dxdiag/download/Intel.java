@@ -38,10 +38,6 @@ public class Intel {
             this.epmID = epmID;
             download = new ArrayList<>();
         }
-
-        public Driver() {
-
-        }
     }
 
 }

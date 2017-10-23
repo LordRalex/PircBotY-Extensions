@@ -38,11 +38,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ScrollCommand implements CommandExecutor {
 
-    private final String url;
-
-    public ScrollCommand() {
-        url = "http://a.scrollsguide.com/scrolls?name={name}&norules";
-    }
+    private final String url = "http://a.scrollsguide.com/scrolls?name={name}&norules";
 
     @Override
     public void runEvent(CommandEvent event) {

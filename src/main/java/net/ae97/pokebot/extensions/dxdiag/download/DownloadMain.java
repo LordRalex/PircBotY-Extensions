@@ -18,7 +18,7 @@ public class DownloadMain {
 
 
     public static void add(GPU gpu, String manufacturer) {
-        try (Connection connection = openConnection()) {
+        try (Connection connection = core.openConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("DELETE FROM dxdiag where isold = TRUE AND drivername = ?")) {
                 statement.setString(1, Util.removeSpecialChars(gpu.name.toLowerCase().trim()));
                 statement.execute();
@@ -75,7 +75,7 @@ public class DownloadMain {
     }
 
     private static void add(String name, String os, String arch, String manufacturer, String link) {
-        try (Connection connection = openConnection()) {
+        try (Connection connection = core.openConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("INSERT INTO dxdiag (drivername, os, arch, manufacturer, link, isold) VALUES (?, ?, ?, ?, ?, FALSE)")) {
                 statement.setString(1, name);
                 statement.setString(2, os);
@@ -89,14 +89,5 @@ public class DownloadMain {
             core.getLogger().log(Level.SEVERE, "Error updating old links", e);
 
         }
-    }
-
-    private static Connection openConnection() throws SQLException {
-        String host = core.getConfig().getString("host");
-        int port = core.getConfig().getInt("port");
-        String mysqlUser = core.getConfig().getString("user");
-        String pass = core.getConfig().getString("pass");
-        String database = core.getConfig().getString("database");
-        return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass);
     }
 }

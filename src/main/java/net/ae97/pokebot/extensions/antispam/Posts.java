@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * @author Lord_Ralex
  */
-public class Posts {
+class Posts {
 
     private final List<Post> posts = new ArrayList<>();
     private final int MAX_MESSAGES;

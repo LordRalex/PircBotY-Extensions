@@ -28,7 +28,6 @@ public class Download {
     public void addDownload(EPMIdResults.ResultsForDisplayImpl display) {
         epmID = display.Id;
         for (String str : display.OperatingSystemSet) {
-            String version = "TooOld";
             int arch = str.contains("64") ? 64 : 32;
             if (str.contains("7")) {
                 gpu.addDownload("7", arch, "https://downloadcenter.intel.com/download/" + epmID);

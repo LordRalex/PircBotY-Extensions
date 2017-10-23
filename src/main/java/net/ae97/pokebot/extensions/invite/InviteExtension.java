@@ -45,5 +45,4 @@ public class InviteExtension extends Extension implements Listener{
         String chan = event.getChannel();
         event.getBot().sendIRC().joinChannel(chan);
     }
-
 }

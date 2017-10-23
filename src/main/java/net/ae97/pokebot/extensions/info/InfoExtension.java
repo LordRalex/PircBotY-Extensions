@@ -49,5 +49,4 @@ public class InfoExtension extends Extension implements CommandExecutor {
             "version"
         };
     }
-
 }

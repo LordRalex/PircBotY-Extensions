@@ -39,17 +39,13 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class StatCommand implements CommandExecutor {
 
-    private final URL url;
-
-    public StatCommand() throws MalformedURLException {
-        url = new URL("http://a.scrollsguide.com/statistics");
-    }
+    private final String url = "http://a.scrollsguide.com/statistics";
 
     @Override
     public void runEvent(CommandEvent event) {
         try {
             List<String> lines = new LinkedList<>();
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestProperty("User-Agent", "PokeBot - " + PokeBot.VERSION);
             conn.connect();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {

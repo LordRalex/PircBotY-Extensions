@@ -37,6 +37,7 @@ import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.CommandExecutor;
 import net.ae97.pokebot.api.EventExecutor;
 import net.ae97.pokebot.api.Listener;
+import sun.misc.Regexp;
 
 /**
  * @author Joshua

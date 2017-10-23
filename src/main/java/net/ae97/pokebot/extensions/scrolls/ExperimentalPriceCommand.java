@@ -38,11 +38,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ExperimentalPriceCommand implements CommandExecutor {
 
-    private final String url;
-
-    public ExperimentalPriceCommand() {
-        url = "http://a.scrollsguide.com/experimentalprices?name={name}&days={days}";
-    }
+    private final String url = "http://a.scrollsguide.com/experimentalprices?name={name}&days={days}";
 
     @Override
     public void runEvent(CommandEvent event) {

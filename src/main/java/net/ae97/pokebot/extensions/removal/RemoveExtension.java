@@ -25,9 +25,6 @@ import net.ae97.pokebot.extension.Extension;
 import org.apache.commons.lang3.StringUtils;
 
 public class RemoveExtension extends Extension implements CommandExecutor {
-    
-    private final String extensionName = "removal";
-    private final String[] aliases = new String[] {"remove", "terminate"};
 
     @Override
     public void load() {
@@ -36,7 +33,7 @@ public class RemoveExtension extends Extension implements CommandExecutor {
 
     @Override
     public String getName() {
-        return extensionName;
+        return "removal";
     }
 
     @Override
@@ -72,7 +69,7 @@ public class RemoveExtension extends Extension implements CommandExecutor {
 
     @Override
     public String[] getAliases() {
-        return aliases;
+        return new String[] {"remove", "terminate"};
     }
 
 }

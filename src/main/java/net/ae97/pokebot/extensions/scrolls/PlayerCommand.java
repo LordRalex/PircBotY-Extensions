@@ -38,13 +38,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class PlayerCommand implements CommandExecutor {
 
-    private final String url;
+    private final String url = "http://a.scrollsguide.com/player?name={name}&fields=all";
     private final BadgeRanks badges;
     private final ScrollsExtension extension;
 
     public PlayerCommand(ScrollsExtension extension) {
         this.extension = extension;
-        url = "http://a.scrollsguide.com/player?name={name}&fields=all";
         badges = new BadgeRanks(this.extension);
     }
 

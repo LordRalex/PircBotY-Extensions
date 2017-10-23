@@ -44,14 +44,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     @Override
     public void load() {
         final GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
-            @Override
-            public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                    throws JsonParseException {
-                return new Date(json.getAsLong());
-            }
-        });
-
+        gsonBuilder.registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (json, typeOfT, context) -> new Date(json.getAsLong()));
         gson = gsonBuilder.create();
 
         PokeBot.getEventHandler().registerListener(this);

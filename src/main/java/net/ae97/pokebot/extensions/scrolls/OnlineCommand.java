@@ -39,17 +39,13 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class OnlineCommand implements CommandExecutor {
 
-    private final URL onlineURL;
-
-    public OnlineCommand() throws MalformedURLException {
-        onlineURL = new URL("http://a.scrollsguide.com/online");
-    }
+    private final String url = "http://a.scrollsguide.com/online";
 
     @Override
     public void runEvent(CommandEvent event) {
         try {
             List<String> lines = new LinkedList<>();
-            HttpURLConnection conn = (HttpURLConnection) onlineURL.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
             conn.setRequestProperty("User-Agent", "PokeBot - " + PokeBot.VERSION);
             conn.connect();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {

@@ -26,25 +26,25 @@ import java.util.List;
 public class AMD {
 
     public static class Platform {
-        
-        
+
+
 
         public Platform(String platformName, String platformID) {
-            
+
         }
 
         public static class ProductFamily {
-            
-            
-            
+
+
+
 
             public ProductFamily(String productFamilyName, String productFamilyID) {
-                
+
             }
 
             public static class Product {
-                
-                
+
+
                 public List<Version> versions = new ArrayList<>();
 
                 public Product(String productName, String productID) {
@@ -53,8 +53,8 @@ public class AMD {
 
                 public static class Version {
                     public boolean shouldDownload = false;
-                    
-                    
+
+
                     public List<Download> downloads = new ArrayList<>();
 
                     public Version(String type, String number, Elements downloads) {

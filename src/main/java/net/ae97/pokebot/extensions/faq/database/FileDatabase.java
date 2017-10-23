@@ -112,7 +112,7 @@ public class FileDatabase extends Database {
 
     private void updateIndex(File source) throws IOException {
         synchronized (indexMapping) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(savePath))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(source))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String name = line.split("\\|")[0];

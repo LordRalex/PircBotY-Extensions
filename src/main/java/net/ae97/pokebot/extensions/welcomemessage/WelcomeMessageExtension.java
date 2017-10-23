@@ -53,12 +53,9 @@ public class WelcomeMessageExtension extends Extension implements Listener, Comm
             return;
         }
         final String[] parts = message.split(";;");
-        PokeBot.getScheduler().scheduleTask(new Runnable() {
-            @Override
-            public void run() {
-                for (String part : parts) {
-                    event.getUser().send().notice(part.replace("{user}", event.getUser().getNick()).replace("{channel}", event.getChannel().getName()));
-                }
+        PokeBot.getScheduler().scheduleTask(() -> {
+            for (String part : parts) {
+                event.getUser().send().notice(part.replace("{user}", event.getUser().getNick()).replace("{channel}", event.getChannel().getName()));
             }
         }, 2, TimeUnit.SECONDS);
 

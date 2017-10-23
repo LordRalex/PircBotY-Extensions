@@ -19,7 +19,7 @@ package net.ae97.pokebot.extensions.antispam;
 /**
  * @author Lord_Ralex
  */
-public class Post {
+class Post {
 
     private final long timePosted;
     private final String message;
