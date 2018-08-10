@@ -167,8 +167,6 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
             return gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class);
 
-        } catch (MalformedURLException e) {
-            getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         }

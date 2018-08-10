@@ -22,6 +22,7 @@ import java.util.Set;
 import net.ae97.pircboty.api.events.ActionEvent;
 import net.ae97.pircboty.api.events.JoinEvent;
 import net.ae97.pircboty.api.events.MessageEvent;
+import net.ae97.pircboty.generics.GenericChannelUserEvent;
 import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.EventExecutor;
 import net.ae97.pokebot.api.Listener;
@@ -53,18 +54,7 @@ public class CensorExtension extends Extension implements Listener {
             return;
         }
         String message = event.getMessage().toLowerCase();
-        if (scanMessage(message)) {
-            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHostmask())) {
-                if (event.getChannel().getUserLevels(event.getUser()).size() > 0) {
-                    return;
-                }
-                event.getChannel().send().kick(event.getUser(), getConfig().getString("kickmessage"));
-            } else {
-                warned.add(event.getUser().getNick());
-                warned.add(event.getUser().getHostmask());
-                event.respond(getConfig().getString("warnmessage", "Please keep it civil"));
-            }
-        }
+        checkForCensor(message, event);
     }
 
     @EventExecutor
@@ -76,18 +66,7 @@ public class CensorExtension extends Extension implements Listener {
             return;
         }
         String message = event.getMessage().toLowerCase();
-        if (scanMessage(message)) {
-            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHostmask())) {
-                if (event.getChannel().getUserLevels(event.getUser()).size() > 0) {
-                    return;
-                }
-                event.getChannel().send().kick(event.getUser(), getConfig().getString("kickmessage"));
-            } else {
-                warned.add(event.getUser().getNick());
-                warned.add(event.getUser().getHostmask());
-                event.respond(getConfig().getString("warnmessage", "Please keep it civil"));
-            }
-        }
+        checkForCensor(message, event);
     }
 
     @EventExecutor
@@ -100,6 +79,21 @@ public class CensorExtension extends Extension implements Listener {
         if (trigger != null) {
             event.getChannel().send().ban("*" + trigger + "*!*@" + event.getUser().getHostmask());
             event.getChannel().send().kick(event.getUser(), getConfig().getString("kickmessage", "Please get a different nickname"));
+        }
+    }
+
+    private void checkForCensor(String message, GenericChannelUserEvent event) {
+        if (scanMessage(message)) {
+            if (warned.contains(event.getUser().getNick()) || warned.contains(event.getUser().getHostmask())) {
+                if (event.getChannel().getUserLevels(event.getUser()).size() > 0) {
+                    return;
+                }
+                event.getChannel().send().kick(event.getUser(), getConfig().getString("kickmessage"));
+            } else {
+                warned.add(event.getUser().getNick());
+                warned.add(event.getUser().getHostmask());
+                event.respond(getConfig().getString("warnmessage", "Please keep it civil"));
+            }
         }
     }
 

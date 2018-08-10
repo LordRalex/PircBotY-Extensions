@@ -4,7 +4,7 @@
 
     <groupId>net.ae97</groupId>
     <artifactId>pokebot-extensions</artifactId>
-    <version>1.0.2</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>PokeBot-Extensions</name>
@@ -78,6 +78,19 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>blacklist</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>blacklist</classifier>
+                            <includes>
+                                <include>**/extensions/blacklist/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>censor</id>
                         <goals>
                             <goal>jar</goal>
@@ -87,6 +100,19 @@
                             <classifier>censor</classifier>
                             <includes>
                                 <include>**/extensions/censor/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>dxdiag</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>dxdiag</classifier>
+                            <includes>
+                                <include>**/extensions/dxdiag/**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -130,33 +156,6 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>mcnames</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <classifier>mcnames</classifier>
-                            <includes>
-                                <include>**/extensions/mcnames/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>dxdiag</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <classifier>dxdiag</classifier>
-                            <includes>
-                                <include>**/extensions/dxdiag/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-
-                    <execution>
                         <id>htop</id>
                         <goals>
                             <goal>jar</goal>
@@ -192,6 +191,19 @@
                             <classifier>invite</classifier>
                             <includes>
                                 <include>**/extensions/invite/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mcnames</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>mcnames</classifier>
+                            <includes>
+                                <include>**/extensions/mcnames/**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -235,15 +247,28 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>scales</id>
+                        <id>removal</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                         <phase>package</phase>
                         <configuration>
-                            <classifier>scales</classifier>
+                            <classifier>removal</classifier>
                             <includes>
-                                <include>**/extensions/testscales/**</include>
+                                <include>**/extensions/removal/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scrolls</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <classifier>scrolls</classifier>
+                            <includes>
+                                <include>**/extensions/scrolls/**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -273,36 +298,6 @@
                             </includes>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>removal</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <classifier>removal</classifier>
-                            <includes>
-                                <include>**/extensions/removal/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>core</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <classifier>core</classifier>
-                            <includes>
-                                <include>**/extensions/htop/**</include>
-                                <include>**/extensions/help/**</include>
-                                <include>**/extensions/info/**</include>
-                                <include>**/extensions/reload/**</include>
-                                <include>**/extensions/uptime/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -311,7 +306,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>pircboty</artifactId>
-            <version>2.1.1</version>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
 </project>

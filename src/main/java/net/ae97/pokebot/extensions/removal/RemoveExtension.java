@@ -60,7 +60,7 @@ public class RemoveExtension extends Extension implements CommandExecutor {
         if(!target.getChannels().contains(ce.getChannel())) {
             return;
         }
-        if(ce.getCommand().equalsIgnoreCase("terminate")) {            
+        if(ce.getCommand().equalsIgnoreCase("terminate") || ce.getCommand().equalsIgnoreCase("ban")) {
             String hostname = "*!*@" + target.getHostmask();
             ce.getChannel().send().ban(hostname);
         }
@@ -69,7 +69,7 @@ public class RemoveExtension extends Extension implements CommandExecutor {
 
     @Override
     public String[] getAliases() {
-        return new String[] {"remove", "terminate"};
+        return new String[] {"remove", "terminate", "kick", "ban"};
     }
 
 }

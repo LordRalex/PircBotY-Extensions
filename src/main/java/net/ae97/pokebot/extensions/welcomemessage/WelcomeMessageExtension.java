@@ -17,8 +17,12 @@
 package net.ae97.pokebot.extensions.welcomemessage;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import net.ae97.pircboty.User;
 import net.ae97.pircboty.api.events.CommandEvent;
 import net.ae97.pircboty.api.events.JoinEvent;
 import net.ae97.pokebot.PokeBot;
@@ -63,7 +67,10 @@ public class WelcomeMessageExtension extends Extension implements Listener, Comm
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getChannel().getOps().contains(event.getUser())) {
+        Set<User> allowedUsers = new HashSet<>();
+        allowedUsers.addAll(event.getChannel().getVoices());
+        allowedUsers.addAll(event.getChannel().getOps());
+        if (allowedUsers.contains(event.getUser())) {
             if (event.getArgs().length == 0) {
                 mappings.remove(event.getChannel().getName().toLowerCase());
                 event.getUser().send().notice("I will stop messaging people when they join");

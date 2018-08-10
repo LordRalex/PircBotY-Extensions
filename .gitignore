@@ -1,3 +1,4 @@
 .gitattributes
 /target/
 *.iml
+.idea/
