@@ -19,18 +19,7 @@ package net.ae97.pokebot.extensions.mcping;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Formatter;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
 
 import net.ae97.pircboty.api.events.CommandEvent;
 import net.ae97.pokebot.PokeBot;
@@ -43,6 +32,8 @@ import net.ae97.pokebot.extension.ExtensionLoadFailedException;
  * @author Joshua
  */
 public class MCPingExtension extends Extension implements CommandExecutor {
+    public static final String BLACKLISTED_MESSAGE = "Server is blacklisted";
+
 
     @Override
     public void load() throws ExtensionLoadFailedException {
@@ -56,20 +47,12 @@ public class MCPingExtension extends Extension implements CommandExecutor {
             return;
         }
         try {
-            HttpURLConnection request = (HttpURLConnection) new URL("https://sessionserver.mojang.com/blockedservers")
-                    .openConnection();
-            request.connect();
-            final List<String> blacklisted = new BufferedReader(new InputStreamReader(request.getInputStream()))
-                    .lines()
-                    .collect(Collectors.toList());
-            final String url = ce.getArgs()[0].split(":")[0];
-            boolean isBlacklisted = isBlacklisted(blacklisted, url);
-            if(isBlacklisted) {
-                ce.respond("Server is blacklisted");
-                return;
+            BlacklistChecker.refreshBlacklist();
+            if(BlacklistChecker.isHostBlacklisted(ce.getArgs()[0])) {
+                ce.respond(BLACKLISTED_MESSAGE);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            getLogger().log(Level.WARNING, "Error updating server blacklist", e);
         }
         try {
             Process pinger = new ProcessBuilder().command("python", "bin/mcping.py", ce.getArgs()[0]).start();
@@ -79,6 +62,7 @@ public class MCPingExtension extends Extension implements CommandExecutor {
             }
         } catch (IOException | InterruptedException ex) {
             ce.respond("Error pinging server: " + ex.getMessage());
+            getLogger().log(Level.WARNING, "Error pinging server", ex);
         }
     }
 
@@ -94,47 +78,4 @@ public class MCPingExtension extends Extension implements CommandExecutor {
         return "mcping";
     }
 
-    private static String getHash(String url)
-    {
-        String sha1 = "";
-        try
-        {
-            MessageDigest crypt = MessageDigest.getInstance("SHA-1");
-            crypt.reset();
-            crypt.update(url.getBytes(StandardCharsets.UTF_8));
-            sha1 = byteToHex(crypt.digest());
-        }
-        catch(NoSuchAlgorithmException e)
-        {
-            e.printStackTrace();
-        }
-        return sha1;
-    }
-
-    private static String byteToHex(final byte[] hash)
-    {
-        Formatter formatter = new Formatter();
-        for (byte b : hash)
-        {
-            formatter.format("%02x", b);
-        }
-        String result = formatter.toString();
-        formatter.close();
-        return result;
-    }
-
-    private boolean isBlacklisted(List<String> blacklisted, String url) {
-        final List<String> parts = Arrays.asList(url.split("\\."));
-        if(blacklisted.contains(getHash(url))) {
-            return true;
-        }
-        for (int i = 1; i < parts.size(); i++) {
-            final String asterisks = String.join("", Collections.nCopies(i, "*."));
-            final String finalUrl = asterisks + String.join(".", parts.subList(i, parts.size()));
-            if(blacklisted.contains(getHash(finalUrl))) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
