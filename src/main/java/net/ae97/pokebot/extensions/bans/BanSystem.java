@@ -35,6 +35,6 @@ public class BanSystem extends Extension {
     public void load() {
         BanSystemListener listener = new BanSystemListener(this);
         PokeBot.getEventHandler().registerListener(listener);
-        PokeBot.getEventHandler().registerCommandExecutor(listener);
+        //PokeBot.getEventHandler().registerCommandExecutor(listener);
     }
 }

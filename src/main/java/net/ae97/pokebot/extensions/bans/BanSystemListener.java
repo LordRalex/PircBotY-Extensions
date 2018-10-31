@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+
 import net.ae97.pircboty.Channel;
 import net.ae97.pircboty.User;
 import net.ae97.pircboty.api.events.CommandEvent;
@@ -42,7 +43,7 @@ import sun.misc.Regexp;
 /**
  * @author Joshua
  */
-public class BanSystemListener implements Listener, CommandExecutor {
+public class BanSystemListener implements Listener {
 
     private final BanSystem core;
     private final Map<String, List<String>> permBanTemp = new ConcurrentHashMap<>();
@@ -70,45 +71,11 @@ public class BanSystemListener implements Listener, CommandExecutor {
             return;
         }
         addBanToHistory(event.getHostmask(), event.getUser(), event.getChannel());
-        boolean toSkip = false;
-        synchronized (permBanTemp) {
-            List<String> skip = permBanTemp.get(event.getChannel().getName());
-            if (skip != null) {
-                for (int i=0; i < skip.size(); i++) {
-                    if (skip.get(i).equals(event.getHostmask())) {
-                        toSkip = true;
-                        skip.remove(i);
-                        i--;
-                    }
-                }
-            }
-        }
-        if(!toSkip) {
-            PokeBot.getScheduler().scheduleTask(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
-        }
-        if (!event.getUser().getNick().equals(event.getBot().getNick())) {
+
+        PokeBot.getScheduler().scheduleTask(new UnbanRunnable(event.getChannel().getName(), event.getHostmask()), core.getConfig().getInt("unban-delay", 3), TimeUnit.HOURS);
+        if (!isIgnored(event)) {
             addBanToSystem(event.getHostmask(), event.getUser(), event.getChannel());
         }
-    }
-
-    @Override
-    public void runEvent(CommandEvent event) {
-        if (!event.getChannel().isOp(event.getUser())) {
-            return;
-        }
-        if (event.getArgs().length != 1) {
-            event.respond("Usage: permban <mask>");
-        }
-        synchronized (permBanTemp) {
-            List<String> existingBans = permBanTemp.getOrDefault(event.getChannel().getName(), new ArrayList<>());
-            existingBans.add(event.getArgs()[0]);
-            permBanTemp.put(event.getChannel().getName(), existingBans);
-        }
-    }
-
-    @Override
-    public String[] getAliases() {
-        return new String[]{"permban"};
     }
 
     private void processEvent(User user, Channel channel) {
@@ -176,6 +143,10 @@ public class BanSystemListener implements Listener, CommandExecutor {
         return core.getConfig().getStringList("channels");
     }
 
+    private List<String> getIgnoredBanners() {
+        return core.getConfig().getStringList("ignoredBanners");
+    }
+
     private int getPreviousBanCount(String mask, String channel) {
         try (Connection connection = openConnection()) {
             try (PreparedStatement statement = connection.prepareStatement("SELECT count(*) AS count FROM banhistory WHERE ? LIKE mask AND channel = ?")) {
@@ -215,5 +186,10 @@ public class BanSystemListener implements Listener, CommandExecutor {
         String pass = core.getConfig().getString("pass");
         String database = core.getConfig().getString("database");
         return DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, mysqlUser, pass);
+    }
+
+    private boolean isIgnored(SetChannelBanEvent event) {
+        String bannerName = event.getUser().getNick();
+        return bannerName.equals(event.getBot().getNick()) || getIgnoredBanners().contains(bannerName);
     }
 }
