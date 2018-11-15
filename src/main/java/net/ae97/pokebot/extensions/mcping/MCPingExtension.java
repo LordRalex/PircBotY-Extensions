@@ -19,6 +19,8 @@ package net.ae97.pokebot.extensions.mcping;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+
 import net.ae97.pircboty.api.events.CommandEvent;
 import net.ae97.pokebot.PokeBot;
 import net.ae97.pokebot.api.CommandExecutor;
@@ -30,6 +32,8 @@ import net.ae97.pokebot.extension.ExtensionLoadFailedException;
  * @author Joshua
  */
 public class MCPingExtension extends Extension implements CommandExecutor {
+    public static final String BLACKLISTED_MESSAGE = "Server is blacklisted";
+
 
     @Override
     public void load() throws ExtensionLoadFailedException {
@@ -41,7 +45,15 @@ public class MCPingExtension extends Extension implements CommandExecutor {
         if (ce.getArgs().length != 1) {
             ce.respond("Usage: mcping <server ip>[:port]");
             return;
-        }       
+        }
+        try {
+            BlacklistChecker.refreshBlacklist();
+            if(BlacklistChecker.isHostBlacklisted(ce.getArgs()[0])) {
+                ce.respond(BLACKLISTED_MESSAGE);
+            }
+        } catch (IOException e) {
+            getLogger().log(Level.WARNING, "Error updating server blacklist", e);
+        }
         try {
             Process pinger = new ProcessBuilder().command("python", "bin/mcping.py", ce.getArgs()[0]).start();
             pinger.waitFor();
@@ -50,6 +62,7 @@ public class MCPingExtension extends Extension implements CommandExecutor {
             }
         } catch (IOException | InterruptedException ex) {
             ce.respond("Error pinging server: " + ex.getMessage());
+            getLogger().log(Level.WARNING, "Error pinging server", ex);
         }
     }
 
@@ -64,4 +77,5 @@ public class MCPingExtension extends Extension implements CommandExecutor {
     public String getName() {
         return "mcping";
     }
+
 }
