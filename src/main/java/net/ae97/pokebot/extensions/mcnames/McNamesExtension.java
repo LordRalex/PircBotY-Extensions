@@ -2,23 +2,18 @@ package net.ae97.pokebot.extensions.mcnames;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 import net.ae97.pircboty.ChatFormat;
 import net.ae97.pircboty.api.events.CommandEvent;
@@ -63,7 +58,6 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             for (String s : split) {
                 event.respond(s);
             }
-            return;
         }
     }
 
@@ -95,56 +89,54 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
      * Get information about a Minecraft username
      * 
      * @param username Minecraft username of user
-     * @param timestamp Time the user had the name at, or <code>null</code> for the current time
+     * @param timestamp Time the user had the name at, or <code>null</code> for legacy/demo and current time
      * @return \n delimited string containing information about a username
      */
     private String findInfo(String username, Long timestamp) {
         try {
-            String str = "https://api.mojang.com/users/profiles/minecraft/" + username;
-            if (timestamp != null) {
-                str = str + "?at=" + timestamp.toString();
-            }
-            URL url = new URL(str);
-            HttpURLConnection request = (HttpURLConnection) url.openConnection();
-            request.connect();
-
-            // Convert to a JSON object to print data
-            JsonParser jp = new JsonParser(); // from gson
-            JsonElement root = jp.parse(new InputStreamReader(request.getInputStream()));
-            JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
-            String id = rootobj.get("id").getAsString();
-            String currentName = rootobj.get("name").getAsString();
-            boolean migrated = true;
-            boolean paid = true;
-            if (rootobj.has("legacy")) {
-                migrated = false;
-            }
-            if (rootobj.has("demo")) {
-                paid = false;
-            }
-            NameResponse[] names = getNames(id);
             StringBuilder output = new StringBuilder();
-            if (timestamp != null) {
+            AccountStatus accountResult;
+            if(timestamp==null) {
+                accountResult = getAccountStatus(username);
+            } else {
+                accountResult = getLegacyAccountStatus(username, timestamp);
                 output.append(ChatFormat.RED + "Name was changed to: " + ChatFormat.NORMAL);
             }
-            output.append(ChatFormat.BOLD + currentName + ChatFormat.NORMAL + ": " + ChatFormat.BLUE + "UUID: "
-                    + ChatFormat.NORMAL + id + " ");
-            output.append(paid ? ChatFormat.GREEN + "PAID " + ChatFormat.NORMAL
-                    : ChatFormat.RED + "DEMO " + ChatFormat.NORMAL);
-            output.append(migrated ? ChatFormat.YELLOW + "MIGRATED " + ChatFormat.NORMAL
-                    : ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
 
-            if (names != null && names.length > 1) {
-                StringBuilder nameHistory = new StringBuilder();
-                nameHistory.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names[0].getName());
-                for (int i = 1; i < names.length; i++) {
-                    nameHistory.append(String.format(" → %s (%s)", names[i].getName(),
-                            dateFormat.format(names[i].getChangedToAt())));
-                }
-                if (nameHistory.length() > MAX_MESSAGE_CHARACTERS) {
-                    output.append(String.format("\nName history too long for display: https://namemc.com/profile/%s", id));
-                } else {
-                    output.append(nameHistory);
+            if(!accountResult.exists) {
+                return null;
+            }
+
+            output.append(ChatFormat.BOLD + accountResult.getName() + ChatFormat.NORMAL + ": " + ChatFormat.BLUE + "UUID: "
+                    + ChatFormat.NORMAL + accountResult.getId() + " ");
+
+            if (accountResult.isPaid())  {
+                output.append(ChatFormat.GREEN + "PAID " + ChatFormat.NORMAL);
+            } else {
+                output.append(ChatFormat.RED + "DEMO " + ChatFormat.NORMAL);
+            }
+
+            if (accountResult.isMigrated())  {
+                output.append(ChatFormat.YELLOW + "MIGRATED " + ChatFormat.NORMAL);
+            } else {
+                output.append(ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
+            }
+
+            if(accountResult.isMigrated()) {
+                List<NameResponse> names = getNames(accountResult.getId());
+                if (!names.isEmpty()) {
+                    StringBuilder nameHistory = new StringBuilder();
+                    nameHistory.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names.get(0).getName());
+
+                    for(NameResponse name: names) {
+                        nameHistory.append(String.format(" → %s (%s)", name.getName(), dateFormat.format(name.getChangedToAt())));
+                    }
+
+                    if (nameHistory.length() > MAX_MESSAGE_CHARACTERS) {
+                        output.append(String.format("\nName history too long for display: https://namemc.com/profile/%s", accountResult.id));
+                    } else {
+                        output.append(nameHistory);
+                    }
                 }
             }
             return output.toString();
@@ -154,23 +146,64 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         }
     }
 
+    private AccountStatus getAccountStatus(String username) throws IOException {
+        URL url = new URL("https://api.mojang.com/profiles/minecraft");
+        HttpURLConnection request = (HttpURLConnection) url.openConnection();
+        request.setRequestMethod("POST");
+        request.setRequestProperty("Content-Type", "application/json");
+        String query = "[\""+username+"\"]";
+        request.setRequestProperty("Content-Length", Integer.toString(query.length()));
+        request.getOutputStream().write(query.getBytes(StandardCharsets.UTF_8));
+        request.connect();
+
+        JsonParser jp = new JsonParser(); // from gson
+        JsonElement root = jp.parse(new InputStreamReader(request.getInputStream()));
+        JsonArray rootArray = root.getAsJsonArray();
+        if(rootArray.size()==0) {
+            return new AccountStatus();
+        }
+
+        JsonObject user = rootArray.get(0).getAsJsonObject();
+        boolean demo = user.has("demo");
+        boolean legacy = user.has("legacy");
+        String id = user.get("id").getAsString();
+        String name = user.get("name").getAsString();
+
+        return new AccountStatus(!demo, !legacy, id, name);
+    }
+
+    private AccountStatus getLegacyAccountStatus(String username, long timestamp) throws IOException {
+        String str = "https://api.mojang.com/users/profiles/minecraft/" + username + "?at=" + timestamp;
+
+        URL url = new URL(str);
+        HttpURLConnection request = (HttpURLConnection) url.openConnection();
+        request.connect();
+
+        JsonParser jp = new JsonParser();
+        JsonElement root = jp.parse(new InputStreamReader(request.getInputStream()));
+        JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
+        String id = rootobj.get("id").getAsString();
+        String currentName = rootobj.get("name").getAsString();
+        return new AccountStatus(false, false, id, currentName);
+    }
+
     /**
      * Get name history of a user
      * @param id uuid of the user
      * @return Array of past names, or null if something went wrong
      */
-    private NameResponse[] getNames(String id) {
+    private List<NameResponse> getNames(String id) {
         try {
             URL url = new URL("https://api.mojang.com/user/profiles/" + id + "/names");
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.connect();
 
-            return gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class);
+            return Arrays.asList(gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class));
 
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Error looking up player uuid", e);
         }
-        return null;
+        return Collections.emptyList();
     }
 
     /**
@@ -186,6 +219,45 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
         public Date getChangedToAt() {
             return changedToAt;
+        }
+    }
+
+    private class AccountStatus {
+        private boolean migrated;
+        private boolean paid;
+        private boolean exists;
+        private String id;
+        private String name;
+
+        public AccountStatus(boolean migrated, boolean paid, String id, String name) {
+            this.migrated = migrated;
+            this.paid = paid;
+            this.id = id;
+            this.name = name;
+        }
+
+        public AccountStatus() {
+            this.exists = false;
+        }
+
+        public boolean isMigrated() {
+            return migrated;
+        }
+
+        public boolean isPaid() {
+            return paid;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isExists() {
+            return exists;
         }
     }
 
