@@ -101,7 +101,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     private String findInfo(AccountStatus accountStatus) {
         StringBuilder output = new StringBuilder();
 
-        if(!accountStatus.exists) {
+        if(!accountStatus.exists()) {
             return "";
         }
 
@@ -114,13 +114,13 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             output.append(ChatFormat.RED + "DEMO " + ChatFormat.NORMAL);
         }
 
-        if (accountStatus.isMigrated())  {
+        if (accountStatus.isMojang())  {
             output.append(ChatFormat.YELLOW + "MIGRATED " + ChatFormat.NORMAL);
         } else {
             output.append(ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
         }
 
-        if(accountStatus.isMigrated()) {
+        if(accountStatus.isMojang()) {
             List<NameResponse> names = getNames(accountStatus.getId());
             if (!names.isEmpty()) {
                 StringBuilder nameHistory = new StringBuilder();
@@ -233,14 +233,14 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     }
 
     private class AccountStatus {
-        private boolean migrated;
+        private boolean mojang;
         private boolean paid;
         private boolean exists;
         private String id;
         private String name;
 
-        public AccountStatus(boolean migrated, boolean paid, String id, String name) {
-            this.migrated = migrated;
+        public AccountStatus(boolean mojang, boolean paid, String id, String name) {
+            this.mojang = mojang;
             this.paid = paid;
             this.id = id;
             this.name = name;
@@ -250,8 +250,8 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             this.exists = false;
         }
 
-        public boolean isMigrated() {
-            return migrated;
+        public boolean isMojang() {
+            return mojang;
         }
 
         public boolean isPaid() {
@@ -266,7 +266,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             return name;
         }
 
-        public boolean isExists() {
+        public boolean exists() {
             return exists;
         }
     }
