@@ -1,5 +1,13 @@
 package net.ae97.pokebot.extensions.mcnames;
 
+import com.google.gson.*;
+import net.ae97.pircboty.ChatFormat;
+import net.ae97.pircboty.api.events.CommandEvent;
+import net.ae97.pokebot.PokeBot;
+import net.ae97.pokebot.api.CommandExecutor;
+import net.ae97.pokebot.api.Listener;
+import net.ae97.pokebot.extension.Extension;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -7,17 +15,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
-
-import com.google.gson.*;
-
-import net.ae97.pircboty.ChatFormat;
-import net.ae97.pircboty.api.events.CommandEvent;
-import net.ae97.pokebot.PokeBot;
-import net.ae97.pokebot.api.CommandExecutor;
-import net.ae97.pokebot.api.Listener;
-import net.ae97.pokebot.extension.Extension;
 
 public class McNamesExtension extends Extension implements Listener, CommandExecutor {
 
@@ -67,40 +69,46 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         long unixTimestamp = System.currentTimeMillis() / MS_IN_A_SECOND;
         boolean nameChanged = false;
 
-        // find the user who currently has this name
-        Optional<AccountStatus> status = getAccountStatus(username);
-        String result = "";
+        try {
 
-        if(status.isPresent()) {
-            result = findInfo(status.get());
-        }
+            // find the user who currently has this name
+            Optional<AccountStatus> status = getAccountStatus(username);
+            String result = "";
 
-        if (result.isEmpty()) {
-            // otherwise, find the user who until recently had this name
-            status = getLegacyAccountStatus(username, unixTimestamp - SECONDS_IN_A_MONTH);
-            if(status.isPresent()) {
+            if (status.isPresent()) {
                 result = findInfo(status.get());
-                nameChanged = true;
             }
 
             if (result.isEmpty()) {
-                // otherwise, find the user who originally had this name
-                status = getLegacyAccountStatus(username, 0);
-
-                if(status.isPresent()) {
+                // otherwise, find the user who until recently had this name
+                status = getLegacyAccountStatus(username, unixTimestamp - SECONDS_IN_A_MONTH);
+                if (status.isPresent()) {
                     result = findInfo(status.get());
+                    nameChanged = true;
                 }
 
                 if (result.isEmpty()) {
-                    return ChatFormat.RED + "Username doesn't exist" + ChatFormat.NORMAL;
+                    // otherwise, find the user who originally had this name
+                    status = getLegacyAccountStatus(username, 0);
+
+                    if (status.isPresent()) {
+                        result = findInfo(status.get());
+                    }
+
+                    if (result.isEmpty()) {
+                        return ChatFormat.RED + "Username doesn't exist" + ChatFormat.NORMAL;
+                    }
                 }
             }
-        }
 
-        if(nameChanged) {
-            result = ChatFormat.RED + "Name was changed to: " + ChatFormat.NORMAL + result;
+            if (nameChanged) {
+                result = ChatFormat.RED + "Name was changed to: " + ChatFormat.NORMAL + result;
+            }
+            return result;
+        } catch (Exception e) {
+            getLogger().log(Level.WARNING, "Error looking up player " + username, e);
+            return ChatFormat.RED + "Error looking up player " + username + ", Mojang API might be down" + ChatFormat.NORMAL;
         }
-        return result;
     }
 
     /**
@@ -109,7 +117,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
      * @param accountStatus status of the user account
      * @return \n delimited string containing information about a username
      */
-    private String findInfo(AccountStatus accountStatus) {
+    private String findInfo(AccountStatus accountStatus) throws AccountNamesException {
         StringBuilder output = new StringBuilder();
 
         if(!accountStatus.exists()) {
@@ -151,7 +159,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         return output.toString();
     }
 
-    private Optional<AccountStatus> getAccountStatus(String username) {
+    private Optional<AccountStatus> getAccountStatus(String username) throws AccountStatusException {
         try {
             URL url = new URL("https://api.mojang.com/profiles/minecraft");
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
@@ -162,30 +170,31 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             request.getOutputStream().write(query.getBytes(StandardCharsets.UTF_8));
             request.connect();
 
-            JsonParser jp = new JsonParser(); // from gson
-            JsonElement root = jp.parse(new InputStreamReader(request.getInputStream()));
+            JsonParser jp = new JsonParser(); // from gson\
+            try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
+                JsonElement root = jp.parse(reader);
+                JsonArray rootArray = root.getAsJsonArray();
+                if (rootArray.size() == 0) {
+                    return Optional.empty();
+                }
 
-            request.disconnect();
+                JsonObject user = rootArray.get(0).getAsJsonObject();
+                boolean demo = user.has("demo");
+                boolean legacy = user.has("legacy");
+                String id = user.get("id").getAsString();
+                String name = user.get("name").getAsString();
 
-            JsonArray rootArray = root.getAsJsonArray();
-            if (rootArray.size() == 0) {
-                return Optional.empty();
+                return Optional.of(new AccountStatus(!demo, !legacy, id, name));
+            } catch (Exception e) {
+                throw new AccountStatusException(e);
             }
-
-            JsonObject user = rootArray.get(0).getAsJsonObject();
-            boolean demo = user.has("demo");
-            boolean legacy = user.has("legacy");
-            String id = user.get("id").getAsString();
-            String name = user.get("name").getAsString();
-
-            return Optional.of(new AccountStatus(!demo, !legacy, id, name));
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Error looking up player name " + username, e);
-            return Optional.empty();
+            throw new AccountStatusException(e);
         }
     }
 
-    private Optional<AccountStatus> getLegacyAccountStatus(String username, long timestamp) {
+    private Optional<AccountStatus> getLegacyAccountStatus(String username, long timestamp) throws AccountStatusException {
         try {
             String str = "https://api.mojang.com/users/profiles/minecraft/" + username + "?at=" + timestamp;
 
@@ -194,15 +203,19 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             request.connect();
 
             JsonParser jp = new JsonParser();
-            JsonElement root = jp.parse(new InputStreamReader(request.getInputStream()));
-            request.disconnect();
-            JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
-            String id = rootobj.get("id").getAsString();
-            String currentName = rootobj.get("name").getAsString();
-            return Optional.of(new AccountStatus(false, false, id, currentName));
+            try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
+                JsonElement root = jp.parse(reader);
+                request.disconnect();
+                JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
+                String id = rootobj.get("id").getAsString();
+                String currentName = rootobj.get("name").getAsString();
+                return Optional.of(new AccountStatus(false, false, id, currentName));
+            } catch (Exception e) {
+                throw new AccountStatusException(e);
+            }
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Error looking up player name " + username + " at " + timestamp + " on legacy", e);
-            return Optional.empty();
+            throw new AccountStatusException(e);
         }
     }
 
@@ -211,7 +224,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
      * @param id uuid of the user
      * @return Array of past names, or null if something went wrong
      */
-    private List<NameResponse> getNames(String id) {
+    private List<NameResponse> getNames(String id) throws AccountNamesException {
         try {
             URL url = new URL("https://api.mojang.com/user/profiles/" + id + "/names");
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
@@ -223,8 +236,8 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Error looking up player uuid", e);
+            throw new AccountNamesException(e);
         }
-        return Collections.emptyList();
     }
 
     /**
