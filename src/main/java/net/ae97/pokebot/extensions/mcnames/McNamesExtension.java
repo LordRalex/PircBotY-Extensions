@@ -153,6 +153,9 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
             JsonParser jp = new JsonParser(); // from gson
             JsonElement root = jp.parse(new InputStreamReader(request.getInputStream()));
+
+            request.disconnect();
+
             JsonArray rootArray = root.getAsJsonArray();
             if (rootArray.size() == 0) {
                 return new AccountStatus();
@@ -181,6 +184,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
             JsonParser jp = new JsonParser();
             JsonElement root = jp.parse(new InputStreamReader(request.getInputStream()));
+            request.disconnect();
             JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
             String id = rootobj.get("id").getAsString();
             String currentName = rootobj.get("name").getAsString();
@@ -202,7 +206,9 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             HttpURLConnection request = (HttpURLConnection) url.openConnection();
             request.connect();
 
-            return Arrays.asList(gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class));
+            List<NameResponse> nameResponses = Arrays.asList(gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class));
+            request.disconnect();
+            return nameResponses;
 
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Error looking up player uuid", e);
