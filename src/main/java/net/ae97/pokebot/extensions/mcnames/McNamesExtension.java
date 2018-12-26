@@ -185,11 +185,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                 String name = user.get("name").getAsString();
 
                 return Optional.of(new AccountStatus(!demo, !legacy, id, name));
-            } catch (Exception e) {
-                throw new AccountStatusException(e);
             }
-        } catch (IOException e) {
-            throw new AccountStatusException(e);
         }
     }
 
@@ -209,8 +205,6 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                 String id = rootobj.get("id").getAsString();
                 String currentName = rootobj.get("name").getAsString();
                 return Optional.of(new AccountStatus(false, false, id, currentName));
-            } catch (Exception e) {
-                throw new AccountStatusException(e);
             }
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Error looking up player name " + username + " at " + timestamp + " on legacy", e);
