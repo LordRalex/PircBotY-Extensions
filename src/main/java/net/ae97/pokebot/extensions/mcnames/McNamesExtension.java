@@ -47,7 +47,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getCommand().equals("ns")) {
+        if (event.getCommand().equals("ns") || event.getCommand().equals("names")) {
             if (event.getArgs().length != 1) {
                 event.getUser().send().notice("Usage: ns <name>");
                 return;
@@ -215,9 +215,12 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         HttpURLConnection request = (HttpURLConnection) url.openConnection();
         request.connect();
 
-        List<NameResponse> nameResponses = Arrays.asList(gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class));
-        request.disconnect();
-        return nameResponses;
+        try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
+            List<NameResponse> nameResponses = Arrays.asList(gson.fromJson(reader, NameResponse[].class));
+            return nameResponses;
+        } finally {
+            request.disconnect();
+        }
     }
 
     /**
@@ -277,6 +280,6 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     @Override
     public String[] getAliases() {
-        return new String[] { "ns" };
+        return new String[]{"ns", "names"};
     }
 }
