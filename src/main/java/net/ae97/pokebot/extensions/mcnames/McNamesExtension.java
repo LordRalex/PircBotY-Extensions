@@ -117,7 +117,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
      * @param accountStatus status of the user account
      * @return \n delimited string containing information about a username
      */
-    private String findInfo(AccountStatus accountStatus) throws AccountNamesException {
+    private String findInfo(AccountStatus accountStatus) throws IOException {
         StringBuilder output = new StringBuilder();
 
         if(!accountStatus.exists()) {
@@ -187,26 +187,21 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         }
     }
 
-    private Optional<AccountStatus> getLegacyAccountStatus(String username, long timestamp) throws AccountStatusException {
-        try {
-            String str = "https://api.mojang.com/users/profiles/minecraft/" + username + "?at=" + timestamp;
+    private Optional<AccountStatus> getLegacyAccountStatus(String username, long timestamp) throws IOException {
+        String str = "https://api.mojang.com/users/profiles/minecraft/" + username + "?at=" + timestamp;
 
-            URL url = new URL(str);
-            HttpURLConnection request = (HttpURLConnection) url.openConnection();
-            request.connect();
+        URL url = new URL(str);
+        HttpURLConnection request = (HttpURLConnection) url.openConnection();
+        request.connect();
 
-            JsonParser jp = new JsonParser();
-            try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
-                JsonElement root = jp.parse(reader);
-                request.disconnect();
-                JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
-                String id = rootobj.get("id").getAsString();
-                String currentName = rootobj.get("name").getAsString();
-                return Optional.of(new AccountStatus(false, false, id, currentName));
-            }
-        } catch (IOException e) {
-            getLogger().log(Level.WARNING, "Error looking up player name " + username + " at " + timestamp + " on legacy", e);
-            throw new AccountStatusException(e);
+        JsonParser jp = new JsonParser();
+        try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
+            JsonElement root = jp.parse(reader);
+            request.disconnect();
+            JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
+            String id = rootobj.get("id").getAsString();
+            String currentName = rootobj.get("name").getAsString();
+            return Optional.of(new AccountStatus(false, false, id, currentName));
         }
     }
 
@@ -215,20 +210,14 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
      * @param id uuid of the user
      * @return Array of past names, or null if something went wrong
      */
-    private List<NameResponse> getNames(String id) throws AccountNamesException {
-        try {
-            URL url = new URL("https://api.mojang.com/user/profiles/" + id + "/names");
-            HttpURLConnection request = (HttpURLConnection) url.openConnection();
-            request.connect();
+    private List<NameResponse> getNames(String id) throws IOException {
+        URL url = new URL("https://api.mojang.com/user/profiles/" + id + "/names");
+        HttpURLConnection request = (HttpURLConnection) url.openConnection();
+        request.connect();
 
-            List<NameResponse> nameResponses = Arrays.asList(gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class));
-            request.disconnect();
-            return nameResponses;
-
-        } catch (IOException e) {
-            getLogger().log(Level.WARNING, "Error looking up player uuid", e);
-            throw new AccountNamesException(e);
-        }
+        List<NameResponse> nameResponses = Arrays.asList(gson.fromJson(new InputStreamReader(request.getInputStream()), NameResponse[].class));
+        request.disconnect();
+        return nameResponses;
     }
 
     /**
