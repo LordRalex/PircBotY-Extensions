@@ -159,33 +159,31 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         return output.toString();
     }
 
-    private Optional<AccountStatus> getAccountStatus(String username) throws AccountStatusException {
-        try {
-            URL url = new URL("https://api.mojang.com/profiles/minecraft");
-            HttpURLConnection request = (HttpURLConnection) url.openConnection();
-            request.setRequestMethod("POST");
-            request.setRequestProperty("Content-Type", "application/json");
-            String query = "[\"" + username + "\"]";
-            request.setRequestProperty("Content-Length", Integer.toString(query.length()));
-            request.getOutputStream().write(query.getBytes(StandardCharsets.UTF_8));
-            request.connect();
+    private Optional<AccountStatus> getAccountStatus(String username) throws IOException {
+        URL url = new URL("https://api.mojang.com/profiles/minecraft");
+        HttpURLConnection request = (HttpURLConnection) url.openConnection();
+        request.setRequestMethod("POST");
+        request.setRequestProperty("Content-Type", "application/json");
+        String query = "[\"" + username + "\"]";
+        request.setRequestProperty("Content-Length", Integer.toString(query.length()));
+        request.getOutputStream().write(query.getBytes(StandardCharsets.UTF_8));
+        request.connect();
 
-            JsonParser jp = new JsonParser(); // from gson\
-            try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
-                JsonElement root = jp.parse(reader);
-                JsonArray rootArray = root.getAsJsonArray();
-                if (rootArray.size() == 0) {
-                    return Optional.empty();
-                }
-
-                JsonObject user = rootArray.get(0).getAsJsonObject();
-                boolean demo = user.has("demo");
-                boolean legacy = user.has("legacy");
-                String id = user.get("id").getAsString();
-                String name = user.get("name").getAsString();
-
-                return Optional.of(new AccountStatus(!demo, !legacy, id, name));
+        JsonParser jp = new JsonParser(); // from gson\
+        try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
+            JsonElement root = jp.parse(reader);
+            JsonArray rootArray = root.getAsJsonArray();
+            if (rootArray.size() == 0) {
+                return Optional.empty();
             }
+
+            JsonObject user = rootArray.get(0).getAsJsonObject();
+            boolean demo = user.has("demo");
+            boolean legacy = user.has("legacy");
+            String id = user.get("id").getAsString();
+            String name = user.get("name").getAsString();
+
+            return Optional.of(new AccountStatus(!demo, !legacy, id, name));
         }
     }
 
