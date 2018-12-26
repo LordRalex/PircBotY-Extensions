@@ -189,7 +189,6 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                 throw new AccountStatusException(e);
             }
         } catch (IOException e) {
-            getLogger().log(Level.WARNING, "Error looking up player name " + username, e);
             throw new AccountStatusException(e);
         }
     }
