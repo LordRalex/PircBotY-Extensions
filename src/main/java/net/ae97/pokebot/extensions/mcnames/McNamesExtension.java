@@ -120,26 +120,34 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             return "";
         }
 
-        output.append(ChatFormat.BOLD + accountStatus.getName() + ChatFormat.NORMAL + ": " + ChatFormat.BLUE + "UUID: "
-                + ChatFormat.NORMAL + accountStatus.getId() + " ");
+        output.append(ChatFormat.BOLD).append(accountStatus.getName()).append(ChatFormat.NORMAL).append(": ").append(ChatFormat.BLUE).append("UUID:").append(ChatFormat.NORMAL).append(" ").append(accountStatus.getId()).append(" ");
 
-        if (accountStatus.isPaid()) {
-            output.append(ChatFormat.GREEN + "PAID " + ChatFormat.NORMAL);
-        } else {
-            output.append(ChatFormat.RED + "DEMO " + ChatFormat.NORMAL);
+        switch (accountStatus.getPaidStatus()) {
+            case PAID:
+                output.append(ChatFormat.GREEN + "PAID");
+                break;
+            case DEMO:
+                output.append(ChatFormat.RED + "DEMO");
+                break;
+            case UNKNOWN:
+                output.append(ChatFormat.YELLOW + "UNKNOWN");
+                break;
         }
+
+        output.append(ChatFormat.NORMAL).append(" ");
 
         if (accountStatus.isMojang()) {
-            output.append(ChatFormat.YELLOW + "MIGRATED " + ChatFormat.NORMAL);
+            output.append(ChatFormat.YELLOW + "MOJANG");
         } else {
-            output.append(ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
+            output.append(ChatFormat.RED + "LEGACY");
         }
+        output.append(ChatFormat.NORMAL + " ");
 
         if (accountStatus.isMojang()) {
             List<NameResponse> names = getNames(accountStatus.getId());
             if (names.size() > 1) {
                 StringBuilder nameHistory = new StringBuilder();
-                nameHistory.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names.get(0).getName());
+                nameHistory.append("\n" + ChatFormat.DARK_GRAY + "Name history:" + ChatFormat.NORMAL + " ").append(names.get(0).getName());
 
                 for (NameResponse name : names) {
                     nameHistory.append(String.format(" → %s (%s)", name.getName(), dateFormat.format(name.getChangedToAt())));
@@ -175,12 +183,17 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             }
 
             JsonObject user = rootArray.get(0).getAsJsonObject();
-            boolean demo = user.has("demo");
+            PaidStatus paidStatus;
+            if (user.has("demo")) {
+                paidStatus = PaidStatus.DEMO;
+            } else {
+                paidStatus = PaidStatus.PAID;
+            }
             boolean legacy = user.has("legacy");
             String id = user.get("id").getAsString();
             String name = user.get("name").getAsString();
 
-            return Optional.of(new AccountStatus(!demo, !legacy, id, name));
+            return Optional.of(new AccountStatus(!legacy, paidStatus, id, name));
         }
     }
 
@@ -202,7 +215,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                     JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
                     String id = rootobj.get("id").getAsString();
                     String currentName = rootobj.get("name").getAsString();
-                    return Optional.of(new AccountStatus(false, false, id, currentName));
+                    return Optional.of(new AccountStatus(false, PaidStatus.UNKNOWN, id, currentName));
                 }
             } else {
                 throw new IOException("Unexpected response code " + request.getResponseCode());
@@ -255,27 +268,23 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     public class AccountStatus {
         private boolean mojang;
-        private boolean paid;
+        private PaidStatus paid;
         private boolean exists;
         private String id;
         private String name;
 
-        public AccountStatus(boolean mojang, boolean paid, String id, String name) {
+        public AccountStatus(boolean mojang, PaidStatus paid, String id, String name) {
             this.mojang = mojang;
             this.paid = paid;
             this.id = id;
             this.name = name;
         }
 
-        public AccountStatus() {
-            this.exists = false;
-        }
-
         public boolean isMojang() {
             return mojang;
         }
 
-        public boolean isPaid() {
+        public PaidStatus getPaidStatus() {
             return paid;
         }
 
@@ -290,6 +299,12 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         public boolean exists() {
             return exists;
         }
+    }
+
+    private enum PaidStatus {
+        PAID,
+        DEMO,
+        UNKNOWN
     }
 
     @Override
