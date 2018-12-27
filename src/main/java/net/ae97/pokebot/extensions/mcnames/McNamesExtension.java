@@ -180,7 +180,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             String id = user.get("id").getAsString();
             String name = user.get("name").getAsString();
 
-            return Optional.of(new AccountStatus(!demo, !legacy, id, name));
+            return Optional.of(new AccountStatus(!legacy, !demo, id, name));
         }
     }
 
@@ -202,7 +202,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                     JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
                     String id = rootobj.get("id").getAsString();
                     String currentName = rootobj.get("name").getAsString();
-                    return Optional.of(new AccountStatus(false, false, id, currentName));
+                    return Optional.of(new AccountStatus(false, true, id, currentName));
                 }
             } else {
                 throw new IOException("Unexpected response code " + request.getResponseCode());
