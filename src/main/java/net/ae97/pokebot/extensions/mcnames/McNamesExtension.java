@@ -10,15 +10,13 @@ import net.ae97.pokebot.extension.Extension;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 
 public class McNamesExtension extends Extension implements Listener, CommandExecutor {
@@ -27,8 +25,8 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     private static final long SECONDS_IN_A_MONTH = 2505600L; // 29 days (in seconds)
     private static final int MAX_MESSAGE_CHARACTERS = 350;
 
+    private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // ISO 8601 format
     private Gson gson;
-    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd"); // ISO 8601 format
 
     @Override
     public String getName() {
@@ -47,20 +45,18 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     @Override
     public void runEvent(CommandEvent event) {
-        if (event.getCommand().equals("ns") || event.getCommand().equals("names")) {
-            if (event.getArgs().length != 1) {
-                event.getUser().send().notice("Usage: ns <name>");
-                return;
-            }
-            String result = getNS(event.getArgs()[0]);
-            String[] split = result.split("\n");
-            for (String s : split) {
-                event.respond(s);
-            }
+        if (event.getArgs().length != 1) {
+            event.getUser().send().notice("Usage: ns <name>");
+            return;
+        }
+        String result = getNameHistory(event.getArgs()[0]);
+        String[] split = result.split("\n");
+        for (String s : split) {
+            event.respond(s);
         }
     }
 
-    private String getNS(String username) {
+    public String getNameHistory(String username) {
         if (username == null || username.isEmpty()) {
             return "Invalid username";
         }
@@ -76,14 +72,14 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
             String result = "";
 
             if (status.isPresent()) {
-                result = findInfo(status.get());
+                result = getInfo(status.get());
             }
 
             if (result.isEmpty()) {
                 // otherwise, find the user who until recently had this name
                 status = getLegacyAccountStatus(username, unixTimestamp - SECONDS_IN_A_MONTH);
                 if (status.isPresent()) {
-                    result = findInfo(status.get());
+                    result = getInfo(status.get());
                     nameChanged = true;
                 }
 
@@ -92,7 +88,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                     status = getLegacyAccountStatus(username, 0);
 
                     if (status.isPresent()) {
-                        result = findInfo(status.get());
+                        result = getInfo(status.get());
                     }
 
                     if (result.isEmpty()) {
@@ -113,39 +109,39 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
 
     /**
      * Get information about a Minecraft username
-     * 
+     *
      * @param accountStatus status of the user account
      * @return \n delimited string containing information about a username
      */
-    private String findInfo(AccountStatus accountStatus) throws IOException {
+    public String getInfo(AccountStatus accountStatus) throws IOException {
         StringBuilder output = new StringBuilder();
 
-        if(!accountStatus.exists()) {
+        if (accountStatus.exists()) {
             return "";
         }
 
         output.append(ChatFormat.BOLD + accountStatus.getName() + ChatFormat.NORMAL + ": " + ChatFormat.BLUE + "UUID: "
                 + ChatFormat.NORMAL + accountStatus.getId() + " ");
 
-        if (accountStatus.isPaid())  {
+        if (accountStatus.isPaid()) {
             output.append(ChatFormat.GREEN + "PAID " + ChatFormat.NORMAL);
         } else {
             output.append(ChatFormat.RED + "DEMO " + ChatFormat.NORMAL);
         }
 
-        if (accountStatus.isMojang())  {
+        if (accountStatus.isMojang()) {
             output.append(ChatFormat.YELLOW + "MIGRATED " + ChatFormat.NORMAL);
         } else {
             output.append(ChatFormat.RED + "LEGACY " + ChatFormat.NORMAL);
         }
 
-        if(accountStatus.isMojang()) {
+        if (accountStatus.isMojang()) {
             List<NameResponse> names = getNames(accountStatus.getId());
-            if (!names.isEmpty()) {
+            if (names.size() > 1) {
                 StringBuilder nameHistory = new StringBuilder();
                 nameHistory.append("\n" + ChatFormat.DARK_GRAY + "Name history: " + ChatFormat.NORMAL + names.get(0).getName());
 
-                for(NameResponse name: names) {
+                for (NameResponse name : names) {
                     nameHistory.append(String.format(" → %s (%s)", name.getName(), dateFormat.format(name.getChangedToAt())));
                 }
 
@@ -159,12 +155,13 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         return output.toString();
     }
 
-    private Optional<AccountStatus> getAccountStatus(String username) throws IOException {
+    public Optional<AccountStatus> getAccountStatus(String username) throws IOException {
         URL url = new URL("https://api.mojang.com/profiles/minecraft");
         HttpURLConnection request = (HttpURLConnection) url.openConnection();
         request.setRequestMethod("POST");
         request.setRequestProperty("Content-Type", "application/json");
         String query = "[\"" + username + "\"]";
+        request.setDoOutput(true);
         request.setRequestProperty("Content-Length", Integer.toString(query.length()));
         request.getOutputStream().write(query.getBytes(StandardCharsets.UTF_8));
         request.connect();
@@ -187,37 +184,54 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         }
     }
 
-    private Optional<AccountStatus> getLegacyAccountStatus(String username, long timestamp) throws IOException {
+    public Optional<AccountStatus> getLegacyAccountStatus(String username, long timestamp) throws IOException {
         String str = "https://api.mojang.com/users/profiles/minecraft/" + username + "?at=" + timestamp;
 
         URL url = new URL(str);
-        HttpURLConnection request = (HttpURLConnection) url.openConnection();
-        request.connect();
+        HttpURLConnection request = null;
+        try {
+            request = (HttpURLConnection) url.openConnection();
+            request.connect();
 
-        JsonParser jp = new JsonParser();
-        try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
-            JsonElement root = jp.parse(reader);
+            if (request.getResponseCode() == 204) {
+                return Optional.empty();
+            } else if (request.getResponseCode() == 200) {
+                JsonParser jp = new JsonParser();
+                try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
+                    JsonElement root = jp.parse(reader);
+                    JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
+                    String id = rootobj.get("id").getAsString();
+                    String currentName = rootobj.get("name").getAsString();
+                    return Optional.of(new AccountStatus(false, false, id, currentName));
+                }
+            } else {
+                throw new IOException("Unexpected response code " + request.getResponseCode());
+            }
+        } finally {
             request.disconnect();
-            JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
-            String id = rootobj.get("id").getAsString();
-            String currentName = rootobj.get("name").getAsString();
-            return Optional.of(new AccountStatus(false, false, id, currentName));
         }
     }
 
     /**
      * Get name history of a user
+     *
      * @param id uuid of the user
-     * @return Array of past names, or null if something went wrong
+     * @return Array of past names
      */
-    private List<NameResponse> getNames(String id) throws IOException {
+    public List<NameResponse> getNames(String id) throws IOException {
         URL url = new URL("https://api.mojang.com/user/profiles/" + id + "/names");
-        HttpURLConnection request = (HttpURLConnection) url.openConnection();
-        request.connect();
+        HttpURLConnection request = null;
 
-        try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
-            List<NameResponse> nameResponses = Arrays.asList(gson.fromJson(reader, NameResponse[].class));
-            return nameResponses;
+        try {
+            request = (HttpURLConnection) url.openConnection();
+            request.connect();
+
+            if (request.getResponseCode() == 204) {
+                return new ArrayList<>(0);
+            }
+            try (InputStreamReader reader = new InputStreamReader(request.getInputStream())) {
+                return Arrays.asList(gson.fromJson(reader, NameResponse[].class));
+            }
         } finally {
             request.disconnect();
         }
@@ -226,7 +240,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
     /**
      * Name response DTO. See <a href="http://wiki.vg/Mojang_API#UUID_-.3E_Name_history"> http://wiki.vg/Mojang_API </a>
      */
-    private class NameResponse {
+    public class NameResponse {
         private String name;
         private Date changedToAt;
 
@@ -239,7 +253,7 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
         }
     }
 
-    private class AccountStatus {
+    public class AccountStatus {
         private boolean mojang;
         private boolean paid;
         private boolean exists;
