@@ -209,7 +209,8 @@ public class McNamesExtension extends Extension implements Listener, CommandExec
                     JsonObject rootobj = root.getAsJsonObject(); // May be an array, may be an object.
                     String id = rootobj.get("id").getAsString();
                     String currentName = rootobj.get("name").getAsString();
-                    return Optional.of(new AccountStatus(false, PaidStatus.UNKNOWN, id, currentName));
+                    boolean isLegacy = username.equals(currentName); // If the name was changed its definately migrated, else we dont know
+                    return Optional.of(new AccountStatus(isLegacy, PaidStatus.UNKNOWN, id, currentName));
                 }
             } else {
                 throw new IOException("Unexpected response code " + request.getResponseCode());
